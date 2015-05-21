@@ -25,6 +25,7 @@ module.exports = function (grunt) {
 		version: packageJson.version,
 		all: [ 'src/**/*.ts', 'typings/tsd.d.ts' ],
 		tests: [ 'tests/**/*.ts', 'typings/tsd.d.ts' ],
+		staticTestFiles: 'tests/**/*.{html,css,json,xml}',
 		devDirectory: compilerOptions.outDir,
 		istanbulIgnoreNext: '/* istanbul ignore next */',
 
@@ -58,6 +59,12 @@ module.exports = function (grunt) {
 				cwd: '.',
 				src: [ 'README.md', 'LICENSE', 'package.json', 'bower.json' ],
 				dest: 'dist/'
+			},
+			staticTestFiles: {
+				expand: true,
+				cwd: '.',
+				src: [ '<%= staticTestFiles %>' ],
+				dest: '<%= devDirectory %>'
 			},
 			typings: {
 				expand: true,
@@ -182,7 +189,7 @@ module.exports = function (grunt) {
 				options: {
 					atBegin: true
 				},
-				files: [ '<%= all %>', '<%= tests %>' ],
+				files: [ '<%= all %>', '<%= tests %>', '<%= staticTestFiles %>' ],
 				tasks: [
 					'dev',
 					'tslint'
@@ -218,6 +225,7 @@ module.exports = function (grunt) {
 
 	grunt.registerTask('dev', [
 		'ts:dev',
+		'copy:staticTestFiles',
 		'replace:addIstanbulIgnore'
 	]);
 	grunt.registerTask('dist', [
