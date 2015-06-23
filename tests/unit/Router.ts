@@ -128,19 +128,17 @@ registerSuite({
 		},
 
 		'error handling'(): Promise<void> {
-			const error = sinon.spy();
 			const router = new Router({
 				path: '/',
-				error: error,
 				source: getSource(),
 				routes: [
-					new Route({ path: '/some/{path}', enter: function () {} }),
+					new Route({ path: '/some/{path}', enter() {} }),
 				]
 			});
 
 			return router.go('/nonsensical')
-				.then(function () {
-					assert.isTrue(error.called);
+				.then(undefined, function (error: any) {
+					assert.strictEqual(error.name, 'MissingRouteError');
 				});
 		}
 	},
@@ -189,14 +187,8 @@ registerSuite({
 	'canceling routing': {
 		beforeEnter(): Promise<void> {
 			const enter = sinon.spy();
-
-			let errorName: string;
-			const error = function (error: any): void {
-				errorName = error.name;
-			};
 			const router = new Router({
 				path: '/',
-				error: error,
 				source: getSource(),
 				routes: [
 					new Route({
@@ -209,10 +201,10 @@ registerSuite({
 				]
 			});
 
-			return router.go('/some/value').then(function () {
+			return router.go('/some/value').then(undefined, function (error: any) {
 				assert.isFalse(enter.called);
 				assert.isFalse(sourceGo.called);
-				assert.equal(errorName, 'CancelNavigationError');
+				assert.strictEqual(error.name, 'CancelNavigationError');
 			});
 		},
 
@@ -220,10 +212,8 @@ registerSuite({
 			const beforeEnter = sinon.spy();
 			const enter = sinon.spy();
 			const exit = sinon.spy();
-			const error = sinon.spy();
 			const router = new Router({
 				path: '/',
-				error: error,
 				routes: [
 					new Route({
 						path: '/some/{path}',
@@ -247,11 +237,10 @@ registerSuite({
 				.then(function () {
 					return router.go('/other');
 				})
-				.then(function () {
+				.then(undefined, function (error: any) {
 					assert.isFalse(exit.called);
 					assert.isFalse(beforeEnter.called);
 					assert.isFalse(enter.called);
-					assert.isTrue(error.called);
 				});
 		},
 
@@ -314,6 +303,54 @@ registerSuite({
 			setTimeout(dfd.callback(function () {
 				assert.isFalse(enter.called);
 			}));
+		},
+
+		cancel(): void {
+			const dfd = this.async();
+			const enter = sinon.spy();
+			const router = new Router({
+				path: '/',
+				routes: [
+					new Route({
+						path: '/path/{id}',
+						enter: enter,
+						beforeEnter(event: any) {
+							event.preventDefault();
+						}
+					})
+				],
+				source: getSource()
+			});
+
+			router.on('cancel', dfd.callback(function (event: any): void {
+				assert.strictEqual(event.path, 'path/42/');
+				assert.strictEqual(Number(event.state.id), 42);
+				assert.isFalse(enter.called);
+			}));
+			router.go('/path/42');
+		},
+
+		error(): void {
+			const dfd = this.async();
+			const testError = new Error('test');
+			const router = new Router({
+				path: '/',
+				source: getSource(),
+				routes: [
+					new Route({
+						path: '/some/{path}',
+						enter() {},
+						beforeEnter(event: any): void {
+							throw testError;
+						}
+					})
+				]
+			});
+
+			router.on('error', dfd.callback(function (event: any) {
+				assert.strictEqual(event.error, testError);
+			}));
+			router.go('some/value/');
 		}
 	}
 });

@@ -57,8 +57,6 @@ export interface RouteManagerArgs {
 
 export interface RouterArgs extends RouteManagerArgs {
 	source?: RouterSource;
-
-	error?: (error: Error) => void;
 }
 
 export interface RouterSource {

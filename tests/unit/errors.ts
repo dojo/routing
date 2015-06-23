@@ -2,6 +2,7 @@ import * as assert from 'intern/chai!assert';
 import * as registerSuite from 'intern!object';
 import * as sinon from 'sinon';
 import CancelNavigationError from 'src/errors/CancelNavigationError';
+import MissingRouteError from 'src/errors/MissingRouteError';
 import PathRuleError from 'src/errors/PathRuleError';
 
 registerSuite({
@@ -13,6 +14,15 @@ registerSuite({
 		assert.strictEqual(error.message, 'test');
 
 		error = new CancelNavigationError();
+		assert.strictEqual(error.message, '');
+	},
+
+	'MissingRouteError'(): void {
+		let error = new MissingRouteError('test');
+		assert.strictEqual(error.name, 'MissingRouteError');
+		assert.strictEqual(error.message, 'test');
+
+		error = new MissingRouteError();
 		assert.strictEqual(error.message, '');
 	},
 

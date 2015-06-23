@@ -21,15 +21,19 @@
 
 				router.run()
 					.then(function () {
+						// noop
+					}, function (e) {
 						return router.go('articles');
 					})
 					.then(function () {
 						return router.go('articles/article');
 					})
 					.then(function () {
+						// noop
+					}, function () {
 						return router.go('articles/12345');
 					})
-					.then(function () {
+					.finally(function () {
 						window.routerSourceResults = app.paths;
 					});
 			});

@@ -15,6 +15,7 @@ let isLoggedIn: boolean = false;
 function loadRouter(source?: RouterSource): Router {
 	const router = new Router({
 		path: 'root',
+		source: source,
 		routes: [
 			new RouteGroup({
 				path: 'articles',

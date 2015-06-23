@@ -3,6 +3,7 @@ import Evented from 'dojo-core/Evented';
 import { Handle, EventObject } from 'dojo-core/interfaces';
 import Promise from 'dojo-core/Promise';
 import CancelNavigationError from './errors/CancelNavigationError';
+import MissingRouteError from './errors/MissingRouteError';
 import has from './has';
 import HashSource from './HashSource';
 import HtmlHistorySource from './HtmlHistorySource';
@@ -34,13 +35,11 @@ export default class Router extends RouteManager {
 
 	canceled: NavigationArgs;
 	current: NavigationArgs;
-	error: (error: Error) => void;
 	source: RouterSource;
 
 	constructor(kwArgs: RouterArgs) {
 		super(kwArgs);
 
-		this.error = kwArgs.error || null;
 		this.source = kwArgs.source || defaultSource;
 		this._evented = new Evented();
 		this._isRun = false;
@@ -103,7 +102,7 @@ export default class Router extends RouteManager {
 		const getEventPromise = this._getEventPromise.bind(this, event, path);
 
 		const self = this;
-		return getEventPromise(this, 'emit')
+		return getEventPromise(this._evented, 'emit')
 			.then(function () {
 				return previous && getEventPromise(previous, 'beforeExit');
 			})
@@ -121,19 +120,19 @@ export default class Router extends RouteManager {
 			})
 			.then(function () {
 				self.source && self.source.go(PathRule.join(self.path, path), args.state);
-				self.emit(self._createEvent('change', args));
+				self._evented.emit(self._createEvent('change', args));
 			})
 			.catch(function (error: any) {
 				self.canceled = args;
 				self.current = previousArgs;
 
-				if (self.error) {
-					return self.error(error);
-				}
+				const errorEvent = (error.name === 'CancelNavigationError') ?
+					self._createEvent('cancel', args) :
+					{ type: 'error', error: error };
 
-				if (error.name !== 'CancelNavigationError') {
-					throw error;
-				}
+				self._evented.emit(errorEvent);
+
+				return Promise.reject(error);
 			});
 	}
 
@@ -143,10 +142,6 @@ export default class Router extends RouteManager {
 		};
 		this.source && this.source.destroy();
 		this.routes = this._rule = this.source = null;
-	}
-
-	emit(data: EventObject): void {
-		return this._evented.emit(data);
 	}
 
 	go(path: string): Promise<any> {
@@ -159,8 +154,9 @@ export default class Router extends RouteManager {
 		const args = this._getRouteArgs(path);
 
 		if (!args) {
-			this.error && this.error(new Error('The path provided to Router#go matched no routes.'));
-			return Promise.resolve(null);
+			const error = new MissingRouteError('The path provided to Router#go matched no routes.');
+			this._evented.emit({ type: 'error', error: error });
+			return Promise.reject(error);
 		}
 
 		args.routerPath = normalized;
@@ -171,11 +167,6 @@ export default class Router extends RouteManager {
 		return this._evented.on(type, listener);
 	}
 
-	/**
-	 * Starts the router.
-	 *
-	 *
-	 */
 	run(forceRedirect: boolean = true): Promise<any> {
 		let path: string = forceRedirect ? '/' : this.source && this.source.currentPath;
 		this.run = function (): Promise<any> {
