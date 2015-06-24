@@ -11,7 +11,7 @@ import PathRule from './PathRule';
 import RouteManager from './RouteManager';
 import { CancelableNavigationArgs, MatchableRoute, NavigationArgs, Route, RouteHandlers, RouterArgs, RouterSource } from './routing';
 
-const DefaultSource = has('history') ? HtmlHistorySource : HashSource;
+const DefaultSource = has('html5-history') ? HtmlHistorySource : HashSource;
 let defaultSource: RouterSource = null;
 
 if (has('host-browser')) {

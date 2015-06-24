@@ -25,7 +25,7 @@ registerSuite({
 	name: 'HtmlHistorySource',
 
 	'on initialize'(): void {
-		if (has('history')) {
+		if (has('html5-history')) {
 			this.skip('the following test requires an environment without HTML History support.');
 		}
 

@@ -14,7 +14,7 @@ export default class HtmlHistorySource extends Evented implements RouterSource {
 	}
 
 	constructor() {
-		if (!has('history')) {
+		if (!has('html5-history')) {
 			throw new Error('HtmlHistorySource requires `window.history` support.');
 		}
 

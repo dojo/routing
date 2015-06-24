@@ -2,7 +2,6 @@ import Evented from 'dojo-core/Evented';
 import global from 'dojo-core/global';
 import { Handle } from 'dojo-core/interfaces';
 import { createHandle } from 'dojo-core/lang';
-import has from 'dojo-core/has';
 import { NavigationArgs, RouterSource } from './routing';
 
 export default class HashSource extends Evented implements RouterSource {
@@ -24,7 +23,7 @@ export default class HashSource extends Evented implements RouterSource {
 	}
 
 	constructor(prefix: string = '!') {
-		if (!has('host-browser')) {
+		if (!('location' in global) || !('addEventListener' in global)) {
 			throw new Error('HashSource requires a browser.');
 		}
 
