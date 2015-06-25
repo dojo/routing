@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>DefaultBrowserSource Test - Path Navigation</title>
+	</head>
+	<body>
+		<button id="second">Second</button>
+
+		<script src="//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js"></script>
+		<script>
+			require({
+				packages: [
+					{ name: 'dojo-core', location: '/node_modules/dojo-core' },
+					{ name: 'src', location: '/_build/src' },
+					{ name: 'app', location: '/_build/tests/functional/default' }
+				]
+			}, [
+				'app/defaultBrowserSourceHelpers',
+				'src/DefaultBrowserSource'
+			], function (helpers, DefaultBrowserSource) {
+				var source = window.defaultBrowserSource = new DefaultBrowserSource.default();
+				document.getElementById('second').addEventListener('click', function () {
+					source.go(helpers.replacePath('first.html', 'second.html'));
+				});
+			});
+		</script>
+	</body>
+</html>

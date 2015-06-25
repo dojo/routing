@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>DefaultBrowserSource Test - `change` event and `#destroy` method.</title>
+	</head>
+	<body>
+		<script src="//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js"></script>
+		<script>
+			require({
+				packages: [
+					{ name: 'dojo-core', location: '/node_modules/dojo-core' },
+					{ name: 'src', location: '/_build/src' },
+					{ name: 'app', location: '/_build/tests/functional/default' }
+				]
+			}, [
+				'app/defaultBrowserSourceHelpers',
+				'src/DefaultBrowserSource'
+			], function (helpers, DefaultBrowserSource) {
+				var source = new DefaultBrowserSource.default();
+				source.on('change', function (event) {
+					var currentPath = source.currentPath;
+
+					// Navigating to the current path should have no effect.
+					source.go(currentPath);
+					source.destroy();
+					// Navigating to a new path after the source has been destroyed should have no effect.
+					source.go(helpers.replacePath('second.html', 'third.html'));
+
+					window.routerSourceResults = {
+						currentPath: currentPath,
+						path: event.path
+					};
+				});
+				source.go();
+			});
+		</script>
+	</body>
+</html>

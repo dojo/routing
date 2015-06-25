@@ -21,14 +21,14 @@ export default class DefaultBrowserSource extends Evented implements RouterSourc
 	}
 
 	go(path: string = null): void {
-		if (path === null || !this._current) {
+		if (path === null && this._current === undefined) {
 			this._current = global.location.pathname;
 			this.emit({
 				type: 'change',
 				path: this._current
 			});
 		}
-		else if (path !== this._current) {
+		else if (path !== null && path !== this._current) {
 			global.location = global.location.origin + path;
 		}
 	}
