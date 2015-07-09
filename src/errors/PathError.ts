@@ -1,8 +1,8 @@
-export default class PathRuleError implements Error {
+export default class PathError implements Error {
 	message: string;
 
 	get name(): string {
-		return 'PathRuleError';
+		return 'PathError';
 	}
 
 	constructor(message: string = '') {

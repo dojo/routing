@@ -1,8 +1,8 @@
 import DefaultRoute from 'src/DefaultRoute';
+import { CancelableNavigationArgs, RouterSource } from 'src/interfaces';
 import Route from 'src/Route';
 import RouteGroup from 'src/RouteGroup';
 import Router from 'src/Router';
-import { CancelableNavigationArgs, RouterSource } from 'src/routing';
 
 interface PathEvent {
 	entered: boolean;
@@ -26,8 +26,8 @@ function loadRouter(source?: RouterSource): Router {
 							if (isNaN(Number(event.state.id))) {
 								paths.push({
 									entered: false,
-									path: event.path,
-									routerPath: event.routerPath
+									matched: event.matched,
+									path: event.path
 								});
 								event.preventDefault();
 							}
@@ -35,8 +35,8 @@ function loadRouter(source?: RouterSource): Router {
 						enter(): void {
 							paths.push({
 								entered: true,
-								path: router.current.path,
-								routerPath: router.current.routerPath
+								matched: router.current.matched,
+								path: router.current.path
 							});
 						}
 					})
@@ -45,8 +45,8 @@ function loadRouter(source?: RouterSource): Router {
 					enter(): void {
 						paths.push({
 							entered: true,
-							path: router.current.path,
-							routerPath: router.current.routerPath
+							matched: router.current.matched,
+							path: router.current.path
 						});
 					}
 				})
@@ -57,8 +57,8 @@ function loadRouter(source?: RouterSource): Router {
 					if (isLoggedIn) {
 						paths.push({
 							entered: false,
-							path: router.current.path,
-							routerPath: router.current.routerPath
+							matched: router.current.matched,
+							path: router.current.path
 						});
 						event.preventDefault();
 					}
@@ -67,8 +67,8 @@ function loadRouter(source?: RouterSource): Router {
 					isLoggedIn = true;
 					paths.push({
 						entered: true,
-						path: router.current.path,
-						routerPath: router.current.routerPath
+						matched: router.current.matched,
+						path: router.current.path
 					});
 					router.go(router.canceled.path);
 				}
@@ -78,8 +78,8 @@ function loadRouter(source?: RouterSource): Router {
 			enter(): void {
 				paths.push({
 					entered: true,
-					path: router.current.path,
-					routerPath: router.current.routerPath
+					matched: router.current.matched,
+					path: router.current.path
 				});
 			}
 		})

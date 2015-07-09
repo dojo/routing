@@ -1,6 +1,6 @@
 import Evented from 'dojo-core/Evented';
 import global from 'dojo-core/global';
-import { NavigationArgs, RouterSource } from './routing';
+import { RouterSource } from './interfaces';
 
 /**
  * The `DefaultBrowserSource` navigates via full page refreshes (the default method of
@@ -12,14 +12,26 @@ import { NavigationArgs, RouterSource } from './routing';
 export default class DefaultBrowserSource extends Evented implements RouterSource {
 	protected _current: string;
 
+	/**
+	 * The current URL path.
+	 */
 	get currentPath(): string {
 		return this._current || global.location.pathname;
 	}
 
+	/**
+	 * Disables the instance so that it no longer affects the browser state.
+	 */
 	destroy(): void {
 		this.go = function () {};
 	}
 
+	/**
+	 * Redirects the browser to the provided URL. If no path is provided, then it is
+	 * assumed that the current URL is meant to be treated as the new path. In this case,
+	 * a "change" event is emitted, with the expectation that the router can then pass control
+	 * to the appropriate route.
+	 */
 	go(path: string = null): void {
 		if (path === null && this._current === undefined) {
 			this._current = global.location.pathname;

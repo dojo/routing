@@ -19,28 +19,28 @@ function testPaths(events: any): void {
 	}
 
 	let event: any = events[0];
+	assert.strictEqual(event.matched, 'login/');
 	assert.strictEqual(event.path, 'login/');
-	assert.strictEqual(event.routerPath, 'login/');
 	assert.isTrue(event.entered);
 
 	event = events[1];
+	assert.strictEqual(event.matched, '/');
 	assert.strictEqual(event.path, '/');
-	assert.strictEqual(event.routerPath, '/');
 	assert.isTrue(event.entered);
 
 	event = events[2];
-	assert.strictEqual(event.path, '/');
-	assert.strictEqual(event.routerPath, 'articles/');
+	assert.strictEqual(event.matched, '/');
+	assert.strictEqual(event.path, 'articles/');
 	assert.isTrue(event.entered);
 
 	event = events[3];
-	assert.strictEqual(event.path, 'article/');
-	assert.strictEqual(event.routerPath, 'articles/article/');
+	assert.strictEqual(event.matched, 'article/');
+	assert.strictEqual(event.path, 'articles/article/');
 	assert.isFalse(event.entered);
 
 	event = events[4];
-	assert.strictEqual(event.path, '12345/');
-	assert.strictEqual(event.routerPath, 'articles/12345/');
+	assert.strictEqual(event.matched, '12345/');
+	assert.strictEqual(event.path, 'articles/12345/');
 	assert.isTrue(event.entered);
 }
 

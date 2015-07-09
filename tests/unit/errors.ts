@@ -3,7 +3,7 @@ import * as registerSuite from 'intern!object';
 import * as sinon from 'sinon';
 import CancelNavigationError from 'src/errors/CancelNavigationError';
 import MissingRouteError from 'src/errors/MissingRouteError';
-import PathRuleError from 'src/errors/PathRuleError';
+import PathError from 'src/errors/PathError';
 
 registerSuite({
 	name: 'errors',
@@ -26,12 +26,12 @@ registerSuite({
 		assert.strictEqual(error.message, '');
 	},
 
-	'PathRuleError'(): void {
-		let error = new PathRuleError('test');
-		assert.strictEqual(error.name, 'PathRuleError');
+	'PathError'(): void {
+		let error = new PathError('test');
+		assert.strictEqual(error.name, 'PathError');
 		assert.strictEqual(error.message, 'test');
 
-		error = new PathRuleError();
+		error = new PathError();
 		assert.strictEqual(error.message, '');
 	}
 });

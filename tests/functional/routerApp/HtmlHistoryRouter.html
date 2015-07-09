@@ -24,7 +24,7 @@
 
 				var router = app.loadRouter(new HtmlHistorySource.default());
 
-				router.run()
+				router.go('/')
 					.then(function () {
 						// noop
 					}, function (e) {

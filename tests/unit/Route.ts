@@ -1,8 +1,8 @@
 import * as assert from 'intern/chai!assert';
 import * as registerSuite from 'intern!object';
 import * as sinon from 'sinon';
+import { CancelableNavigationArgs } from 'src/interfaces';
 import Route from 'src/Route';
-import { CancelableNavigationArgs } from 'src/routing';
 
 registerSuite({
 	name: 'Route',
@@ -33,17 +33,5 @@ registerSuite({
 		assert.isNull(route.change);
 		assert.isNull(route.exit);
 		assert.isFalse(enter.called);
-	},
-
-	'#match()'(): void {
-		const route = new Route({
-			path: '/some/{path}',
-			enter: function () {}
-		});
-
-		assert.isNotNull(route.match('/some/value'));
-		assert.isNotNull(route.match('/some/other-value'));
-		assert.isNotNull(route.match('/some/other/value'));
-		assert.isNull(route.match('/other/value'));
 	}
 });

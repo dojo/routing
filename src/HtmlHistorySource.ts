@@ -3,12 +3,15 @@ import global from 'dojo-core/global';
 import { Handle } from 'dojo-core/interfaces';
 import { createHandle } from 'dojo-core/lang';
 import has from './has';
-import { NavigationArgs, RouterSource } from './routing';
+import { RouterSource } from './interfaces';
 
 export default class HtmlHistorySource extends Evented implements RouterSource {
 	protected _current: { path: string; state: any };
 	protected _handle: Handle;
 
+	/**
+	 * The current URL path.
+	 */
 	get currentPath(): string {
 		return global.location.pathname;
 	}
@@ -52,11 +55,20 @@ export default class HtmlHistorySource extends Evented implements RouterSource {
 		this._current.state = state;
 	}
 
+	/**
+	 * Disables the instance so that it no longer affects the browser state.
+	 */
 	destroy(): void {
 		this._handle.destroy();
 		this.go = function () {};
 	}
 
+	/**
+	 * Redirects the browser to the provided URL. If no path is provided, then it is
+	 * assumed that the current URL is meant to be treated as the new path. In this case,
+	 * a "change" event is emitted, with the expectation that the router can then pass control
+	 * to the appropriate route.
+	 */
 	go(path: string, state: {} = null): void {
 		const normalized = (path.charAt(0) === '/') ? path : '/' + path;
 

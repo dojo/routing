@@ -1,15 +1,16 @@
 import { after } from 'dojo-core/aspect';
 import Evented from 'dojo-core/Evented';
 import { Handle, EventObject } from 'dojo-core/interfaces';
+import { assign } from 'dojo-core/lang';
 import Promise from 'dojo-core/Promise';
 import CancelNavigationError from './errors/CancelNavigationError';
 import MissingRouteError from './errors/MissingRouteError';
 import has from './has';
 import HashSource from './HashSource';
 import HtmlHistorySource from './HtmlHistorySource';
-import PathRule from './PathRule';
-import RouteManager from './RouteManager';
-import { CancelableNavigationArgs, MatchableRoute, NavigationArgs, Route, RouteHandlers, RouterArgs, RouterSource } from './routing';
+import { CancelableNavigationArgs, NavigationArgs, RouterArgs, RouterSource } from './interfaces';
+import { joinPath, normalizePath } from './PathRule';
+import RouteGroup from './RouteGroup';
 
 const DefaultSource = has('html5-history') ? HtmlHistorySource : HashSource;
 let defaultSource: RouterSource = null;
@@ -18,23 +19,38 @@ if (has('host-browser')) {
 	defaultSource = new (<any> DefaultSource)();
 }
 
-// TODO Replace with `lang.assign` when it's available.
-function mixin(target: {}, ...sources: {}[]): {} {
-	return sources.reduce(function (object: {}, source: {}): {} {
-		Object.keys(source).forEach(function (key: string): void {
-			(<any> object)[key] = (<any> source)[key];
-		});
-
-		return object;
-	}, target);
-}
-
-export default class Router extends RouteManager {
+/**
+ * Handles navigating to/from paths in response to events from the user/environment.
+ *
+ * @fires "beforechange" Before the lifecycle methods are called. Passed an `event` object with route
+ * 		data and a `preventDefault` method that can be called to cancel the route change.
+ * @fires "change" When the new route has been entered. Passed an object containing route data.
+ * @fires "error" When a route change is canceled or another error occurs. Passed the error object.
+ */
+export default class Router extends RouteGroup {
 	protected _evented: Evented;
-	protected _isRun: boolean;
 
+	/**
+	 * The route data for a route canceled by one of the following methods:
+	 * `beforeEnter`, `beforeExit`, or a `beforechange` event handler. This is cleared
+	 * each time a new route is successfully entered.
+	 */
 	canceled: NavigationArgs;
+
+	/**
+	 * The data for the current route.
+	 */
 	current: NavigationArgs;
+
+	/**
+	 * The object responsible for updating the environment in response to router changes. Defaults to
+	 * an instance of `HtmlHistorySource` in environments where the history API is supported, and to
+	 * an instance of `HashSource` otherwise.
+	 *
+	 * `Router` does not actually change the browser URL or interact with the environment directly.
+	 * This allows users to control how the browser responds to route changes (for example, by changing
+	 * the URL hash or by calling `history.pushState`).
+	 */
 	source: RouterSource;
 
 	constructor(kwArgs: RouterArgs) {
@@ -42,11 +58,10 @@ export default class Router extends RouteManager {
 
 		this.source = kwArgs.source || defaultSource;
 		this._evented = new Evented();
-		this._isRun = false;
 	}
 
 	protected _createEvent(type: string, args: NavigationArgs): CancelableNavigationArgs {
-		const event = <CancelableNavigationArgs> mixin(Object.create(null), args);
+		const event = <CancelableNavigationArgs> assign(Object.create(null), args);
 		event.type = type;
 
 		return event;
@@ -73,20 +88,6 @@ export default class Router extends RouteManager {
 			});
 			object[method](event);
 		});
-	}
-
-	protected _getRouteArgs(path: string): NavigationArgs {
-		let args: NavigationArgs = null;
-
-		for (let route of this.routes) {
-			args = route.match(path);
-
-			if (args) {
-				break;
-			}
-		}
-
-		return args || this.defaultRoute && this.defaultRoute.match(path);
 	}
 
 	protected _navigate(path: string, args: NavigationArgs): Promise<any> {
@@ -119,7 +120,8 @@ export default class Router extends RouteManager {
 				return current.enter(path);
 			})
 			.then(function () {
-				self.source && self.source.go(PathRule.join(self.path, path), args.state);
+				self.source && self.source.go(joinPath(self.path, path), args.state);
+				self.canceled = null;
 				self._evented.emit(self._createEvent('change', args));
 			})
 			.catch(function (error: any) {
@@ -136,22 +138,42 @@ export default class Router extends RouteManager {
 			});
 	}
 
+	/**
+	 * Disables the router so that it no longer can manage or respond to navigation changes.
+	 */
 	destroy(): void {
+		super.destroy();
 		this.go = function () {
 			return Promise.resolve(null);
 		};
 		this.source && this.source.destroy();
-		this.routes = this._rule = this.source = null;
+		this.source = null;
 	}
 
+	/**
+	 * Navigates to the specified path.
+	 *
+	 * `Router#go` recursively searches all of its nested groups for a route that matches the specified
+	 * path. If a route is found, then the lifecycle methods are called in the following order:
+	 * 1. The current route's optional `beforeExit` method.
+	 * 2. The new route's optional `beforeEnter` method.
+	 * 3. The current route's optional `exit` method.
+	 * 4. The new route's required `enter` method.
+	 *
+	 * If no route is found, then an "error" event is emitted that can be used to handle the error.
+	 *
+	 * @param path The path to navigate to.
+	 * @return A promise that resolves when all of the lifecycle methods have executed without error
+	 * 		and the environment has successfully navigated to the new URL.
+	 */
 	go(path: string): Promise<any> {
-		const normalized = PathRule.normalizePath(path);
+		const normalized = normalizePath(path);
 
 		if (this.current && (normalized === this.current.path)) {
 			return Promise.resolve(null);
 		}
 
-		const args = this._getRouteArgs(path);
+		const args = this._registry.match(normalized);
 
 		if (!args) {
 			const error = new MissingRouteError('The path provided to Router#go matched no routes.');
@@ -159,19 +181,18 @@ export default class Router extends RouteManager {
 			return Promise.reject(error);
 		}
 
-		args.routerPath = normalized;
-		return this._navigate(path, args);
+		args.path = normalized;
+
+		return this._navigate(normalized, args);
 	}
 
+	/**
+	 * Registers callbacks that will be fired when the router emits the corresponding events.
+	 *
+	 * @param type The name of the event to be listened to.
+	 * @returns An object with a `destroy` method that can be called to disable the registered callback.
+	 */
 	on(type: string, listener: (event: EventObject) => void): Handle {
 		return this._evented.on(type, listener);
-	}
-
-	run(forceRedirect: boolean = true): Promise<any> {
-		let path: string = forceRedirect ? '/' : this.source && this.source.currentPath;
-		this.run = function (): Promise<any> {
-			return Promise.resolve(null);
-		};
-		return this.go(path);
 	}
 }

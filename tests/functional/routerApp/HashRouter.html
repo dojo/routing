@@ -19,7 +19,7 @@
 			], function (app, HashSource) {
 				var router = app.loadRouter(new HashSource.default());
 
-				router.run()
+				router.go('/')
 					.then(function () {
 						// noop
 					}, function (e) {

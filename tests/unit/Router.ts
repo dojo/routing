@@ -3,9 +3,9 @@ import * as assert from 'intern/chai!assert';
 import * as registerSuite from 'intern!object';
 import * as sinon from 'sinon';
 import DefaultRoute from 'src/DefaultRoute';
+import { NavigationArgs, RouterSource } from 'src/interfaces';
 import Route from 'src/Route';
 import Router from 'src/Router';
-import { NavigationArgs, RouterSource } from 'src/routing';
 
 let sourceDestroy: any;
 let sourceGo: any;
@@ -25,14 +25,6 @@ registerSuite({
 	name: 'Router',
 
 	'#constructor()'(): void {
-		assert.throw(function () {
-			new Router({
-				path: '/',
-				routes: [],
-				source: getSource()
-			});
-		});
-
 		const route = new Route({
 			path: '/path',
 			enter: function () {}
@@ -42,7 +34,6 @@ registerSuite({
 			routes: [ route ]
 		});
 
-		assert.equal(route.parent, router);
 		assert.equal(router.path, '/');
 	},
 
@@ -139,47 +130,6 @@ registerSuite({
 			return router.go('/nonsensical')
 				.then(undefined, function (error: any) {
 					assert.strictEqual(error.name, 'MissingRouteError');
-				});
-		}
-	},
-
-	'#run()': {
-		'Router#path'(): Promise<void> {
-			const enter = sinon.spy();
-			const router = new Router({
-				path: '/',
-				source: getSource(),
-				defaultRoute: new DefaultRoute({
-					enter: enter
-				})
-			});
-
-			return router.run()
-				.then(function () {
-					assert.isTrue(enter.called);
-
-					enter.reset();
-					return router.run();
-				})
-				.then(function () {
-					assert.isFalse(enter.called);
-				});
-		},
-
-		'Router#source#currentPath'(): Promise<void> {
-			const enter = sinon.spy();
-			const router = new Router({
-				path: '/',
-				source: getSource(),
-				defaultRoute: new DefaultRoute({
-					enter: enter
-				})
-			});
-
-			return router.run(false)
-				.then(function () {
-					assert.isTrue(enter.called);
-					assert.strictEqual(router.current.path, router.source.currentPath);
 				});
 		}
 	},
