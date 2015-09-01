@@ -26,7 +26,7 @@ registerSuite({
 		});
 
 		route.destroy();
-		route.enter('/');
+		route.enter(<any> { path: '/' });
 
 		assert.isNull(route.beforeEnter);
 		assert.isNull(route.beforeExit);

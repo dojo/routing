@@ -117,7 +117,7 @@ export default class Router extends RouteGroup {
 				self.current = args;
 				self.current.route = current;
 
-				return current.enter(path);
+				return current.enter(args);
 			})
 			.then(function () {
 				self.source && self.source.go(joinPath(self.path, path), args.state);

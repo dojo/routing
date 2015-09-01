@@ -8,7 +8,7 @@ export interface CancelableNavigationArgs extends NavigationArgs {
 }
 
 export interface DefaultRouteArgs extends RouteHandlers {
-	enter(path: string): void | Promise<void>;
+	enter(kwArgs: NavigationArgs): void | Promise<void>;
 }
 
 // TODO: This interface exists mostly to allow classes like PathRegistry to
@@ -32,7 +32,7 @@ export interface RouteHandlers {
 	beforeEnter?: (event: CancelableNavigationArgs) => void;
 	beforeExit?: (event: CancelableNavigationArgs) => void;
 	change?: (kwArgs: NavigationArgs) => void;
-	enter?: (path: string) => void;
+	enter?: (kwArgs: NavigationArgs) => void;
 	exit?: () => void;
 }
 
