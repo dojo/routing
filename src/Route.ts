@@ -1,6 +1,5 @@
-import Promise from 'dojo-core/Promise';
 import DefaultRoute from './DefaultRoute';
-import { NavigationArgs, RouteArgs } from './interfaces';
+import { NavigationEvent, RouteArgs } from './interfaces';
 import PathRule, { normalizePath } from './PathRule';
 
 /**
@@ -17,7 +16,7 @@ export default class Route extends DefaultRoute {
 	 * "articles/12345" to "articles/67890", the `change` lifecycle method is called
 	 * instead of `enter`.
 	 */
-	change: (kwArgs: NavigationArgs) => void;
+	change: (event: NavigationEvent) => void;
 
 	/**
 	 * The route's path (read-only).

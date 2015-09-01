@@ -1,5 +1,4 @@
-import Promise from 'dojo-core/Promise';
-import { CancelableNavigationArgs, DefaultRouteArgs, MatchableRoute, NavigationArgs } from './interfaces';
+import { CancelableNavigationEvent, DefaultRouteArgs, MatchableRoute, NavigationEvent } from './interfaces';
 import PathRule from './PathRule';
 
 /**
@@ -17,7 +16,7 @@ export default class DefaultRoute implements MatchableRoute {
 	 *
 	 * @param event An object containing route data, as well as a `preventDefault` method for canceling the route change.
 	 */
-	beforeEnter: (event: CancelableNavigationArgs) => void;
+	beforeEnter: (event: CancelableNavigationEvent) => void;
 
 	/**
 	 * An optional lifecycle method that is called before `this` route exits.
@@ -28,14 +27,14 @@ export default class DefaultRoute implements MatchableRoute {
 	 *
 	 * @param event An object containing route data, as well as a `preventDefault` method for canceling the route change.
 	 */
-	beforeExit: (event: CancelableNavigationArgs) => void;
+	beforeExit: (event: CancelableNavigationEvent) => void;
 
 	/**
 	 * A required lifecycle method that is called when `this` route is entered.
 	 *
 	 * @param path The full, normalized path matched by the router.
 	 */
-	enter: (kwArgs: NavigationArgs) => void;
+	enter: (event: NavigationEvent) => void;
 
 	/**
 	 * An optional lifecycle method that is called when `this` route is exited.
@@ -69,7 +68,7 @@ export default class DefaultRoute implements MatchableRoute {
 	 * is possible to add a route to many groups. RouteGroup objects provide an API for removing routes.
 	 */
 	destroy(): void {
-		this.enter = function (kwArgs: NavigationArgs): void {};
+		this.enter = function (event: NavigationEvent): void {};
 		this.beforeEnter = this.beforeExit = this.exit = null;
 	}
 }

@@ -3,7 +3,7 @@ import * as assert from 'intern/chai!assert';
 import * as registerSuite from 'intern!object';
 import * as sinon from 'sinon';
 import DefaultRoute from 'src/DefaultRoute';
-import { NavigationArgs, RouterSource } from 'src/interfaces';
+import { RouterSource } from 'src/interfaces';
 import Route from 'src/Route';
 import Router from 'src/Router';
 

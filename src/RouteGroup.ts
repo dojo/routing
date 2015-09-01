@@ -1,5 +1,5 @@
 import DefaultRoute from './DefaultRoute';
-import { MatchableRoute, NavigationArgs, RouteGroupArgs } from './interfaces';
+import { MatchableRoute, NavigationEvent, RouteGroupArgs } from './interfaces';
 import PathRegistry, { PathRegistryHandle } from './PathRegistry';
 import PathRule, { normalizePath } from './PathRule';
 
@@ -84,7 +84,7 @@ export default class RouteGroup implements MatchableRoute {
 		});
 
 		this._handles = this._registry = null;
-		this.match = this.addRoute = this.removeRoute = function (): NavigationArgs {
+		this.match = this.addRoute = this.removeRoute = function (): NavigationEvent {
 			return null;
 		};
 	}
@@ -97,7 +97,7 @@ export default class RouteGroup implements MatchableRoute {
 	 * @returns An object containing the matched route, the matched portion of the path, and any token
 	 * 		values parsed from the route's path template.
 	 */
-	match(path: string): NavigationArgs {
+	match(path: string): NavigationEvent {
 		const childPath = this._rule.getChildPath(path);
 
 		return this._registry.match(childPath);

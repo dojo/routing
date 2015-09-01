@@ -1,6 +1,5 @@
 import * as assert from 'intern/chai!assert';
 import * as registerSuite from 'intern!object';
-import * as sinon from 'sinon';
 import CancelNavigationError from 'src/errors/CancelNavigationError';
 import MissingRouteError from 'src/errors/MissingRouteError';
 import PathError from 'src/errors/PathError';

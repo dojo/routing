@@ -1,6 +1,5 @@
 import * as assert from 'intern/chai!assert';
 import * as registerSuite from 'intern!object';
-import * as Suite from 'intern/lib/Suite';
 import * as Command from 'leadfoot/Command';
 
 import pollUntil = require('intern/dojo/node!leadfoot/helpers/pollUntil');

@@ -1,5 +1,5 @@
 import DefaultRoute from 'src/DefaultRoute';
-import { CancelableNavigationArgs, RouterSource } from 'src/interfaces';
+import { CancelableNavigationEvent, RouterSource } from 'src/interfaces';
 import Route from 'src/Route';
 import RouteGroup from 'src/RouteGroup';
 import Router from 'src/Router';
@@ -22,7 +22,7 @@ function loadRouter(source?: RouterSource): Router {
 				routes: [
 					new Route({
 						path: '{id}',
-						beforeEnter(event: CancelableNavigationArgs): void {
+						beforeEnter(event: CancelableNavigationEvent): void {
 							if (isNaN(Number(event.state.id))) {
 								paths.push({
 									entered: false,
@@ -53,7 +53,7 @@ function loadRouter(source?: RouterSource): Router {
 			}),
 			new Route({
 				path: 'login',
-				beforeEnter(event: CancelableNavigationArgs): void {
+				beforeEnter(event: CancelableNavigationEvent): void {
 					if (isLoggedIn) {
 						paths.push({
 							entered: false,
@@ -85,7 +85,7 @@ function loadRouter(source?: RouterSource): Router {
 		})
 	});
 
-	router.on('beforechange', function (event: CancelableNavigationArgs): void {
+	router.on('beforechange', function (event: CancelableNavigationEvent): void {
 		if (!isLoggedIn && event.path !== 'login/') {
 			event.preventDefault();
 			router.go('login');

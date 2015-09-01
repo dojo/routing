@@ -1,7 +1,7 @@
 import { assign } from 'dojo-core/lang';
 import { escapeRegExp } from 'dojo-core/string';
 import PathError from './errors/PathError';
-import { NavigationArgs } from './interfaces';
+import { NavigationEvent } from './interfaces';
 
 const afterPattern = /\\}/g;
 const beforePattern = /\\{/g;
@@ -23,13 +23,13 @@ export function joinPath(...parts: string[]): string {
 }
 
 /**
- * Combines any number of `NavigationArgs` objects into a new, single object, working from left to right.
+ * Combines any number of `NavigationEvent` objects into a new, single object, working from left to right.
  * The `state` objects are also combined into a single object, so that the final object contains
- * all of the properties from each `NavigationArgs` object.
+ * all of the properties from each `NavigationEvent` object.
  */
-export function mergeRouteArgs(...argsArray: NavigationArgs[]): NavigationArgs {
-	return argsArray.reduce(function (merged: NavigationArgs, args: NavigationArgs): NavigationArgs {
-		return Object.keys(args).reduce(function (merged: NavigationArgs, key: string): NavigationArgs {
+export function mergeRouteArgs(...argsArray: NavigationEvent[]): NavigationEvent {
+	return argsArray.reduce(function (merged: NavigationEvent, args: NavigationEvent): NavigationEvent {
+		return Object.keys(args).reduce(function (merged: NavigationEvent, key: string): NavigationEvent {
 			if (key === 'state') {
 				merged.state = merged.state || Object.create(null);
 				assign(merged.state, args.state);
@@ -145,17 +145,17 @@ export default class PathRule {
 	}
 
 	/**
-	 * Converts a string path into a NavigationArgs object, using the rule's path as a template.
+	 * Converts a string path into a NavigationEvent object, using the rule's path as a template.
 	 *
 	 * Example: `new PathRule('some/{path}/').parsePath('some/path/'); // { path: 'path' }`
 	 *
 	 * @param path The path to convert.
 	 * @return A key-value object that matches the rule's parameter names.
 	 */
-	parsePath(path: string): NavigationArgs {
+	parsePath(path: string): NavigationEvent {
 		const normalized = normalizePath(path);
 		const values = this._rule.exec(normalized);
-		let args: NavigationArgs = null;
+		let args: NavigationEvent = null;
 
 		if (values) {
 			const state = Object.create(null);

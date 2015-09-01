@@ -1,7 +1,6 @@
 import * as assert from 'intern/chai!assert';
 import * as registerSuite from 'intern!object';
 import * as sinon from 'sinon';
-import { CancelableNavigationArgs } from 'src/interfaces';
 import Route from 'src/Route';
 
 registerSuite({

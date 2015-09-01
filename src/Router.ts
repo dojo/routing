@@ -8,7 +8,7 @@ import MissingRouteError from './errors/MissingRouteError';
 import has from './has';
 import HashSource from './HashSource';
 import HtmlHistorySource from './HtmlHistorySource';
-import { CancelableNavigationArgs, NavigationArgs, RouterArgs, RouterSource } from './interfaces';
+import { CancelableNavigationEvent, NavigationEvent, RouterArgs, RouterSource } from './interfaces';
 import { joinPath, normalizePath } from './PathRule';
 import RouteGroup from './RouteGroup';
 
@@ -35,12 +35,12 @@ export default class Router extends RouteGroup {
 	 * `beforeEnter`, `beforeExit`, or a `beforechange` event handler. This is cleared
 	 * each time a new route is successfully entered.
 	 */
-	canceled: NavigationArgs;
+	canceled: NavigationEvent;
 
 	/**
 	 * The data for the current route.
 	 */
-	current: NavigationArgs;
+	current: NavigationEvent;
 
 	/**
 	 * The object responsible for updating the environment in response to router changes. Defaults to
@@ -60,15 +60,15 @@ export default class Router extends RouteGroup {
 		this._evented = new Evented();
 	}
 
-	protected _createEvent(type: string, args: NavigationArgs): CancelableNavigationArgs {
-		const event = <CancelableNavigationArgs> assign(Object.create(null), args);
+	protected _createEvent(type: string, args: NavigationEvent): CancelableNavigationEvent {
+		const event = <CancelableNavigationEvent> assign(Object.create(null), args);
 		event.type = type;
 
 		return event;
 	}
 
 	protected _getEventPromise(
-		event: CancelableNavigationArgs,
+		event: CancelableNavigationEvent,
 		path: string,
 		object: any,
 		method: string
@@ -90,7 +90,7 @@ export default class Router extends RouteGroup {
 		});
 	}
 
-	protected _navigate(path: string, args: NavigationArgs): Promise<any> {
+	protected _navigate(path: string, args: NavigationEvent): Promise<any> {
 		const current = args.route;
 		const previous = this.current && this.current.route;
 

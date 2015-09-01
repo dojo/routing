@@ -1,7 +1,7 @@
 import { Handle } from 'dojo-core/interfaces';
 import Registry, { Test } from 'dojo-core/Registry';
 import DefaultRoute from './DefaultRoute';
-import { MatchableRoute, NavigationArgs } from './interfaces';
+import { MatchableRoute, NavigationEvent } from './interfaces';
 import PathRule, { mergeRouteArgs, normalizePath } from './PathRule';
 
 export interface PathRegistryHandle extends Handle {
@@ -30,7 +30,7 @@ export default class PathRegistry extends Registry<MatchableRoute> {
 	 * the parsed URL data, or null if no match was found.
 	 *
 	 * Note that, because path tokens can be broken up across different groups, any tokens generated during
-	 * parsing will be merged into a single `state` object on the returned `NavigationArgs` object, with the
+	 * parsing will be merged into a single `state` object on the returned `NavigationEvent` object, with the
 	 * most recently-matched group/route given priority. As a result, if a `RouteGroup`'s path is
 	 * "articles/{id}/", and it contains a route downstream that matches the path "comments/{id}/", then
 	 * `state.id` will be the comment ID, not the article ID. Ultimately it is up to developers to avoid
@@ -46,10 +46,10 @@ export default class PathRegistry extends Registry<MatchableRoute> {
 	 * @returns An object containing the matched route, the matched portion of the path, and any token
 	 * 		values parsed from the route's path template.
 	 */
-	match(path: string): NavigationArgs {
+	match(path: string): NavigationEvent {
 		const normalized = normalizePath(path);
 		let route = super.match(normalized);
-		let args: NavigationArgs = route && route.rule.parsePath(normalized);
+		let args: NavigationEvent = route && route.rule.parsePath(normalized);
 
 		if (args) {
 			args.route = route;
@@ -57,7 +57,7 @@ export default class PathRegistry extends Registry<MatchableRoute> {
 
 		if (route && typeof route.match === 'function') {
 			const childPath = route.rule.getChildPath(normalized);
-			let childArgs: NavigationArgs = route.match(childPath);
+			let childArgs: NavigationEvent = route.match(childPath);
 
 			if (!childArgs) {
 				childArgs = this._defaultValue && this._defaultValue.rule.parsePath(childPath);
