@@ -23,9 +23,9 @@
 		"grunt-text-replace": "0.4.0",
 		"grunt-ts": "3.0.0",
 		"grunt-tslint": "2.0.0",
-		"tslint": "2.1.1",
 		"intern": "2.2.2",
-		"typescript": "Arnavion/typescript-github#2015-05-07-e1d05150f6acef05452772192a4abdfc7eb671eb",
+		"tslint": "2.4.0",
+		"typescript": "1.5.3",
 		"sinon": "1.14.1"
 	}
 }
