@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>HtmlHistorySource Test - `popstate` Handler</title>
+	</head>
+	<body>
+		<script src="//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js"></script>
+		<script>
+			require({
+				packages: [
+					{ name: 'dojo-core', location: '/node_modules/dojo-core' },
+					{ name: 'src', location: '/_build/src' },
+					{ name: 'history', location: '/_build/tests/functional/history' }
+				]
+			}, [
+				'history/popstate'
+			], function (results) {
+				window.routerSourceResults = results;
+			});
+		</script>
+	</body>
+</html>

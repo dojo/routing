@@ -1,1 +1,4 @@
-export var removeThis = 1;
+import './DefaultBrowserSource';
+import './HtmlHistorySource';
+import './HashSource';
+import './Router';

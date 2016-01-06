@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>HTML History API Routing Test</title>
+	</head>
+	<body>
+		<script src="//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js"></script>
+		<script>
+			require({
+				packages: [
+					{ name: 'dojo-core', location: '/node_modules/dojo-core' },
+					{ name: 'src', location: '/_build/src' },
+					{ name: 'routerApp', location: '/_build/tests/functional/routerApp' }
+				]
+			}, [
+				'routerApp/Router',
+				'src/has',
+				'src/HtmlHistorySource'
+			], function (app, has, HtmlHistorySource) {
+				if (!has.default('history')) {
+					window.routerSourceResults = 'skip';
+				}
+
+				var router = app.loadRouter(new HtmlHistorySource.default());
+
+				router.go('/')
+					.then(function () {
+						// noop
+					}, function (e) {
+						return router.go('articles');
+					})
+					.then(function () {
+						return router.go('articles/article');
+					})
+					.then(function () {
+						// noop
+					}, function () {
+						return router.go('articles/12345');
+					})
+					.finally(function () {
+						window.routerSourceResults = app.paths;
+					});
+			});
+		</script>
+	</body>
+</html>

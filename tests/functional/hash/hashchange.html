@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>HashSource Test - `hashchange` Handler</title>
+	</head>
+	<body>
+		<script src="//ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js"></script>
+		<script>
+			require({
+				packages: [
+					{ name: 'dojo-core', location: '/node_modules/dojo-core' },
+					{ name: 'src', location: '/_build/src' },
+					{ name: 'hash', location: '/_build/tests/functional/hash' }
+				]
+			}, [
+				'hash/hashchange'
+			], function (results) {
+				window.routerSourceResults = results;
+			});
+		</script>
+	</body>
+</html>
