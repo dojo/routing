@@ -16,7 +16,10 @@
 	],
 	"files": [
 		"./typings/tsd.d.ts",
+		"./src/createRoute.ts",
+		"./src/example.ts",
 		"./src/main.ts",
+		"./src/util/path.ts",
 		"./tests/functional/all.ts",
 		"./tests/intern-local.ts",
 		"./tests/intern-saucelabs.ts",
