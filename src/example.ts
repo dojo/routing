@@ -1,17 +1,18 @@
 import createRoute, { Route, Parameters } from './createRoute';
 
-try {
-	missingOptions();
-} catch (err) {
-	console.error('missingOptions threw', err);
-}
-
+defaultRoot();
 withPath();
 withDefaultParameters();
 withTypedParameters();
 
-function missingOptions () {
-	createRoute();
+function defaultRoot () {
+	const route = createRoute();
+	if (route.match('/').matched) {
+		console.log('/ matched');
+	}
+	if (route.match('/bar').matched) {
+		console.log('/bar matched, which is bad!');
+	}
 }
 
 function withPath () {

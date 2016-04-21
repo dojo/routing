@@ -26,18 +26,18 @@ export interface Request<PP extends Parameters> {
 }
 
 export interface RouteOptions<PP> {
-	pathname: string;
+	pathname?: string;
 	exec?: (request: Request<PP>) => void;
 	guard?: (request: Request<PP>) => boolean;
 	params?: (...rawParams: string[]) => void | PP;
 }
 
 export interface RouteFactory extends ComposeFactory<Route<Parameters>, RouteOptions<Parameters>> {
-	<PP extends Parameters>(options: RouteOptions<PP>): Route<PP>;
+	<PP extends Parameters>(options?: RouteOptions<PP>): Route<PP>;
 }
 
 const createRoute: RouteFactory = compose({
-	pathSegments: <PathSegments> {},
+	pathSegments: {} as PathSegments,
 
 	match (path: string): MatchResult<Parameters> {
 		const { matched, values } = matchPath(this.pathSegments, path);
@@ -61,9 +61,8 @@ const createRoute: RouteFactory = compose({
 
 		return params;
 	}
-}, (instance: Route<Parameters>, { pathname, exec, guard, params }: RouteOptions<Parameters>) => {
-	instance.pathSegments = parsePath(pathname);
-
+}, (instance: Route<Parameters>, { pathname, exec, guard, params }: RouteOptions<Parameters> = {}) => {
+	instance.pathSegments = parsePath(pathname || '/');
 	if (exec) {
 		instance.exec = exec;
 	}
