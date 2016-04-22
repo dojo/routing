@@ -35,6 +35,8 @@
 		"./tests/typings/leadfoot/leadfoot.d.ts",
 		"./tests/typings/node/node.d.ts",
 		"./tests/typings/tsd.d.ts",
-		"./tests/unit/all.ts"
+		"./tests/unit/all.ts",
+		"./tests/unit/createRoute.ts",
+		"./tests/unit/createRouter.ts"
 	]
 }
