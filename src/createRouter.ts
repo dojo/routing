@@ -35,15 +35,11 @@ const createRouter: RouterFactory = compose({
 				return false;
 			}
 
-			if (route.guard) {
-				if (!route.guard({ context, params })) {
-					return false;
-				}
+			if (!route.guard({ context, params })) {
+				return false;
 			}
 
-			if (route.exec) {
-				route.exec({ context, params });
-			}
+			route.exec({ context, params });
 
 			return true;
 		});

@@ -20,8 +20,8 @@ export interface MatchResult<PP> {
 
 export interface Route<PP extends Parameters> {
 	path: DeconstructedPath;
-	exec?: (request: Request<PP>) => void;
-	guard?: (request: Request<PP>) => boolean;
+	exec: (request: Request<PP>) => void;
+	guard: (request: Request<PP>) => boolean;
 	match: (segments: string[]) => MatchResult<PP>;
 	params: (...rawParams: string[]) => void | PP;
 }
@@ -39,6 +39,12 @@ export interface RouteFactory extends ComposeFactory<Route<Parameters>, RouteOpt
 
 const createRoute: RouteFactory = compose({
 	path: {} as DeconstructedPath,
+
+	exec (request: Request<Parameters>) {},
+
+	guard (request: Request<Parameters>) {
+		return true;
+	},
 
 	match (segments: string[]): MatchResult<Parameters> {
 		const { hasRemaining, isMatch, offset, values } = matchPath(this.path, segments);
