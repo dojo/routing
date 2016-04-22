@@ -17,7 +17,7 @@ const createRouter: RouterFactory = compose({
 
 	dispatch (context: Context, path: string) {
 		const segments = getSegments(path);
-		this.routes.some(route => {
+		(<Router> this).routes.some(route => {
 			const { isMatch, hasRemaining, params } = route.match(segments);
 
 			if (!isMatch || hasRemaining) {

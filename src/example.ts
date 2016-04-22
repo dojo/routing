@@ -1,6 +1,6 @@
-import createRoute, { Route } from './createRoute';
+import createRoute, { DefaultParameters, Route } from './createRoute';
 import createRouter from './createRouter';
-import { Context, Parameters } from './interfaces';
+import { Context, Parameters, Request } from './interfaces';
 
 const context: Context = {};
 
@@ -41,7 +41,7 @@ function withDefaultParameters () {
 	const router = createRouter();
 	router.append(createRoute({
 		pathname: '/posts/:category/:id',
-		exec ({ params }) {
+		exec ({ params }: Request<DefaultParameters>) {
 			console.log('withDefaultParameters', params['category'], params['id']);
 		}
 	}));

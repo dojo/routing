@@ -52,7 +52,7 @@ const createRoute: RouteFactory = compose({
 	params (...rawParams: string[]): DefaultParameters {
 		const params: DefaultParameters = {};
 
-		this.path.parameters.forEach((name, index) => {
+		(<DeconstructedPath> this.path).parameters.forEach((name, index) => {
 			params[name] = rawParams[index];
 		});
 
