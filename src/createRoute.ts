@@ -128,6 +128,10 @@ const createRoute: RouteFactory = compose({
 		instance.guard = guard;
 	}
 	if (params) {
+		if (instance.path.parameters.length === 0) {
+			throw new TypeError('Can\'t specify params() if pathname doesn\'t contain any');
+		}
+
 		instance.params = params;
 	}
 });
