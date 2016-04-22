@@ -1,4 +1,8 @@
-import createRoute, { Route, Parameters } from './createRoute';
+import createRoute, { Route } from './createRoute';
+import createRouter from './createRouter';
+import { Context, Parameters } from './interfaces';
+
+const context: Context = {};
 
 defaultRoot();
 withPath();
@@ -6,42 +10,50 @@ withDefaultParameters();
 withTypedParameters();
 
 function defaultRoot () {
-	const route = createRoute();
-	if (route.match('/').matched) {
-		console.log('/ matched');
-	}
-	if (route.match('/bar').matched) {
-		console.log('/bar matched, which is bad!');
-	}
+	let path = '';
+	const router = createRouter();
+	router.append(createRoute({
+		exec () {
+			console.log('matched', path, 'should match /');
+		}
+	}));
+
+	router.dispatch(context, path = '/');
+	router.dispatch(context, path = '/foo');
 }
 
 function withPath () {
-	const route = createRoute({ pathname: '/foo' });
-	if (route.match('/foo').matched) {
-		console.log('/foo matched');
-	}
-	if (route.match('/bar').matched) {
-		console.log('/bar matched, which is bad!');
-	}
+	let path = '';
+	const router = createRouter();
+	router.append(createRoute({
+		pathname: '/foo',
+		exec () {
+			console.log('matched', path, 'should match /foo');
+		}
+	}));
+
+	router.dispatch(context, path = '/foo');
+	router.dispatch(context, path = '/bar');
 }
 
 function withDefaultParameters () {
-	const route = createRoute({
+	let path = '';
+	const router = createRouter();
+	router.append(createRoute({
 		pathname: '/posts/:category/:id',
 		exec ({ params }) {
 			console.log('withDefaultParameters', params['category'], params['id']);
 		}
-	});
+	}));
 
-	['/posts/answers/42', '/posts/answers/-42'].forEach(path => {
-		const { matched, params } = route.match(path);
-		if (matched) {
-			route.exec({ params });
-		}
-	});
+	router.dispatch(context, path = '/posts/answers/42');
+	router.dispatch(context, path = '/posts/answers/-42');
 }
 
 function withTypedParameters () {
+	let path = '';
+	const router = createRouter();
+
 	// FIXME: Can we use Number.isInteger instead?
 	function isInteger (value: number): boolean {
 		return isFinite(value) && Math.floor(value) === value;
@@ -51,7 +63,7 @@ function withTypedParameters () {
 		category: string;
 		id: number;
 	}
-	const route: Route<PostParams> = createRoute({
+	router.append(<Route<PostParams>> createRoute({
 		pathname: '/posts/:category/:id',
 		params (category: string, id: string) {
 			const numericId: number = parseFloat(id);
@@ -63,12 +75,8 @@ function withTypedParameters () {
 		exec ({ params }) {
 			console.log('withTypedParameters', params.category, params.id);
 		}
-	});
+	}));
 
-	['/posts/answers/42', '/posts/answers/-42'].forEach(path => {
-		const { matched, params } = route.match(path);
-		if (matched) {
-			route.exec({ params });
-		}
-	});
+	router.dispatch(context, path = '/posts/answers/42');
+	router.dispatch(context, path = '/posts/answers/-42');
 }

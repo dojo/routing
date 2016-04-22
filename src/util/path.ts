@@ -18,6 +18,8 @@ export interface DeconstructedPath {
 
 export interface MatchResult {
 	isMatch: boolean;
+	hasRemaining: boolean;
+	offset: number;
 	values: string[];
 }
 
@@ -44,7 +46,7 @@ function tokenize (path: string): string[] {
 	return tokens.slice(segmentStart, end);
 }
 
-function getSegments (path: string): string[] {
+export function getSegments (path: string): string[] {
 	const tokens = tokenize(path);
 	const segments: string[] = [];
 	let last = -1;
@@ -65,19 +67,25 @@ function getSegments (path: string): string[] {
 	return segments;
 }
 
-export function match ({ expectedSegments }: DeconstructedPath, path: string): MatchResult {
+export function match ({ expectedSegments }: DeconstructedPath, segments: string[]): MatchResult {
 	let isMatch = true;
+	let hasRemaining = false;
+	let offset = 0;
 	let values: string[] = [];
 
-	const segments = getSegments(path);
-
 	if (expectedSegments.length === 0) {
-		return { isMatch, values };
+		hasRemaining = segments.length > 0;
+		return { isMatch, hasRemaining, offset, values };
 	}
 
 	if (expectedSegments.length > segments.length) {
 		isMatch = false;
-		return { isMatch, values };
+		return { isMatch, hasRemaining, offset, values };
+	}
+
+	if (expectedSegments.length < segments.length) {
+		hasRemaining = true;
+		offset = expectedSegments.length;
 	}
 
 	for (let i = 0; isMatch && i < expectedSegments.length; i++) {
@@ -90,7 +98,7 @@ export function match ({ expectedSegments }: DeconstructedPath, path: string): M
 		}
 	}
 
-	return { isMatch, values };
+	return { isMatch, hasRemaining, offset, values };
 }
 
 export function deconstruct (path: string): DeconstructedPath {

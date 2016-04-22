@@ -17,7 +17,9 @@
 	"files": [
 		"./typings/tsd.d.ts",
 		"./src/createRoute.ts",
+		"./src/createRouter.ts",
 		"./src/example.ts",
+		"./src/interfaces.d.ts",
 		"./src/main.ts",
 		"./src/util/path.ts",
 		"./tests/functional/all.ts",

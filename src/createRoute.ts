@@ -1,8 +1,7 @@
 import compose, { ComposeFactory } from 'dojo-compose/compose';
 
 import { match as matchPath, deconstruct as deconstructPath, DeconstructedPath } from './util/path';
-
-export interface Parameters {}
+import { Request, Parameters } from './interfaces';
 
 export interface DefaultParameters extends Parameters {
 	[param: string]: string;
@@ -10,6 +9,8 @@ export interface DefaultParameters extends Parameters {
 
 export interface MatchResult<PP> {
 	isMatch: boolean;
+	hasRemaining: boolean;
+	offset: number;
 	params?: PP;
 }
 
@@ -17,12 +18,8 @@ export interface Route<PP extends Parameters> {
 	path: DeconstructedPath;
 	exec?: (request: Request<PP>) => void;
 	guard?: (request: Request<PP>) => boolean;
-	match: (path: string) => MatchResult<PP>;
+	match: (segments: string[]) => MatchResult<PP>;
 	params: (...rawParams: string[]) => void | PP;
-}
-
-export interface Request<PP extends Parameters> {
-	params: PP;
 }
 
 export interface RouteOptions<PP> {
@@ -39,17 +36,17 @@ export interface RouteFactory extends ComposeFactory<Route<Parameters>, RouteOpt
 const createRoute: RouteFactory = compose({
 	path: {} as DeconstructedPath,
 
-	match (path: string): MatchResult<Parameters> {
-		const { isMatch, values } = matchPath(this.path, path);
+	match (segments: string[]): MatchResult<Parameters> {
+		const { isMatch, hasRemaining, offset, values } = matchPath(this.path, segments);
 		if (!isMatch) {
-			return { isMatch: false };
+			return { isMatch: false, hasRemaining: false, offset: 0 };
 		}
 
 		const params = this.params(...values);
 		if (params === null) {
-			return { isMatch: false };
+			return { isMatch: false, hasRemaining: false, offset: 0 };
 		}
-		return { isMatch: true, params };
+		return { isMatch: true, hasRemaining, offset, params };
 	},
 
 	params (...rawParams: string[]): DefaultParameters {
