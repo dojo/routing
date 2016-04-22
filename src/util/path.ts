@@ -97,16 +97,16 @@ export function deconstruct (path: string): DeconstructedPath {
 			const name = next;
 			next = tokens[i++];
 			if (!name || name === ':' || name === '/') {
-				throw new Error('Expecting param to have a name');
+				throw new TypeError('Expecting param to have a name');
 			}
 			if (next && next !== '/') {
-				throw new Error(`Expecting param to be followed by /, got '${next}'`);
+				throw new TypeError(`Expecting param to be followed by /, got '${next}'`);
 			}
 
 			parameters.push(name);
 			expectedSegments.push({ name });
 		}
-		else if (!next || next === '/') {
+		else {
 			expectedSegments.push({ value });
 		}
 	}
