@@ -23,30 +23,36 @@ export interface MatchResult {
 	values: string[];
 }
 
-function tokenize (path: string): string[] {
-	const tokens: string[] = path.split(/([/:])/).filter(Boolean);
+function tokenizeParameterizedPathname (pathname: string): string[] {
+	const tokens: string[] = pathname.split(/([/:])/).filter(Boolean);
 	return tokens[0] === '/' ? tokens.slice(1) : tokens;
 }
 
-export function getSegments (path: string): string[] {
-	const tokens = tokenize(path);
-	const segments: string[] = [];
-	let last = -1;
+function tokenizePath (path: string): string[] {
+	const tokens: string[] = path.split(/([/?#])/).filter(Boolean);
 
-	for (const t of tokens) {
-		if (t === '/') {
-			continue;
-		}
+	const queryStart = tokens.indexOf('?');
+	const hashStart = tokens.indexOf('#');
 
-		if (segments[last] === ':') {
-			segments[last] += t;
+	let end = tokens.length;
+	if (queryStart >= 0) {
+		if (hashStart >= 0) {
+			end = Math.min(queryStart, hashStart);
 		}
 		else {
-			last = segments.push(t);
+			end = queryStart;
 		}
 	}
+	else if (hashStart >= 0) {
+		end = hashStart;
+	}
 
-	return segments;
+	const segmentStart = tokens[0] === '/' ? 1 : 0;
+	return tokens.slice(segmentStart, end);
+}
+
+export function getSegments (path: string): string[] {
+	return tokenizePath(path).filter(t => t !== '/');
 }
 
 export function match ({ expectedSegments }: DeconstructedPath, segments: string[]): MatchResult {
@@ -84,7 +90,7 @@ export function match ({ expectedSegments }: DeconstructedPath, segments: string
 }
 
 export function deconstruct (path: string): DeconstructedPath {
-	const tokens = tokenize(path);
+	const tokens = tokenizeParameterizedPathname(path);
 	const parameters: string[] = [];
 	const expectedSegments: Segment[] = [];
 
