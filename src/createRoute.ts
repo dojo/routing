@@ -1,6 +1,6 @@
 import compose, { ComposeFactory } from 'dojo-compose/compose';
 
-import { match as matchPath, parse as parsePath, PathSegments } from './util/path';
+import { match as matchPath, deconstruct as deconstructPath, DeconstructedPath } from './util/path';
 
 export interface Parameters {}
 
@@ -9,12 +9,12 @@ export interface DefaultParameters extends Parameters {
 }
 
 export interface MatchResult<PP> {
-	matched: boolean;
+	isMatch: boolean;
 	params?: PP;
 }
 
 export interface Route<PP extends Parameters> {
-	pathSegments: PathSegments;
+	path: DeconstructedPath;
 	exec?: (request: Request<PP>) => void;
 	guard?: (request: Request<PP>) => boolean;
 	match: (path: string) => MatchResult<PP>;
@@ -37,32 +37,32 @@ export interface RouteFactory extends ComposeFactory<Route<Parameters>, RouteOpt
 }
 
 const createRoute: RouteFactory = compose({
-	pathSegments: {} as PathSegments,
+	path: {} as DeconstructedPath,
 
 	match (path: string): MatchResult<Parameters> {
-		const { matched, values } = matchPath(this.pathSegments, path);
-		if (!matched) {
-			return { matched: false };
+		const { isMatch, values } = matchPath(this.path, path);
+		if (!isMatch) {
+			return { isMatch: false };
 		}
 
 		const params = this.params(...values);
 		if (params === null) {
-			return { matched: false };
+			return { isMatch: false };
 		}
-		return { matched: true, params };
+		return { isMatch: true, params };
 	},
 
 	params (...rawParams: string[]): DefaultParameters {
 		const params: DefaultParameters = {};
 
-		this.pathSegments.names.forEach((name, index) => {
+		this.path.parameters.forEach((name, index) => {
 			params[name] = rawParams[index];
 		});
 
 		return params;
 	}
 }, (instance: Route<Parameters>, { pathname, exec, guard, params }: RouteOptions<Parameters> = {}) => {
-	instance.pathSegments = parsePath(pathname || '/');
+	instance.path = deconstructPath(pathname || '/');
 	if (exec) {
 		instance.exec = exec;
 	}
