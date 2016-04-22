@@ -1,6 +1,6 @@
 import compose, { ComposeFactory } from 'dojo-compose/compose';
 
-import { Parameters, Request } from './interfaces';
+import { Context, Parameters, Request } from './interfaces';
 import {
 	deconstruct as deconstructPath,
 	match as matchPath,
@@ -20,10 +20,13 @@ export interface MatchResult<PP> {
 
 export interface Route<PP extends Parameters> {
 	path: DeconstructedPath;
+	routes: Route<Parameters>[];
+	append: (routes: Route<Parameters> | Route<Parameters>[]) => void;
 	exec: (request: Request<PP>) => void;
 	guard: (request: Request<PP>) => boolean;
 	match: (segments: string[]) => MatchResult<PP>;
 	params: (...rawParams: string[]) => void | PP;
+	select: (context: Context, segments: string[]) => Selection[];
 }
 
 export interface RouteOptions<PP> {
@@ -33,12 +36,29 @@ export interface RouteOptions<PP> {
 	pathname?: string;
 }
 
+export interface Selection {
+	params: Parameters;
+	route: Route<Parameters>;
+}
+
 export interface RouteFactory extends ComposeFactory<Route<Parameters>, RouteOptions<Parameters>> {
 	<PP extends Parameters>(options?: RouteOptions<PP>): Route<PP>;
 }
 
 const createRoute: RouteFactory = compose({
 	path: {} as DeconstructedPath,
+	routes: [] as Route<Parameters>[],
+
+	append (routes: Route<Parameters> | Route<Parameters>[]) {
+		if (Array.isArray(routes)) {
+			for (const route of routes) {
+				this.routes.push(route);
+			}
+		}
+		else {
+			this.routes.push(routes);
+		}
+	},
 
 	exec (request: Request<Parameters>) {},
 
@@ -67,9 +87,39 @@ const createRoute: RouteFactory = compose({
 		});
 
 		return params;
+	},
+
+	select (context: Context, segments: string[]): Selection[] {
+		const { isMatch, hasRemaining, offset, params } = this.match(segments);
+		if (!isMatch) {
+			return [];
+		}
+
+		if (hasRemaining && this.routes.length === 0) {
+			return [];
+		}
+
+		if (!this.guard({ context, params })) {
+			return [];
+		}
+
+		if (!hasRemaining) {
+			return [{ params, route: this }];
+		}
+
+		const remainingSegments = segments.slice(offset);
+		for (const nested of this.routes) {
+			const hierarchy = nested.select(context, remainingSegments);
+			if (hierarchy.length > 0) {
+				return [{ params, route: this }, ...hierarchy];
+			}
+		}
+
+		return [];
 	}
 }, (instance: Route<Parameters>, { exec, guard, params, pathname }: RouteOptions<Parameters> = {}) => {
 	instance.path = deconstructPath(pathname || '/');
+	instance.routes = [];
 
 	if (exec) {
 		instance.exec = exec;

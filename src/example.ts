@@ -8,6 +8,7 @@ defaultRoot();
 withPath();
 withDefaultParameters();
 withTypedParameters();
+nested();
 
 function defaultRoot () {
 	let path = '';
@@ -79,4 +80,19 @@ function withTypedParameters () {
 
 	router.dispatch(context, path = '/posts/answers/42');
 	router.dispatch(context, path = '/posts/answers/-42');
+}
+
+function nested () {
+	const router = createRouter();
+	const foo = createRoute({ pathname: '/foo' });
+	const bar = createRoute({
+		pathname: '/bar',
+		exec () {
+			console.log('/foo/bar yay!');
+		}
+	});
+	foo.append(bar);
+	router.append(foo);
+
+	router.dispatch(context, '/foo/bar');
 }

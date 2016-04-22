@@ -29,17 +29,14 @@ const createRouter: RouterFactory = compose({
 	dispatch (context: Context, path: string) {
 		const segments = getSegments(path);
 		(<Router> this).routes.some(route => {
-			const { isMatch, hasRemaining, params } = route.match(segments);
-
-			if (!isMatch || hasRemaining) {
+			const hierarchy = route.select(context, segments);
+			if (hierarchy.length === 0) {
 				return false;
 			}
 
-			if (!route.guard({ context, params })) {
-				return false;
+			for (const { route, params } of hierarchy) {
+				route.exec({ context, params });
 			}
-
-			route.exec({ context, params });
 
 			return true;
 		});
