@@ -26,9 +26,9 @@ const createRouter: RouterFactory = compose({
 		}
 	},
 
-	dispatch (context: Context, path: string) {
+	dispatch (context: Context, path: string): boolean {
 		const segments = getSegments(path);
-		(<Router> this).routes.some(route => {
+		return (<Router> this).routes.some(route => {
 			const hierarchy = route.select(context, segments);
 			if (hierarchy.length === 0) {
 				return false;
