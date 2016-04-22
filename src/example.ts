@@ -27,7 +27,7 @@ function withPath () {
 	let path = '';
 	const router = createRouter();
 	router.append(createRoute({
-		pathname: '/foo',
+		path: '/foo',
 		exec () {
 			console.log('matched', path, 'should match /foo');
 		}
@@ -41,7 +41,7 @@ function withDefaultParameters () {
 	let path = '';
 	const router = createRouter();
 	router.append(createRoute({
-		pathname: '/posts/:category/:id',
+		path: '/posts/:category/:id',
 		exec ({ params }: Request<DefaultParameters>) {
 			console.log('withDefaultParameters', params['category'], params['id']);
 		}
@@ -65,7 +65,7 @@ function withTypedParameters () {
 		id: number;
 	}
 	router.append(<Route<PostParams>> createRoute({
-		pathname: '/posts/:category/:id',
+		path: '/posts/:category/:id',
 		params (category: string, id: string) {
 			const numericId: number = parseFloat(id);
 			if (!isInteger(numericId) || numericId <= 0) {
@@ -84,9 +84,9 @@ function withTypedParameters () {
 
 function nested () {
 	const router = createRouter();
-	const foo = createRoute({ pathname: '/foo' });
+	const foo = createRoute({ path: '/foo' });
 	const bar = createRoute({
-		pathname: '/bar',
+		path: '/bar',
 		exec () {
 			console.log('/foo/bar yay!');
 		}

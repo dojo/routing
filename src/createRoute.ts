@@ -33,7 +33,7 @@ export interface RouteOptions<PP> {
 	exec?: (request: Request<PP>) => void;
 	guard?: (request: Request<PP>) => boolean;
 	params?: (...rawParams: string[]) => void | PP;
-	pathname?: string;
+	path?: string;
 }
 
 export interface Selection {
@@ -117,8 +117,12 @@ const createRoute: RouteFactory = compose({
 
 		return [];
 	}
-}, (instance: Route<Parameters>, { exec, guard, params, pathname }: RouteOptions<Parameters> = {}) => {
-	instance.path = deconstructPath(pathname || '/');
+}, (instance: Route<Parameters>, { exec, guard, params, path }: RouteOptions<Parameters> = {}) => {
+	if (path && /\?|#/.test(path)) {
+		throw new TypeError('path must not contain ? or #');
+	}
+
+	instance.path = deconstructPath(path || '/');
 	instance.routes = [];
 
 	if (exec) {
@@ -129,7 +133,7 @@ const createRoute: RouteFactory = compose({
 	}
 	if (params) {
 		if (instance.path.parameters.length === 0) {
-			throw new TypeError('Can\'t specify params() if pathname doesn\'t contain any');
+			throw new TypeError('Can\'t specify params() if path doesn\'t contain any');
 		}
 
 		instance.params = params;

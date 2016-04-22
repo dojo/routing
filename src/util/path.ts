@@ -24,26 +24,8 @@ export interface MatchResult {
 }
 
 function tokenize (path: string): string[] {
-	const tokens: string[] = path.split(/([/:?#])/).filter(Boolean);
-
-	const queryStart = tokens.indexOf('?');
-	const hashStart = tokens.indexOf('#');
-
-	let end = tokens.length;
-	if (queryStart >= 0) {
-		if (hashStart >= 0) {
-			end = Math.min(queryStart, hashStart);
-		}
-		else {
-			end = queryStart;
-		}
-	}
-	else if (hashStart >= 0) {
-		end = hashStart;
-	}
-
-	const segmentStart = tokens[0] === '/' ? 1 : 0;
-	return tokens.slice(segmentStart, end);
+	const tokens: string[] = path.split(/([/:])/).filter(Boolean);
+	return tokens[0] === '/' ? tokens.slice(1) : tokens;
 }
 
 export function getSegments (path: string): string[] {
