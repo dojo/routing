@@ -1,19 +1,30 @@
 import compose, { ComposeFactory } from 'dojo-compose/compose';
 
 import { Route } from './createRoute';
-import { getSegments } from './util/path';
 import { Context, Parameters } from './interfaces';
+import { getSegments } from './util/path';
 
 export interface Router {
 	routes: Route<Parameters>[];
-	dispatch: (context: Context, path: string) => void;
 	append: (routes: Route<Parameters> | Route<Parameters>[]) => void;
+	dispatch: (context: Context, path: string) => void;
 }
 
 export interface RouterFactory extends ComposeFactory<Router, any> {}
 
 const createRouter: RouterFactory = compose({
 	routes: [] as Route<Parameters>[],
+
+	append (routes: Route<Parameters> | Route<Parameters>[]) {
+		if (Array.isArray(routes)) {
+			for (const route of routes) {
+				this.routes.push(route);
+			}
+		}
+		else {
+			this.routes.push(routes);
+		}
+	},
 
 	dispatch (context: Context, path: string) {
 		const segments = getSegments(path);
@@ -36,17 +47,6 @@ const createRouter: RouterFactory = compose({
 
 			return true;
 		});
-	},
-
-	append (routes: Route<Parameters> | Route<Parameters>[]) {
-		if (Array.isArray(routes)) {
-			for (const route of routes) {
-				this.routes.push(route);
-			}
-		}
-		else {
-			this.routes.push(routes);
-		}
 	}
 }, (instance: Router) => {
 	instance.routes = [];

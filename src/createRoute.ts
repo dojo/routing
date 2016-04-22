@@ -1,15 +1,19 @@
 import compose, { ComposeFactory } from 'dojo-compose/compose';
 
-import { match as matchPath, deconstruct as deconstructPath, DeconstructedPath } from './util/path';
-import { Request, Parameters } from './interfaces';
+import { Parameters, Request } from './interfaces';
+import {
+	deconstruct as deconstructPath,
+	match as matchPath,
+	DeconstructedPath
+} from './util/path';
 
 export interface DefaultParameters extends Parameters {
 	[param: string]: string;
 }
 
 export interface MatchResult<PP> {
-	isMatch: boolean;
 	hasRemaining: boolean;
+	isMatch: boolean;
 	offset: number;
 	params?: PP;
 }
@@ -23,10 +27,10 @@ export interface Route<PP extends Parameters> {
 }
 
 export interface RouteOptions<PP> {
-	pathname?: string;
 	exec?: (request: Request<PP>) => void;
 	guard?: (request: Request<PP>) => boolean;
 	params?: (...rawParams: string[]) => void | PP;
+	pathname?: string;
 }
 
 export interface RouteFactory extends ComposeFactory<Route<Parameters>, RouteOptions<Parameters>> {
@@ -37,16 +41,16 @@ const createRoute: RouteFactory = compose({
 	path: {} as DeconstructedPath,
 
 	match (segments: string[]): MatchResult<Parameters> {
-		const { isMatch, hasRemaining, offset, values } = matchPath(this.path, segments);
+		const { hasRemaining, isMatch, offset, values } = matchPath(this.path, segments);
 		if (!isMatch) {
-			return { isMatch: false, hasRemaining: false, offset: 0 };
+			return { hasRemaining: false, isMatch: false, offset: 0 };
 		}
 
 		const params = this.params(...values);
 		if (params === null) {
-			return { isMatch: false, hasRemaining: false, offset: 0 };
+			return { hasRemaining: false, isMatch: false, offset: 0 };
 		}
-		return { isMatch: true, hasRemaining, offset, params };
+		return { hasRemaining, isMatch: true, offset, params };
 	},
 
 	params (...rawParams: string[]): DefaultParameters {
@@ -58,8 +62,9 @@ const createRoute: RouteFactory = compose({
 
 		return params;
 	}
-}, (instance: Route<Parameters>, { pathname, exec, guard, params }: RouteOptions<Parameters> = {}) => {
+}, (instance: Route<Parameters>, { exec, guard, params, pathname }: RouteOptions<Parameters> = {}) => {
 	instance.path = deconstructPath(pathname || '/');
+
 	if (exec) {
 		instance.exec = exec;
 	}
