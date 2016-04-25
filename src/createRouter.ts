@@ -1,6 +1,6 @@
 import compose, { ComposeFactory } from 'dojo-compose/compose';
 
-import { Route } from './createRoute';
+import { Route, ExecutionMethod } from './createRoute';
 import { Context, Parameters } from './interfaces';
 import { getSegments } from './util/path';
 
@@ -34,8 +34,13 @@ const createRouter: RouterFactory = compose({
 				return false;
 			}
 
-			for (const { route, params } of hierarchy) {
-				route.exec({ context, params });
+			for (const { method, route, params } of hierarchy) {
+				if (method === ExecutionMethod.Exec) {
+					route.exec({ context, params });
+				}
+				else if (method === ExecutionMethod.Index) {
+					route.index({ context, params });
+				}
 			}
 
 			return true;

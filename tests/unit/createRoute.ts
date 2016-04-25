@@ -29,6 +29,12 @@ suite('createRoute', () => {
 		});
 	});
 
+	test('index() can be specified', () => {
+		assert.isUndefined(createRoute().index);
+		const index = () => {};
+		assert.strictEqual(createRoute({ index }).index, index);
+	});
+
 	test('guard() can be customized', () => {
 		let wasCustomized = false;
 		createRoute({

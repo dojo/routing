@@ -47,6 +47,40 @@ suite('createRouter', () => {
 		assert.deepEqual(execs[1].params, { bar: 'deep' });
 	});
 
+	test('dispatch calls index() on the final selected route, providing context and extracted parameters', () => {
+		const calls: { method: string, context: C, params: Parameters }[] = [];
+
+		const context = {} as C;
+		const router = createRouter();
+		const root = createRoute({
+			path: '/:foo',
+			exec ({ context, params }) {
+				calls.push({ method: 'exec', context, params });
+			}
+		});
+		const deep = createRoute({
+			path: '/:bar',
+			exec ({ context, params }) {
+				calls.push({ method: 'exec', context, params });
+			},
+			index ({ context, params }) {
+				calls.push({ method: 'index', context, params });
+			}
+		});
+		router.append(root);
+		root.append(deep);
+
+		router.dispatch(context, '/root/deep');
+
+		assert.lengthOf(calls, 2);
+		assert.strictEqual(calls[0].method, 'exec');
+		assert.strictEqual(calls[1].method, 'index');
+		assert.strictEqual(calls[0].context, context);
+		assert.strictEqual(calls[1].context, context);
+		assert.deepEqual(calls[0].params, { foo: 'root' });
+		assert.deepEqual(calls[1].params, { bar: 'deep' });
+	});
+
 	test('dispatch selects routes in order of registration', () => {
 		const order: string[] = [];
 

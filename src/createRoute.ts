@@ -24,6 +24,7 @@ export interface Route<PP extends Parameters> {
 	append: (routes: Route<Parameters> | Route<Parameters>[]) => void;
 	exec: (request: Request<PP>) => void;
 	guard: (request: Request<PP>) => boolean;
+	index?: (request: Request<PP>) => void;
 	match: (segments: string[]) => MatchResult<PP>;
 	params: (...rawParams: string[]) => void | PP;
 	select: (context: Context, segments: string[]) => Selection[];
@@ -32,11 +33,15 @@ export interface Route<PP extends Parameters> {
 export interface RouteOptions<PP> {
 	exec?: (request: Request<PP>) => void;
 	guard?: (request: Request<PP>) => boolean;
+	index?: (request: Request<PP>) => void;
 	params?: (...rawParams: string[]) => void | PP;
 	path?: string;
 }
 
+export const enum ExecutionMethod { Exec, Index }
+
 export interface Selection {
+	method: ExecutionMethod;
 	params: Parameters;
 	route: Route<Parameters>;
 }
@@ -104,20 +109,21 @@ const createRoute: RouteFactory = compose({
 		}
 
 		if (!hasRemaining) {
-			return [{ params, route: this }];
+			const method = (<Route<Parameters>> this).index ? ExecutionMethod.Index : ExecutionMethod.Exec;
+			return [{ method, params, route: this }];
 		}
 
 		const remainingSegments = segments.slice(offset);
 		for (const nested of this.routes) {
 			const hierarchy = nested.select(context, remainingSegments);
 			if (hierarchy.length > 0) {
-				return [{ params, route: this }, ...hierarchy];
+				return [{ method: ExecutionMethod.Exec, params, route: this }, ...hierarchy];
 			}
 		}
 
 		return [];
 	}
-}, (instance: Route<Parameters>, { exec, guard, params, path }: RouteOptions<Parameters> = {}) => {
+}, (instance: Route<Parameters>, { exec, guard, index, params, path }: RouteOptions<Parameters> = {}) => {
 	if (path && /\?|#/.test(path)) {
 		throw new TypeError('path must not contain ? or #');
 	}
@@ -130,6 +136,9 @@ const createRoute: RouteFactory = compose({
 	}
 	if (guard) {
 		instance.guard = guard;
+	}
+	if (index) {
+		instance.index = index;
 	}
 	if (params) {
 		if (instance.path.parameters.length === 0) {
