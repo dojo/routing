@@ -23,6 +23,7 @@ export interface Route<PP extends Parameters> {
 	routes: Route<Parameters>[];
 	append: (routes: Route<Parameters> | Route<Parameters>[]) => void;
 	exec: (request: Request<PP>) => void;
+	fallback?: (request: Request<PP>) => void;
 	guard: (request: Request<PP>) => boolean;
 	index?: (request: Request<PP>) => void;
 	match: (segments: string[]) => MatchResult<PP>;
@@ -32,13 +33,14 @@ export interface Route<PP extends Parameters> {
 
 export interface RouteOptions<PP> {
 	exec?: (request: Request<PP>) => void;
+	fallback?: (request: Request<PP>) => void;
 	guard?: (request: Request<PP>) => boolean;
 	index?: (request: Request<PP>) => void;
 	params?: (...rawParams: string[]) => void | PP;
 	path?: string;
 }
 
-export const enum ExecutionMethod { Exec, Index }
+export const enum ExecutionMethod { Exec, Fallback, Index }
 
 export interface Selection {
 	method: ExecutionMethod;
@@ -100,11 +102,7 @@ const createRoute: RouteFactory = compose({
 			return [];
 		}
 
-		if (hasRemaining && this.routes.length === 0) {
-			return [];
-		}
-
-		if (!this.guard({ context, params })) {
+		if ((!hasRemaining || this.routes.length > 0) && !this.guard({ context, params })) {
 			return [];
 		}
 
@@ -121,9 +119,13 @@ const createRoute: RouteFactory = compose({
 			}
 		}
 
+		if ((<Route<Parameters>> this).fallback) {
+			return [{ method: ExecutionMethod.Fallback, params, route: this }];
+		}
+
 		return [];
 	}
-}, (instance: Route<Parameters>, { exec, guard, index, params, path }: RouteOptions<Parameters> = {}) => {
+}, (instance: Route<Parameters>, { exec, fallback, guard, index, params, path }: RouteOptions<Parameters> = {}) => {
 	if (path && /\?|#/.test(path)) {
 		throw new TypeError('path must not contain ? or #');
 	}
@@ -133,6 +135,9 @@ const createRoute: RouteFactory = compose({
 
 	if (exec) {
 		instance.exec = exec;
+	}
+	if (fallback) {
+		instance.fallback = fallback;
 	}
 	if (guard) {
 		instance.guard = guard;

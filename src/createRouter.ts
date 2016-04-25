@@ -38,6 +38,9 @@ const createRouter: RouterFactory = compose({
 				if (method === ExecutionMethod.Exec) {
 					route.exec({ context, params });
 				}
+				else if (method === ExecutionMethod.Fallback) {
+					route.fallback({ context, params });
+				}
 				else if (method === ExecutionMethod.Index) {
 					route.index({ context, params });
 				}

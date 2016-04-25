@@ -35,6 +35,12 @@ suite('createRoute', () => {
 		assert.strictEqual(createRoute({ index }).index, index);
 	});
 
+	test('fallback() can be specified', () => {
+		assert.isUndefined(createRoute().fallback);
+		const fallback = () => {};
+		assert.strictEqual(createRoute({ fallback }).fallback, fallback);
+	});
+
 	test('guard() can be customized', () => {
 		let wasCustomized = false;
 		createRoute({

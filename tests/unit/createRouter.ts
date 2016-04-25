@@ -81,6 +81,30 @@ suite('createRouter', () => {
 		assert.deepEqual(calls[1].params, { bar: 'deep' });
 	});
 
+	test('dispatch calls fallback() on the deepest matching route, providing context and extracted parameters', () => {
+		const calls: { method: string, context: C, params: Parameters }[] = [];
+
+		const context = {} as C;
+		const router = createRouter();
+		const root = createRoute({
+			path: '/:foo',
+			exec ({ context, params }) {
+				calls.push({ method: 'exec', context, params });
+			},
+			fallback ({ context, params }) {
+				calls.push({ method: 'fallback', context, params });
+			}
+		});
+		router.append(root);
+
+		router.dispatch(context, '/root/deep');
+
+		assert.lengthOf(calls, 1);
+		assert.strictEqual(calls[0].method, 'fallback');
+		assert.strictEqual(calls[0].context, context);
+		assert.deepEqual(calls[0].params, { foo: 'root' });
+	});
+
 	test('dispatch selects routes in order of registration', () => {
 		const order: string[] = [];
 
