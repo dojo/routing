@@ -1,3 +1,5 @@
+import UrlSearchParams from 'dojo-core/UrlSearchParams';
+
 export interface Segment {
 	value?: string;
 	name?: string;
@@ -12,8 +14,9 @@ export interface NamedSegment extends Segment {
 }
 
 export interface DeconstructedPath {
-	parameters: string[];
 	expectedSegments: Segment[];
+	parameters: string[];
+	searchParameters: string[];
 }
 
 export interface MatchResult {
@@ -24,23 +27,26 @@ export interface MatchResult {
 }
 
 function tokenizeParameterizedPathname (pathname: string): string[] {
-	const tokens: string[] = pathname.split(/([/{}])/).filter(Boolean);
+	const tokens: string[] = pathname.split(/([/{}?&])/).filter(Boolean);
 	return tokens[0] === '/' ? tokens.slice(1) : tokens;
 }
 
-function tokenizePath (path: string): string[] {
+function tokenizePath (path: string): { search: string, tokens: string[] } {
 	const tokens: string[] = path.split(/([/?#])/).filter(Boolean);
 
-	const queryStart = tokens.indexOf('?');
+	const searchStart = tokens.indexOf('?');
 	const hashStart = tokens.indexOf('#');
 
 	let end = tokens.length;
-	if (queryStart >= 0) {
+	let search = '';
+	if (searchStart >= 0) {
 		if (hashStart >= 0) {
-			end = Math.min(queryStart, hashStart);
+			end = Math.min(searchStart, hashStart);
+			search = tokens.slice(searchStart + 1, hashStart).join('');
 		}
 		else {
-			end = queryStart;
+			end = searchStart;
+			search = tokens.slice(searchStart + 1).join('');
 		}
 	}
 	else if (hashStart >= 0) {
@@ -48,11 +54,18 @@ function tokenizePath (path: string): string[] {
 	}
 
 	const segmentStart = tokens[0] === '/' ? 1 : 0;
-	return tokens.slice(segmentStart, end);
+	return {
+		search,
+		tokens: tokens.slice(segmentStart, end)
+	};
 }
 
-export function getSegments (path: string): string[] {
-	return tokenizePath(path).filter(t => t !== '/');
+export function getSegments (path: string): { searchParams: UrlSearchParams, segments: string[] } {
+	const { search, tokens } = tokenizePath(path);
+	return {
+		searchParams: new UrlSearchParams(search),
+		segments: tokens.filter(t => t !== '/')
+	};
 }
 
 export function match ({ expectedSegments }: DeconstructedPath, segments: string[]): MatchResult {
@@ -91,41 +104,82 @@ export function match ({ expectedSegments }: DeconstructedPath, segments: string
 
 export function deconstruct (path: string): DeconstructedPath {
 	const tokens = tokenizeParameterizedPathname(path);
-	const parameters: string[] = [];
 	const expectedSegments: Segment[] = [];
+	const parameters: string[] = [];
+	const searchParameters: string[] = [];
 
+	let inSearchComponent = false;
 	let i = 0;
 	while (i < tokens.length) {
-		const value = tokens[i++];
-		let next = tokens[i++];
+		const t = tokens[i++];
 
-		if (value === '{') {
-			const name = next;
-			next = tokens[i++];
-			if (!name || name === '}') {
-				throw new TypeError('Expecting parameter to have a name');
-			}
-			if (name === '{' || /:/.test(name)) {
-				throw new TypeError('Parameter name cannot contain \'{\' or \':\'');
-			}
-			if (!next || next !== '}') {
-				throw new TypeError(`Expecting parameter name to be followed by '}', got '${next}'`);
-			}
-			next = tokens[i++];
-			if (next && next !== '/') {
-				throw new TypeError(`Expecting parameter to be followed by '/', got '${next}'`);
-			}
-			if (parameters.indexOf(name) !== -1) {
-				throw new TypeError(`Expecting parameter to have a unique name, got '${name}'`);
+		switch (t) {
+			case '{': {
+				const name = tokens[i++]; // consume next
+				if (!name || name === '}') {
+					throw new TypeError('Parameter must have a name');
+				}
+				if (name === '{' || name === '&' || /:/.test(name)) {
+					throw new TypeError('Parameter name must not contain \'{\', \'&\' or \':\'');
+				}
+				if (parameters.indexOf(name) !== -1) {
+					throw new TypeError(`Parameter must have a unique name, got '${name}'`);
+				}
+
+				const closing = tokens[i++]; // consume next
+				if (!closing || closing !== '}') {
+					throw new TypeError(`Parameter name must be followed by '}', got '${closing}'`);
+				}
+
+				const separator = tokens[i]; // peek next
+				if (separator) {
+					if (inSearchComponent) {
+						if (separator !== '&') {
+							throw new TypeError(`Search parameter must be followed by '&', got '${separator}'`);
+						}
+					}
+					else if (separator !== '/' && separator !== '?') {
+						throw new TypeError(`Parameter must be followed by '/' or '?', got '${separator}'`);
+					}
+				}
+
+				if (inSearchComponent) {
+					searchParameters.push(name);
+				} else {
+					parameters.push(name);
+					expectedSegments.push({ name });
+				}
+
+				break;
 			}
 
-			parameters.push(name);
-			expectedSegments.push({ name });
-		}
-		else {
-			expectedSegments.push({ value });
+			case '?':
+			case '/':
+				if (inSearchComponent) {
+					throw new TypeError(`Expected parameter in search component, got '${t}'`);
+				}
+
+				if (t === '?') {
+					inSearchComponent = true;
+				}
+
+				break;
+
+			case '&':
+				if (!inSearchComponent) {
+					throw new TypeError('Path segment must not contain \'&\'');
+				}
+
+				break;
+
+			default:
+				if (inSearchComponent) {
+					throw new TypeError(`Expected parameter in search component, got '${t}'`);
+				}
+
+				expectedSegments.push({ value: t });
 		}
 	}
 
-	return { parameters, expectedSegments };
+	return { expectedSegments, parameters, searchParameters };
 }

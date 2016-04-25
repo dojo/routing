@@ -32,9 +32,9 @@ const createRouter: RouterFactory = compose({
 	},
 
 	dispatch (context: Context, path: string): boolean {
-		const segments = getSegments(path);
+		const { searchParams, segments } = getSegments(path);
 		const dispatched = (<Router> this).routes.some(route => {
-			const hierarchy = route.select(context, segments);
+			const hierarchy = route.select(context, segments, searchParams);
 			if (hierarchy.length === 0) {
 				return false;
 			}
