@@ -24,7 +24,7 @@ export interface MatchResult {
 }
 
 function tokenizeParameterizedPathname (pathname: string): string[] {
-	const tokens: string[] = pathname.split(/([/:])/).filter(Boolean);
+	const tokens: string[] = pathname.split(/([/{}])/).filter(Boolean);
 	return tokens[0] === '/' ? tokens.slice(1) : tokens;
 }
 
@@ -99,17 +99,24 @@ export function deconstruct (path: string): DeconstructedPath {
 		const value = tokens[i++];
 		let next = tokens[i++];
 
-		if (value === ':') {
+		if (value === '{') {
 			const name = next;
 			next = tokens[i++];
-			if (!name || name === ':' || name === '/') {
-				throw new TypeError('Expecting param to have a name');
+			if (!name || name === '}') {
+				throw new TypeError('Expecting parameter to have a name');
 			}
+			if (name === '{' || /:/.test(name)) {
+				throw new TypeError('Parameter name cannot contain \'{\' or \':\'');
+			}
+			if (!next || next !== '}') {
+				throw new TypeError(`Expecting parameter name to be followed by '}', got '${next}'`);
+			}
+			next = tokens[i++];
 			if (next && next !== '/') {
-				throw new TypeError(`Expecting param to be followed by /, got '${next}'`);
+				throw new TypeError(`Expecting parameter to be followed by '/', got '${next}'`);
 			}
 			if (parameters.indexOf(name) !== -1) {
-				throw new Error(`Expecting param to have a unique name, got '${name}'`);
+				throw new TypeError(`Expecting parameter to have a unique name, got '${name}'`);
 			}
 
 			parameters.push(name);

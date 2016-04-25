@@ -41,7 +41,7 @@ function withDefaultParameters () {
 	let path = '';
 	const router = createRouter();
 	router.append(createRoute({
-		path: '/posts/:category/:id',
+		path: '/posts/{category}/{id}',
 		exec ({ params }: Request<DefaultParameters>) {
 			console.log('withDefaultParameters', params['category'], params['id']);
 		}
@@ -65,7 +65,7 @@ function withTypedParameters () {
 		id: number;
 	}
 	router.append(<Route<PostParams>> createRoute({
-		path: '/posts/:category/:id',
+		path: '/posts/{category}/{id}',
 		params (raw: string[]) {
 			const [category, id] = raw;
 			const numericId: number = parseFloat(id);

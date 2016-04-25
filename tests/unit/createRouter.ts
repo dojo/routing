@@ -24,13 +24,13 @@ suite('createRouter', () => {
 		const context = {} as C;
 		const router = createRouter();
 		const root = createRoute({
-			path: '/:foo',
+			path: '/{foo}',
 			exec ({ context, params }) {
 				execs.push({ context, params });
 			}
 		});
 		const deep = createRoute({
-			path: '/:bar',
+			path: '/{bar}',
 			exec ({ context, params }) {
 				execs.push({ context, params });
 			}
@@ -53,13 +53,13 @@ suite('createRouter', () => {
 		const context = {} as C;
 		const router = createRouter();
 		const root = createRoute({
-			path: '/:foo',
+			path: '/{foo}',
 			exec ({ context, params }) {
 				calls.push({ method: 'exec', context, params });
 			}
 		});
 		const deep = createRoute({
-			path: '/:bar',
+			path: '/{bar}',
 			exec ({ context, params }) {
 				calls.push({ method: 'exec', context, params });
 			},
@@ -87,7 +87,7 @@ suite('createRouter', () => {
 		const context = {} as C;
 		const router = createRouter();
 		const root = createRoute({
-			path: '/:foo',
+			path: '/{foo}',
 			exec ({ context, params }) {
 				calls.push({ method: 'exec', context, params });
 			},

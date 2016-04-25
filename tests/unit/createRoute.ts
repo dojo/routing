@@ -92,7 +92,7 @@ suite('createRoute', () => {
 
 	test('path parameters are extracted', () => {
 		const route = <Route<DefaultParameters>> createRoute({
-			path: '/:foo/:bar'
+			path: '/{foo}/{bar}'
 		});
 		const [{ params }] = route.select({} as C, ['baz', 'qux']);
 		assert.deepEqual(params, {
@@ -101,34 +101,44 @@ suite('createRoute', () => {
 		});
 	});
 
-	test('path parameters cannot be named :', () => {
+	test('path parameters cannot contain { or :', () => {
 		assert.throws(() => {
-			createRoute({ path: '/::' });
-		}, TypeError, 'Expecting param to have a name');
+			createRoute({ path: '/{:}' });
+		}, TypeError, 'Parameter name cannot contain \'{\' or \':\'');
+
+		assert.throws(() => {
+			createRoute({ path: '/{{}' });
+		}, TypeError, 'Parameter name cannot contain \'{\' or \':\'');
 	});
 
-	test('path parameters must be named :', () => {
+	test('path parameters must be named', () => {
 		assert.throws(() => {
-			createRoute({ path: '/:/' });
-		}, TypeError, 'Expecting param to have a name');
+			createRoute({ path: '/{}/' });
+		}, TypeError, 'Expecting parameter to have a name');
+	});
+
+	test('path parameters must be closed', () => {
+		assert.throws(() => {
+			createRoute({ path: '/{foo/' });
+		}, TypeError, 'Expecting parameter name to be followed by \'}\', got \'/\'');
 	});
 
 	test('path parameters must be separated by /', () => {
 		assert.throws(() => {
-			createRoute({ path: '/:foo:bar' });
-		}, TypeError, 'Expecting param to be followed by /, got \':\'');
+			createRoute({ path: '/{foo}{bar}' });
+		}, TypeError, 'Expecting parameter to be followed by \'/\', got \'{\'');
 	});
 
 	test('path parameters must have unique names', () => {
 		assert.throws(() => {
-			createRoute({ path: '/:foo/:foo' });
-		}, Error, 'Expecting param to have a unique name, got \'foo\'');
+			createRoute({ path: '/{foo}/{foo}' });
+		}, TypeError, 'Expecting parameter to have a unique name, got \'foo\'');
 	});
 
 	test('guard() receives the extracted parameters', () => {
 		let received: Parameters;
 		const route = <Route<DefaultParameters>> createRoute({
-			path: '/:foo/:bar',
+			path: '/{foo}/{bar}',
 			guard ({ params }: R) {
 				received = params;
 				return true;
@@ -147,7 +157,7 @@ suite('createRoute', () => {
 			barIsQux: boolean;
 		}
 		const route = <Route<Customized>> createRoute({
-			path: '/:foo/:bar',
+			path: '/{foo}/{bar}',
 			params (fromPath) {
 				const [foo, bar] = fromPath;
 				return {
@@ -176,7 +186,7 @@ suite('createRoute', () => {
 
 	test('parameter extraction can cause a route not to match', () => {
 		const route = createRoute({
-			path: '/:foo',
+			path: '/{foo}',
 			params () {
 				return null;
 			}
@@ -295,9 +305,9 @@ suite('createRoute', () => {
 	});
 
 	test('extracts path parameters for each nested route', () => {
-		const root = createRoute({ path: '/foo/:param' });
-		const deep = createRoute({ path: '/bar/:param' });
-		const deeper = createRoute({ path: '/baz/:param' });
+		const root = createRoute({ path: '/foo/{param}' });
+		const deep = createRoute({ path: '/bar/{param}' });
+		const deeper = createRoute({ path: '/baz/{param}' });
 		root.append(deep);
 		deep.append(deeper);
 
