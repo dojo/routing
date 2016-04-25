@@ -108,6 +108,9 @@ export function deconstruct (path: string): DeconstructedPath {
 			if (next && next !== '/') {
 				throw new TypeError(`Expecting param to be followed by /, got '${next}'`);
 			}
+			if (parameters.indexOf(name) !== -1) {
+				throw new Error(`Expecting param to have a unique name, got '${name}'`);
+			}
 
 			parameters.push(name);
 			expectedSegments.push({ name });

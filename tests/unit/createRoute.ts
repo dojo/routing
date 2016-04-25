@@ -119,6 +119,12 @@ suite('createRoute', () => {
 		}, TypeError, 'Expecting param to be followed by /, got \':\'');
 	});
 
+	test('path parameters must have unique names', () => {
+		assert.throws(() => {
+			createRoute({ path: '/:foo/:foo' });
+		}, Error, 'Expecting param to have a unique name, got \'foo\'');
+	});
+
 	test('guard() receives the extracted parameters', () => {
 		let received: Parameters;
 		const route = <Route<DefaultParameters>> createRoute({
