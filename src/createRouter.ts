@@ -40,14 +40,16 @@ const createRouter: RouterFactory = compose({
 			}
 
 			for (const { method, route, params } of hierarchy) {
-				if (method === ExecutionMethod.Exec) {
-					route.exec({ context, params });
-				}
-				else if (method === ExecutionMethod.Fallback) {
-					route.fallback({ context, params });
-				}
-				else if (method === ExecutionMethod.Index) {
-					route.index({ context, params });
+				switch (method) {
+					case ExecutionMethod.Exec:
+						route.exec({ context, params });
+						break;
+					case ExecutionMethod.Fallback:
+						route.fallback({ context, params });
+						break;
+					case ExecutionMethod.Index:
+						route.index({ context, params });
+						break;
 				}
 			}
 
