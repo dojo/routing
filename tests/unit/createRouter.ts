@@ -127,6 +127,22 @@ suite('createRouter', () => {
 		assert.deepEqual(order, ['first', 'second']);
 	});
 
+	test('router can be created with a fallback route', () => {
+		let received: R;
+
+		const router = createRouter({
+			fallback (request) {
+				received = request;
+			}
+		});
+
+		const context = {} as C;
+		assert.isTrue(router.dispatch(context, '/foo'));
+		assert.ok(received);
+		assert.strictEqual(received.context, context);
+		assert.deepEqual(received.params, {});
+	});
+
 	test('can append several routes at once', () => {
 		const order: string[] = [];
 
