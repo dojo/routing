@@ -27,7 +27,7 @@ export interface Route<PP extends Parameters> {
 	guard: (request: Request<PP>) => boolean;
 	index?: (request: Request<PP>) => void;
 	match: (segments: string[]) => MatchResult<PP>;
-	params: (...rawParams: string[]) => void | PP;
+	params: (fromPath: string[]) => void | PP;
 	select: (context: Context, segments: string[]) => Selection[];
 }
 
@@ -36,7 +36,7 @@ export interface RouteOptions<PP> {
 	fallback?: (request: Request<PP>) => void;
 	guard?: (request: Request<PP>) => boolean;
 	index?: (request: Request<PP>) => void;
-	params?: (...rawParams: string[]) => void | PP;
+	params?: (fromPath: string[]) => void | PP;
 	path?: string;
 }
 
@@ -79,18 +79,18 @@ const createRoute: RouteFactory = compose({
 			return { hasRemaining: false, isMatch: false, offset: 0 };
 		}
 
-		const params = this.params(...values);
+		const params = this.params(values);
 		if (params === null) {
 			return { hasRemaining: false, isMatch: false, offset: 0 };
 		}
 		return { hasRemaining, isMatch: true, offset, params };
 	},
 
-	params (...rawParams: string[]): DefaultParameters {
+	params (fromPath: string[]): DefaultParameters {
 		const params: DefaultParameters = {};
 
 		(<DeconstructedPath> this.path).parameters.forEach((name, index) => {
-			params[name] = rawParams[index];
+			params[name] = fromPath[index];
 		});
 
 		return params;

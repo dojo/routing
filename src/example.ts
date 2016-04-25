@@ -66,7 +66,8 @@ function withTypedParameters () {
 	}
 	router.append(<Route<PostParams>> createRoute({
 		path: '/posts/:category/:id',
-		params (category: string, id: string) {
+		params (raw: string[]) {
+			const [category, id] = raw;
 			const numericId: number = parseFloat(id);
 			if (!isInteger(numericId) || numericId <= 0) {
 				return null;

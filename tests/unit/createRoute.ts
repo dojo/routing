@@ -148,7 +148,8 @@ suite('createRoute', () => {
 		}
 		const route = <Route<Customized>> createRoute({
 			path: '/:foo/:bar',
-			params (foo, bar) {
+			params (fromPath) {
+				const [foo, bar] = fromPath;
 				return {
 					upper: foo.toUpperCase(),
 					barIsQux: bar === 'qux'
@@ -166,7 +167,7 @@ suite('createRoute', () => {
 		assert.throws(() => {
 			createRoute({
 				path: '/foo/bar',
-				params (foo, bar) {
+				params () {
 					return {};
 				}
 			});
