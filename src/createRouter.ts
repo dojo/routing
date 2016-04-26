@@ -5,21 +5,19 @@ import { Context, Parameters, Request } from './interfaces';
 import { getSegments } from './util/path';
 
 export interface Router {
-	routes: Route<Parameters>[];
-	append: (routes: Route<Parameters> | Route<Parameters>[]) => void;
-	dispatch: (context: Context, path: string) => void;
-	fallback?: (request: Request<any>) => void;
+	routes?: Route<Parameters>[];
+	append(routes: Route<Parameters> | Route<Parameters>[]): void;
+	dispatch(context: Context, path: string): void;
+	fallback?(request: Request<any>): void;
 }
 
 export interface RouterOptions {
-	fallback?: (request: Request<any>) => void;
+	fallback?(request: Request<any>): void;
 }
 
 export interface RouterFactory extends ComposeFactory<Router, RouterOptions> {}
 
 const createRouter: RouterFactory = compose({
-	routes: [] as Route<Parameters>[],
-
 	append (routes: Route<Parameters> | Route<Parameters>[]) {
 		if (Array.isArray(routes)) {
 			for (const route of routes) {
@@ -56,8 +54,8 @@ const createRouter: RouterFactory = compose({
 			return true;
 		});
 
-		if (!dispatched && (<Router> this).fallback) {
-			(<Router> this).fallback({ context, params: {} });
+		if (!dispatched && this.fallback) {
+			this.fallback({ context, params: {} });
 			return true;
 		}
 

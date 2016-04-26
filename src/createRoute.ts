@@ -21,25 +21,25 @@ export interface MatchResult<PP> {
 }
 
 export interface Route<PP extends Parameters> {
-	path: DeconstructedPath;
-	routes: Route<Parameters>[];
-	append: (routes: Route<Parameters> | Route<Parameters>[]) => void;
-	exec: (request: Request<PP>) => void;
-	fallback?: (request: Request<PP>) => void;
-	guard: (request: Request<PP>) => boolean;
-	index?: (request: Request<PP>) => void;
-	match: (segments: string[], searchParams: UrlSearchParams) => MatchResult<PP>;
-	params: (fromPath: string[], searchParams: UrlSearchParams) => void | PP;
-	select: (context: Context, segments: string[], searchParams: UrlSearchParams) => Selection[];
+	path?: DeconstructedPath;
+	routes?: Route<Parameters>[];
+	append(routes: Route<Parameters> | Route<Parameters>[]): void;
+	exec(request: Request<PP>): void;
+	fallback?(request: Request<PP>): void;
+	guard(request: Request<PP>): boolean;
+	index?(request: Request<PP>): void;
+	match(segments: string[], searchParams: UrlSearchParams): MatchResult<PP>;
+	params(fromPath: string[], searchParams: UrlSearchParams): void | PP;
+	select(context: Context, segments: string[], searchParams: UrlSearchParams): Selection[];
 }
 
 export interface RouteOptions<PP> {
-	exec?: (request: Request<PP>) => void;
-	fallback?: (request: Request<PP>) => void;
-	guard?: (request: Request<PP>) => boolean;
-	index?: (request: Request<PP>) => void;
-	params?: (fromPath: string[], searchParams: UrlSearchParams) => void | PP;
 	path?: string;
+	exec?(request: Request<PP>): void;
+	fallback?(request: Request<PP>): void;
+	guard?(request: Request<PP>): boolean;
+	index?(request: Request<PP>): void;
+	params?(fromPath: string[], searchParams: UrlSearchParams): void | PP;
 }
 
 export const enum ExecutionMethod { Exec, Fallback, Index }
@@ -55,9 +55,6 @@ export interface RouteFactory extends ComposeFactory<Route<Parameters>, RouteOpt
 }
 
 const createRoute: RouteFactory = compose({
-	path: {} as DeconstructedPath,
-	routes: [] as Route<Parameters>[],
-
 	append (routes: Route<Parameters> | Route<Parameters>[]) {
 		if (Array.isArray(routes)) {
 			for (const route of routes) {
