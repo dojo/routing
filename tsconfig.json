@@ -19,6 +19,12 @@
 		"./src/createRoute.ts",
 		"./src/createRouter.ts",
 		"./src/example.ts",
+		"./src/history.ts",
+		"./src/history/_browser.ts",
+		"./src/history/hashHistory.ts",
+		"./src/history/interfaces.ts",
+		"./src/history/memoryHistory.ts",
+		"./src/history/stateHistory.ts",
 		"./src/interfaces.d.ts",
 		"./src/main.ts",
 		"./src/util/path.ts",
@@ -37,6 +43,10 @@
 		"./tests/typings/tsd.d.ts",
 		"./tests/unit/all.ts",
 		"./tests/unit/createRoute.ts",
-		"./tests/unit/createRouter.ts"
+		"./tests/unit/createRouter.ts",
+		"./tests/unit/history/all.ts",
+		"./tests/unit/history/createHashHistory.ts",
+		"./tests/unit/history/createHistory.ts",
+		"./tests/unit/history/createMemoryHistory.ts"
 	]
 }

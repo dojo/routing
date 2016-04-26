@@ -53,7 +53,11 @@ export const loaderOptions = {
 	packages: [
 		{ name: 'src', location: '_build/src' },
 		{ name: 'tests', location: '_build/tests' },
-		{ name: 'dojo', location: 'node_modules/intern/node_modules/dojo' }
+		{ name: 'dojo', location: 'node_modules/intern/browser_modules/dojo' },
+		{ name: 'dojo-actions', location: 'node_modules/dojo-actions' },
+		{ name: 'dojo-core', location: 'node_modules/dojo-core' },
+		{ name: 'dojo-compose', location: 'node_modules/dojo-compose' },
+		{ name: 'dojo-widgets', location: 'node_modules/dojo-widgets' }
 	]
 };
 

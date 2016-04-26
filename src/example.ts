@@ -1,5 +1,6 @@
 import createRoute, { DefaultParameters, Route } from './createRoute';
 import createRouter from './createRouter';
+import { createMemoryHistory } from './history';
 import { Context, Parameters, Request } from './interfaces';
 
 const context: Context = {};
@@ -9,6 +10,7 @@ withPath();
 withDefaultParameters();
 withTypedParameters();
 nested();
+usingHistory();
 
 function defaultRoot () {
 	let path = '';
@@ -96,4 +98,38 @@ function nested () {
 	router.append(foo);
 
 	router.dispatch(context, '/foo/bar');
+}
+
+function usingHistory () {
+	const router = createRouter();
+	router.append([
+		createRoute({
+			path: '/foo',
+			exec () {
+				console.log('entered /foo');
+			}
+		}),
+		createRoute({
+			path: '/bar',
+			exec () {
+				console.log('entered /bar');
+			}
+		})
+	]);
+
+	const history = createMemoryHistory({ path: '/foo' });
+	const context: Context = {};
+	history.on('change', ({ value }) => {
+		router.dispatch(context, value);
+	});
+
+	const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+	return router.dispatch(context, history.current).then(() => {
+		history.set('/bar');
+
+		return delay(10);
+	}).then(() => {
+		history.replace('/foo');
+	});
 }
