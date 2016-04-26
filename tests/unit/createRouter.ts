@@ -9,13 +9,17 @@ interface R extends Request<Parameters> {};
 
 suite('createRouter', () => {
 	test('dispatch returns false if no route was executed', () => {
-		assert.isFalse(createRouter().dispatch({} as C, '/'));
+		return createRouter().dispatch({} as C, '/').then(d => {
+			assert.isFalse(d);
+		});
 	});
 
 	test('dispatch returns true if a route was executed', () => {
 		const router = createRouter();
 		router.append(createRoute());
-		assert.isTrue(router.dispatch({} as C, '/'));
+		return router.dispatch({} as C, '/').then(d => {
+			assert.isTrue(d);
+		});
 	});
 
 	test('dispatch executes selected routes, providing context and extracted parameters', () => {
@@ -38,13 +42,13 @@ suite('createRouter', () => {
 		router.append(root);
 		root.append(deep);
 
-		router.dispatch(context, '/root/deep');
-
-		assert.lengthOf(execs, 2);
-		assert.strictEqual(execs[0].context, context);
-		assert.strictEqual(execs[1].context, context);
-		assert.deepEqual(execs[0].params, { foo: 'root' });
-		assert.deepEqual(execs[1].params, { bar: 'deep' });
+		return router.dispatch(context, '/root/deep').then(() => {
+			assert.lengthOf(execs, 2);
+			assert.strictEqual(execs[0].context, context);
+			assert.strictEqual(execs[1].context, context);
+			assert.deepEqual(execs[0].params, { foo: 'root' });
+			assert.deepEqual(execs[1].params, { bar: 'deep' });
+		});
 	});
 
 	test('dispatch calls index() on the final selected route, providing context and extracted parameters', () => {
@@ -70,15 +74,15 @@ suite('createRouter', () => {
 		router.append(root);
 		root.append(deep);
 
-		router.dispatch(context, '/root/deep');
-
-		assert.lengthOf(calls, 2);
-		assert.strictEqual(calls[0].method, 'exec');
-		assert.strictEqual(calls[1].method, 'index');
-		assert.strictEqual(calls[0].context, context);
-		assert.strictEqual(calls[1].context, context);
-		assert.deepEqual(calls[0].params, { foo: 'root' });
-		assert.deepEqual(calls[1].params, { bar: 'deep' });
+		return router.dispatch(context, '/root/deep').then(() => {
+			assert.lengthOf(calls, 2);
+			assert.strictEqual(calls[0].method, 'exec');
+			assert.strictEqual(calls[1].method, 'index');
+			assert.strictEqual(calls[0].context, context);
+			assert.strictEqual(calls[1].context, context);
+			assert.deepEqual(calls[0].params, { foo: 'root' });
+			assert.deepEqual(calls[1].params, { bar: 'deep' });
+		});
 	});
 
 	test('dispatch calls fallback() on the deepest matching route, providing context and extracted parameters', () => {
@@ -97,12 +101,12 @@ suite('createRouter', () => {
 		});
 		router.append(root);
 
-		router.dispatch(context, '/root/deep');
-
-		assert.lengthOf(calls, 1);
-		assert.strictEqual(calls[0].method, 'fallback');
-		assert.strictEqual(calls[0].context, context);
-		assert.deepEqual(calls[0].params, { foo: 'root' });
+		return router.dispatch(context, '/root/deep').then(() => {
+			assert.lengthOf(calls, 1);
+			assert.strictEqual(calls[0].method, 'fallback');
+			assert.strictEqual(calls[0].context, context);
+			assert.deepEqual(calls[0].params, { foo: 'root' });
+		});
 	});
 
 	test('dispatch selects routes in order of registration', () => {
@@ -123,8 +127,93 @@ suite('createRouter', () => {
 			}
 		}));
 
+		return router.dispatch({} as C, '/foo').then(() => {
+			assert.deepEqual(order, ['first', 'second']);
+		});
+	});
+
+	test('dispatch emits navstart event', () => {
+		const router = createRouter();
+
+		let received = '';
+		router.on('navstart', event => {
+			received = event.path;
+		});
+
 		router.dispatch({} as C, '/foo');
-		assert.deepEqual(order, ['first', 'second']);
+		assert.equal(received, '/foo');
+	});
+
+	test('navstart listeners can synchronously cancel routing', () => {
+		const router = createRouter();
+		router.append(createRoute({ path: '/foo' }));
+		router.on('navstart', event => {
+			event.cancel();
+		});
+
+		return router.dispatch({} as C, '/foo').then(d => {
+			assert.isFalse(d);
+		});
+	});
+
+	test('navstart listeners can asynchronously cancel routing', () => {
+		const router = createRouter();
+		router.append(createRoute({ path: '/foo' }));
+		router.on('navstart', event => {
+			const { cancel } = event.defer();
+			Promise.resolve().then(cancel);
+		});
+
+		return router.dispatch({} as C, '/foo').then(d => {
+			assert.isFalse(d);
+		});
+	});
+
+	test('navstart listeners can asynchronously resume routing', () => {
+		const router = createRouter();
+		router.append(createRoute({ path: '/foo' }));
+		router.on('navstart', event => {
+			const { resume } = event.defer();
+			Promise.resolve().then(resume);
+		});
+
+		return router.dispatch({} as C, '/foo').then(d => {
+			assert.isTrue(d);
+		});
+	});
+
+	test('all deferring navstart listeners must resume before routing continues', () => {
+		const router = createRouter();
+		router.append(createRoute({ path: '/foo' }));
+
+		const resumers: {(): void}[] = [];
+		router.on('navstart', event => {
+			const { resume } = event.defer();
+			resumers.push(resume);
+		});
+		router.on('navstart', event => {
+			const { resume } = event.defer();
+			resumers.push(resume);
+		});
+
+		let dispatched = false;
+		router.dispatch({} as C, '/foo').then(d => {
+			dispatched = d;
+		});
+
+		const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+		return Promise.resolve().then(() => {
+			assert.isFalse(dispatched);
+			resumers.shift()();
+			return delay(10);
+		}).then(() => {
+			assert.isFalse(dispatched);
+			resumers.shift()();
+			return delay(10);
+		}).then(() => {
+			assert.isTrue(dispatched);
+		});
 	});
 
 	test('router can be created with a fallback route', () => {
@@ -137,10 +226,12 @@ suite('createRouter', () => {
 		});
 
 		const context = {} as C;
-		assert.isTrue(router.dispatch(context, '/foo'));
-		assert.ok(received);
-		assert.strictEqual(received.context, context);
-		assert.deepEqual(received.params, {});
+		return router.dispatch(context, '/foo').then(d => {
+			assert.isTrue(d);
+			assert.ok(received);
+			assert.strictEqual(received.context, context);
+			assert.deepEqual(received.params, {});
+		});
 	});
 
 	test('can append several routes at once', () => {
@@ -163,8 +254,9 @@ suite('createRouter', () => {
 			})
 		]);
 
-		router.dispatch({} as C, '/foo');
-		assert.deepEqual(order, ['first', 'second']);
+		return router.dispatch({} as C, '/foo').then(() => {
+			assert.deepEqual(order, ['first', 'second']);
+		});
 	});
 
 	test('leading slashes are irrelevant', () => {
@@ -176,7 +268,9 @@ suite('createRouter', () => {
 		deep.append(deeper);
 		router.append(root);
 
-		assert.isTrue(router.dispatch({} as C, 'foo/bar/baz'));
+		return router.dispatch({} as C, 'foo/bar/baz').then(d => {
+			assert.isTrue(d);
+		});
 	});
 
 	test('trailing slashes are irrelevant', () => {
@@ -188,27 +282,35 @@ suite('createRouter', () => {
 		deep.append(deeper);
 		router.append(root);
 
-		assert.isTrue(router.dispatch({} as C, 'foo/bar/baz/'));
+		return router.dispatch({} as C, 'foo/bar/baz/').then(d => {
+			assert.isTrue(d);
+		});
 	});
 
 	test('search components are ignored', () => {
 		const router = createRouter();
 		router.append(createRoute({ path: '/foo' }));
 
-		assert.isTrue(router.dispatch({} as C, '/foo?bar'));
+		return router.dispatch({} as C, '/foo?bar').then(d => {
+			assert.isTrue(d);
+		});
 	});
 
 	test('hash components are ignored', () => {
 		const router = createRouter();
 		router.append(createRoute({ path: '/foo' }));
 
-		assert.isTrue(router.dispatch({} as C, '/foo#bar'));
+		return router.dispatch({} as C, '/foo#bar').then(d => {
+			assert.isTrue(d);
+		});
 	});
 
 	test('query & hash components are ignored', () => {
 		const router = createRouter();
 		router.append(createRoute({ path: '/foo' }));
 
-		assert.isTrue(router.dispatch({} as C, '/foo?bar#baz'));
+		return router.dispatch({} as C, '/foo?bar#baz').then(d => {
+			assert.isTrue(d);
+		});
 	});
 });
