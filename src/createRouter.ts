@@ -42,12 +42,12 @@ const createRouter: RouterFactory = compose({
 	},
 
 	dispatch (context: Context, path: string): Promise<boolean> {
-		let noSyncCancel: () => void;
-		let cancel: () => void;
-		const deferrals = [new Promise<void>((resolve, reject) => {
-			noSyncCancel = resolve;
-			cancel = () => reject();
-		})];
+		let canceled = false;
+		const cancel = () => {
+			canceled = true;
+		};
+
+		const deferrals: Promise<void>[] = [];
 
 		this.emit({
 			type: 'navstart',
@@ -63,7 +63,10 @@ const createRouter: RouterFactory = compose({
 				return { cancel, resume };
 			}
 		});
-		noSyncCancel();
+
+		if (canceled) {
+			return Promise.resolve(false);
+		}
 
 		const { searchParams, segments } = getSegments(path);
 		return Promise.all(deferrals).then(() => {
