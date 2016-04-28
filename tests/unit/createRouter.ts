@@ -8,17 +8,28 @@ import { Context as C, Request, Parameters } from '../../src/interfaces';
 interface R extends Request<Parameters> {};
 
 suite('createRouter', () => {
-	test('dispatch returns false if no route was executed', () => {
+	test('dispatch resolves to false if no route was executed', () => {
 		return createRouter().dispatch({} as C, '/').then(d => {
 			assert.isFalse(d);
 		});
 	});
 
-	test('dispatch returns true if a route was executed', () => {
+	test('dispatch resolves to true if a route was executed', () => {
 		const router = createRouter();
 		router.append(createRoute());
 		return router.dispatch({} as C, '/').then(d => {
 			assert.isTrue(d);
+		});
+	});
+
+	test('dispatch rejects when errors occur', () => {
+		const err = {};
+		const router = createRouter();
+		router.append(createRoute({ exec () { throw err; }}));
+		return router.dispatch({} as C, '/').then(() => {
+			assert.fail('Should not be called');
+		}, actual => {
+			assert.strictEqual(actual, err);
 		});
 	});
 
@@ -213,6 +224,29 @@ suite('createRouter', () => {
 			return delay(10);
 		}).then(() => {
 			assert.isTrue(dispatched);
+		});
+	});
+
+	test('dispatch can be canceled', () => {
+		const router = createRouter();
+
+		let executed = false;
+		router.append(createRoute({
+			path: '/foo',
+			exec () { executed = true; }
+		}));
+
+		let resume: () => void;
+		router.on('navstart', event => {
+			resume = event.defer().resume;
+		});
+
+		const task = router.dispatch({} as C, '/foo');
+		task.cancel();
+		resume();
+
+		return new Promise(resolve => setTimeout(resolve, 10)).then(() => {
+			assert.isFalse(executed);
 		});
 	});
 
