@@ -339,6 +339,25 @@ suite('createRouter', () => {
 		}));
 	});
 
+	test('routes can be configured to ignore trailing slash discrepancies', () => {
+		return Promise.all([true, false].map(withSlash => {
+			const router = createRouter();
+			const root = createRoute({ path: '/foo/' });
+			const deep = createRoute({ path: '/bar/' });
+			const deeper = createRoute({
+				path: `/baz${withSlash ? '' : '/'}`,
+				trailingSlashMustMatch: false
+			});
+			root.append(deep);
+			deep.append(deeper);
+			router.append(root);
+
+			return router.dispatch({} as C, `foo/bar/baz${withSlash ? '/' : ''}`).then(d => {
+				assert.isTrue(d, `there is ${withSlash ? 'a' : 'no'} trailing slash`);
+			});
+		}));
+	});
+
 	test('search components are ignored', () => {
 		const router = createRouter();
 		router.append(createRoute({ path: '/foo' }));

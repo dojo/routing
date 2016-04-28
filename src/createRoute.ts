@@ -23,6 +23,7 @@ export interface MatchResult<PP> {
 export interface Route<PP extends Parameters> {
 	path?: DeconstructedPath;
 	routes?: Route<Parameters>[];
+	trailingSlashMustMatch?: boolean;
 	append(routes: Route<Parameters> | Route<Parameters>[]): void;
 	exec(request: Request<PP>): void;
 	fallback?(request: Request<PP>): void;
@@ -35,6 +36,7 @@ export interface Route<PP extends Parameters> {
 
 export interface RouteOptions<PP> {
 	path?: string;
+	trailingSlashMustMatch?: boolean;
 	exec?(request: Request<PP>): void;
 	fallback?(request: Request<PP>): void;
 	guard?(request: Request<PP>): boolean;
@@ -78,7 +80,7 @@ const createRoute: RouteFactory = compose({
 			return { hasRemaining: false, isMatch: false, offset: 0 };
 		}
 
-		if (!hasRemaining && this.path.trailingSlash !== hasTrailingSlash) {
+		if (!hasRemaining && this.trailingSlashMustMatch && this.path.trailingSlash !== hasTrailingSlash) {
 			return { hasRemaining: false, isMatch: false, offset: 0 };
 		}
 
@@ -142,13 +144,14 @@ const createRoute: RouteFactory = compose({
 
 		return [];
 	}
-}, (instance: Route<Parameters>, { exec, fallback, guard, index, params, path }: RouteOptions<Parameters> = {}) => {
+}, (instance: Route<Parameters>, { exec, fallback, guard, index, params, path, trailingSlashMustMatch = true }: RouteOptions<Parameters> = {}) => {
 	if (path && /#/.test(path)) {
 		throw new TypeError('Path must not contain \'#\'');
 	}
 
 	instance.path = deconstructPath(path || '/');
 	instance.routes = [];
+	instance.trailingSlashMustMatch = trailingSlashMustMatch;
 
 	if (exec) {
 		instance.exec = exec;

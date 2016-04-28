@@ -390,6 +390,22 @@ suite('createRoute', () => {
 		});
 	});
 
+	test('routes can be configured to ignore trailing slash discrepancies', () => {
+		[true, false].forEach(withSlash => {
+			const root = createRoute({ path: '/foo/' });
+			const deep = createRoute({ path: '/bar/' });
+			const deeper = createRoute({
+				path: `/baz${withSlash ? '' : '/'}`,
+				trailingSlashMustMatch: false
+			});
+			root.append(deep);
+			deep.append(deeper);
+
+			const selections = root.select({} as C, ['foo', 'bar', 'baz'], withSlash, new UrlSearchParams());
+			assert.lengthOf(selections, 3, `there is ${withSlash ? 'a' : 'no'} trailing slash when selecting`);
+		});
+	});
+
 	test('all segments must match for a route hierarchy to be selected', () => {
 		const root = createRoute({ path: 'foo' });
 		const deep = createRoute({ path: '/bar' });
