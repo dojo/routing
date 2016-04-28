@@ -28,9 +28,9 @@ export interface Route<PP extends Parameters> {
 	fallback?(request: Request<PP>): void;
 	guard(request: Request<PP>): boolean;
 	index?(request: Request<PP>): void;
-	match(segments: string[], searchParams: UrlSearchParams): MatchResult<PP>;
+	match(segments: string[], hasTrailingSlash: boolean, searchParams: UrlSearchParams): MatchResult<PP>;
 	params(fromPath: string[], searchParams: UrlSearchParams): void | PP;
-	select(context: Context, segments: string[], searchParams: UrlSearchParams): Selection[];
+	select(context: Context, segments: string[], hasTrailingSlash: boolean, searchParams: UrlSearchParams): Selection[];
 }
 
 export interface RouteOptions<PP> {
@@ -72,9 +72,13 @@ const createRoute: RouteFactory = compose({
 		return true;
 	},
 
-	match (segments: string[], searchParams: UrlSearchParams): MatchResult<Parameters> {
+	match (segments: string[], hasTrailingSlash: boolean, searchParams: UrlSearchParams): MatchResult<Parameters> {
 		const { hasRemaining, isMatch, offset, values } = matchPath(this.path, segments);
 		if (!isMatch) {
+			return { hasRemaining: false, isMatch: false, offset: 0 };
+		}
+
+		if (!hasRemaining && this.path.trailingSlash !== hasTrailingSlash) {
 			return { hasRemaining: false, isMatch: false, offset: 0 };
 		}
 
@@ -109,8 +113,8 @@ const createRoute: RouteFactory = compose({
 		return params;
 	},
 
-	select (context: Context, segments: string[], searchParams: UrlSearchParams): Selection[] {
-		const { isMatch, hasRemaining, offset, params } = this.match(segments, searchParams);
+	select (context: Context, segments: string[], hasTrailingSlash: boolean, searchParams: UrlSearchParams): Selection[] {
+		const { isMatch, hasRemaining, offset, params } = this.match(segments, hasTrailingSlash, searchParams);
 		if (!isMatch) {
 			return [];
 		}
@@ -126,7 +130,7 @@ const createRoute: RouteFactory = compose({
 
 		const remainingSegments = segments.slice(offset);
 		for (const nested of this.routes) {
-			const hierarchy = nested.select(context, remainingSegments, searchParams);
+			const hierarchy = nested.select(context, remainingSegments, hasTrailingSlash, searchParams);
 			if (hierarchy.length > 0) {
 				return [{ method: ExecutionMethod.Exec, params, route: this }, ...hierarchy];
 			}

@@ -17,6 +17,7 @@ export interface DeconstructedPath {
 	expectedSegments: Segment[];
 	parameters: string[];
 	searchParameters: string[];
+	trailingSlash: boolean;
 }
 
 export interface MatchResult {
@@ -60,11 +61,12 @@ function tokenizePath (path: string): { search: string, tokens: string[] } {
 	};
 }
 
-export function getSegments (path: string): { searchParams: UrlSearchParams, segments: string[] } {
+export function getSegments (path: string): { searchParams: UrlSearchParams, segments: string[], trailingSlash: boolean } {
 	const { search, tokens } = tokenizePath(path);
 	return {
 		searchParams: new UrlSearchParams(search),
-		segments: tokens.filter(t => t !== '/')
+		segments: tokens.filter(t => t !== '/'),
+		trailingSlash: tokens[tokens.length - 1] === '/'
 	};
 }
 
@@ -108,6 +110,7 @@ export function deconstruct (path: string): DeconstructedPath {
 	const expectedSegments: Segment[] = [];
 	const parameters: string[] = [];
 	const searchParameters: string[] = [];
+	let trailingSlash = false;
 
 	let inSearchComponent = false;
 	let i = 0;
@@ -164,6 +167,13 @@ export function deconstruct (path: string): DeconstructedPath {
 					inSearchComponent = true;
 				}
 
+				if (t === '/') {
+					const next = tokens[i]; // peek next
+					if (!next || next === '?') {
+						trailingSlash = true;
+					}
+				}
+
 				break;
 
 			case '&':
@@ -182,5 +192,5 @@ export function deconstruct (path: string): DeconstructedPath {
 		}
 	}
 
-	return { expectedSegments, parameters, searchParameters };
+	return { expectedSegments, parameters, searchParameters, trailingSlash };
 }

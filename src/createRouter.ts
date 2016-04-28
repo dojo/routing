@@ -68,7 +68,7 @@ const createRouter: RouterFactory = compose({
 			return Task.resolve(false);
 		}
 
-		const { searchParams, segments } = getSegments(path);
+		const { searchParams, segments, trailingSlash } = getSegments(path);
 		return new Task((resolve, reject) => {
 			Promise.all(deferrals).then(() => {
 				if (canceled) {
@@ -76,7 +76,7 @@ const createRouter: RouterFactory = compose({
 				}
 
 				const dispatched = (<Router> this).routes.some(route => {
-					const hierarchy = route.select(context, segments, searchParams);
+					const hierarchy = route.select(context, segments, trailingSlash, searchParams);
 					if (hierarchy.length === 0) {
 						return false;
 					}

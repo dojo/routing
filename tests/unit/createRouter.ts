@@ -307,18 +307,36 @@ suite('createRouter', () => {
 		});
 	});
 
-	test('trailing slashes are irrelevant', () => {
-		const router = createRouter();
-		const root = createRoute({ path: 'foo' });
-		const deep = createRoute({ path: 'bar' });
-		const deeper = createRoute({ path: 'baz' });
-		root.append(deep);
-		deep.append(deeper);
-		router.append(root);
+	test('if present in route, there must be a trailing slash when selecting', () => {
+		return Promise.all([true, false].map(withSlash => {
+			const router = createRouter();
+			const root = createRoute({ path: '/foo/' });
+			const deep = createRoute({ path: '/bar/' });
+			const deeper = createRoute({ path: '/baz/' });
+			root.append(deep);
+			deep.append(deeper);
+			router.append(root);
 
-		return router.dispatch({} as C, 'foo/bar/baz/').then(d => {
-			assert.isTrue(d);
-		});
+			return router.dispatch({} as C, `foo/bar/baz${withSlash ? '/' : ''}`).then(d => {
+				assert.isTrue(d === withSlash, `there is ${withSlash ? 'a' : 'no'} trailing slash`);
+			});
+		}));
+	});
+
+	test('if not present in route, there must not be a trailing slash when selecting', () => {
+		return Promise.all([true, false].map(withSlash => {
+			const router = createRouter();
+			const root = createRoute({ path: '/foo/' });
+			const deep = createRoute({ path: '/bar/' });
+			const deeper = createRoute({ path: '/baz' });
+			root.append(deep);
+			deep.append(deeper);
+			router.append(root);
+
+			return router.dispatch({} as C, `foo/bar/baz${withSlash ? '/' : ''}`).then(d => {
+				assert.isTrue(d !== withSlash, `there is ${withSlash ? 'a' : 'no'} trailing slash`);
+			});
+		}));
 	});
 
 	test('search components are ignored', () => {

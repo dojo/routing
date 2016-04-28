@@ -63,7 +63,7 @@ suite('createRoute', () => {
 			}
 		});
 
-		const selections = route.select({} as C, [], new UrlSearchParams());
+		const selections = route.select({} as C, [], false, new UrlSearchParams());
 		assert.lengthOf(selections, 0);
 	});
 
@@ -77,7 +77,7 @@ suite('createRoute', () => {
 			}
 		});
 
-		route.select(context, [], new UrlSearchParams());
+		route.select(context, [], false, new UrlSearchParams());
 		assert.strictEqual(received, context);
 	});
 
@@ -97,7 +97,7 @@ suite('createRoute', () => {
 		const route = <Route<DefaultParameters>> createRoute({
 			path: '/{foo}/{bar}?{baz}&{qux}'
 		});
-		const [{ params }] = route.select({} as C, ['quux', 'corge'], new UrlSearchParams('baz=grault&qux=garply'));
+		const [{ params }] = route.select({} as C, ['quux', 'corge'], false, new UrlSearchParams('baz=grault&qux=garply'));
 		assert.deepEqual(params, {
 			foo: 'quux',
 			bar: 'corge',
@@ -110,7 +110,7 @@ suite('createRoute', () => {
 		const route = <Route<DefaultParameters>> createRoute({
 			path: '/{foo}/{bar}?{baz}&{qux}'
 		});
-		const [{ params }] = route.select({} as C, ['quux', 'corge'], new UrlSearchParams('baz=grault'));
+		const [{ params }] = route.select({} as C, ['quux', 'corge'], false, new UrlSearchParams('baz=grault'));
 		assert.deepEqual(params, {
 			foo: 'quux',
 			bar: 'corge',
@@ -122,7 +122,7 @@ suite('createRoute', () => {
 		const route = <Route<DefaultParameters>> createRoute({
 			path: '/{foo}/{bar}?{baz}&{qux}'
 		});
-		const [{ params }] = route.select({} as C, ['quux', 'corge'], new UrlSearchParams('baz=grault&baz=garply'));
+		const [{ params }] = route.select({} as C, ['quux', 'corge'], false, new UrlSearchParams('baz=grault&baz=garply'));
 		assert.deepEqual(params, {
 			foo: 'quux',
 			bar: 'corge',
@@ -201,7 +201,7 @@ suite('createRoute', () => {
 				return true;
 			}
 		});
-		route.select({} as C, ['quux', 'corge'], new UrlSearchParams('baz=grault&qux=garply'));
+		route.select({} as C, ['quux', 'corge'], false, new UrlSearchParams('baz=grault&qux=garply'));
 		assert.deepEqual(received, {
 			foo: 'quux',
 			bar: 'corge',
@@ -225,7 +225,7 @@ suite('createRoute', () => {
 				};
 			}
 		});
-		const [{ params }] = route.select({} as C, ['baz', 'qux'], new UrlSearchParams());
+		const [{ params }] = route.select({} as C, ['baz', 'qux'], false, new UrlSearchParams());
 		assert.deepEqual(params, {
 			upper: 'BAZ',
 			barIsQux: true
@@ -246,7 +246,7 @@ suite('createRoute', () => {
 				};
 			}
 		});
-		const [{ params }] = route.select({} as C, [], new UrlSearchParams('foo=baz&bar=qux&foo=BAZ'));
+		const [{ params }] = route.select({} as C, [], false, new UrlSearchParams('foo=baz&bar=qux&foo=BAZ'));
 		assert.deepEqual(params, {
 			fooArr: ['baz', 'BAZ'],
 			barIsQux: true
@@ -272,26 +272,26 @@ suite('createRoute', () => {
 			}
 		});
 
-		const selections = route.select({} as C, ['foo'], new UrlSearchParams());
+		const selections = route.select({} as C, ['foo'], false, new UrlSearchParams());
 		assert.lengthOf(selections, 0);
 	});
 
 	test('without a path, is selected for zero segments', () => {
 		const route = createRoute();
-		const selections = route.select({} as C, [], new UrlSearchParams());
+		const selections = route.select({} as C, [], false, new UrlSearchParams());
 		assert.lengthOf(selections, 1);
 		assert.strictEqual(selections[0].route, route);
 	});
 
 	test('without a path or nested routes, is not selected for segments', () => {
 		const route = createRoute();
-		const selections = route.select({} as C, ['foo'], new UrlSearchParams());
+		const selections = route.select({} as C, ['foo'], false, new UrlSearchParams());
 		assert.lengthOf(selections, 0);
 	});
 
 	test('with a path, is selected if segments match', () => {
 		const route = createRoute({ path: '/foo/bar' });
-		const selections = route.select({} as C, ['foo', 'bar'], new UrlSearchParams());
+		const selections = route.select({} as C, ['foo', 'bar'], false, new UrlSearchParams());
 		assert.lengthOf(selections, 1);
 		assert.strictEqual(selections[0].route, route);
 	});
@@ -299,13 +299,13 @@ suite('createRoute', () => {
 	test('with a path, is not selected if segments do not match', () => {
 		{
 			const route = createRoute({ path: '/foo/bar' });
-			const selections = route.select({} as C, ['baz', 'qux'], new UrlSearchParams());
+			const selections = route.select({} as C, ['baz', 'qux'], false, new UrlSearchParams());
 			assert.lengthOf(selections, 0);
 		}
 
 		{
 			const route = createRoute({ path: '/foo/bar' });
-			const selections = route.select({} as C, ['foo'], new UrlSearchParams());
+			const selections = route.select({} as C, ['foo'], false, new UrlSearchParams());
 			assert.lengthOf(selections, 0);
 		}
 	});
@@ -317,7 +317,7 @@ suite('createRoute', () => {
 		root.append(deep);
 		deep.append(deeper);
 
-		const selections = root.select({} as C, ['foo', 'bar', 'baz'], new UrlSearchParams());
+		const selections = root.select({} as C, ['foo', 'bar', 'baz'], false, new UrlSearchParams());
 		assert.lengthOf(selections, 3);
 		const [{ route: first }, { route: second }, { route: third }] = selections;
 		assert.strictEqual(first, root);
@@ -335,7 +335,7 @@ suite('createRoute', () => {
 			root.append(altDeep);
 			deep.append(deeper);
 
-			const selections = root.select({} as C, ['foo', 'bar', 'baz'], new UrlSearchParams());
+			const selections = root.select({} as C, ['foo', 'bar', 'baz'], false, new UrlSearchParams());
 			assert.lengthOf(selections, 3);
 		}
 
@@ -348,7 +348,7 @@ suite('createRoute', () => {
 			root.append(deep);
 			deep.append(deeper);
 
-			const selections = root.select({} as C, ['foo', 'bar', 'baz'], new UrlSearchParams());
+			const selections = root.select({} as C, ['foo', 'bar', 'baz'], false, new UrlSearchParams());
 			assert.lengthOf(selections, 2);
 		}
 	});
@@ -360,19 +360,34 @@ suite('createRoute', () => {
 		root.append(deep);
 		deep.append(deeper);
 
-		const selections = root.select({} as C, ['foo', 'bar', 'baz'], new UrlSearchParams());
+		const selections = root.select({} as C, ['foo', 'bar', 'baz'], false, new UrlSearchParams());
 		assert.lengthOf(selections, 3);
 	});
 
-	test('trailing slashes are irrelevant', () => {
-		const root = createRoute({ path: '/foo/' });
-		const deep = createRoute({ path: '/bar/' });
-		const deeper = createRoute({ path: '/baz/' });
-		root.append(deep);
-		deep.append(deeper);
+	test('if present in route, there must be a trailing slash when selecting', () => {
+		[true, false].forEach(withSlash => {
+			const root = createRoute({ path: '/foo/' });
+			const deep = createRoute({ path: '/bar/' });
+			const deeper = createRoute({ path: '/baz/' });
+			root.append(deep);
+			deep.append(deeper);
 
-		const selections = root.select({} as C, ['foo', 'bar', 'baz'], new UrlSearchParams());
-		assert.lengthOf(selections, 3);
+			const selections = root.select({} as C, ['foo', 'bar', 'baz'], withSlash, new UrlSearchParams());
+			assert.lengthOf(selections, withSlash ? 3 : 0, `there is ${withSlash ? 'a' : 'no'} trailing slash when selecting`);
+		});
+	});
+
+	test('if not present in route, there must not be a trailing slash when selecting', () => {
+		[true, false].forEach(withSlash => {
+			const root = createRoute({ path: '/foo/' });
+			const deep = createRoute({ path: '/bar/' });
+			const deeper = createRoute({ path: '/baz' });
+			root.append(deep);
+			deep.append(deeper);
+
+			const selections = root.select({} as C, ['foo', 'bar', 'baz'], withSlash, new UrlSearchParams());
+			assert.lengthOf(selections, withSlash ? 0 : 3, `there is ${withSlash ? 'a' : 'no'} trailing slash when selecting`);
+		});
 	});
 
 	test('all segments must match for a route hierarchy to be selected', () => {
@@ -380,7 +395,7 @@ suite('createRoute', () => {
 		const deep = createRoute({ path: '/bar' });
 		root.append(deep);
 
-		const selections = root.select({} as C, ['foo', 'bar', 'baz'], new UrlSearchParams());
+		const selections = root.select({} as C, ['foo', 'bar', 'baz'], false, new UrlSearchParams());
 		assert.lengthOf(selections, 0);
 	});
 
@@ -391,7 +406,7 @@ suite('createRoute', () => {
 		root.append(deep);
 		deep.append(deeper);
 
-		const selections = root.select({} as C, ['foo', 'root', 'bar', 'deep', 'baz', 'deeper'], new UrlSearchParams());
+		const selections = root.select({} as C, ['foo', 'root', 'bar', 'deep', 'baz', 'deeper'], false, new UrlSearchParams());
 		assert.lengthOf(selections, 3);
 		const [{ params: first }, { params: second }, { params: third }] = selections;
 		assert.deepEqual(first, { param: 'root' });
@@ -405,7 +420,7 @@ suite('createRoute', () => {
 		const altDeep = createRoute({ path: '/bar/baz' });
 		root.append([altDeep, deep]);
 
-		const selections = root.select({} as C, ['foo', 'bar', 'baz'], new UrlSearchParams());
+		const selections = root.select({} as C, ['foo', 'bar', 'baz'], false, new UrlSearchParams());
 		assert.lengthOf(selections, 2);
 	});
 });
