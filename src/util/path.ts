@@ -1,12 +1,12 @@
 import UrlSearchParams from 'dojo-core/UrlSearchParams';
 
 export interface Segment {
-	value?: string;
+	literal?: string;
 	name?: string;
 }
 
 export interface LiteralSegment extends Segment {
-	value: string;
+	literal: string;
 }
 
 export interface NamedSegment extends Segment {
@@ -91,10 +91,11 @@ export function match ({ expectedSegments }: DeconstructedPath, segments: string
 
 	for (let i = 0; isMatch && i < expectedSegments.length; i++) {
 		const value = segments[i];
-		const { value: expected, name } = expectedSegments[i];
+		const { literal, name } = expectedSegments[i];
 		if (name) {
 			values.push(value);
-		} else if (value !== expected) {
+		}
+		else if (literal !== value) {
 			isMatch = false;
 		}
 	}
@@ -177,7 +178,7 @@ export function deconstruct (path: string): DeconstructedPath {
 					throw new TypeError(`Expected parameter in search component, got '${t}'`);
 				}
 
-				expectedSegments.push({ value: t });
+				expectedSegments.push({ literal: t });
 		}
 	}
 
