@@ -7,27 +7,102 @@ import { Route, ExecutionMethod } from './createRoute';
 import { Context, Parameters, Request } from './interfaces';
 import { getSegments } from './util/path';
 
+/**
+ * Event object that is emitted for the 'navstart' event.
+ */
 export interface NavigationStartEvent extends EventObject {
+	/**
+	 * The path that has been navigated to.
+	 */
 	path: string;
+
+	/**
+	 * Call to prevent the path to be dispatched.
+	 */
 	cancel(): void;
-	defer(): { cancel(): void, resume(): void };
+
+	/**
+	 * Call to defer dispatching of the path
+	 * @return an object which allows the caller to resume or cancel dispatch
+	 */
+	defer(): DispatchDeferral;
 }
 
+/**
+ * An object to resume or cancel router dispatch.
+ */
+export interface DispatchDeferral {
+	/**
+	 * Call to prevent a path from being dispatched.
+	 */
+	cancel(): void;
+
+	/**
+	 * Call to resume a path being dispatched.
+	 */
+	resume(): void;
+}
+
+/**
+ * A router.
+ */
 export interface Router extends Evented {
+	/**
+	 * Holds top-level routes.
+	 * @private
+	 */
 	routes?: Route<Parameters>[];
+
+	/**
+	 * Append one or more routes.
+	 * @param routes A single route or an array containing 0 or more routes
+	 */
 	append(routes: Route<Parameters> | Route<Parameters>[]): void;
+
+	/**
+	 * Select and execute routes for a given path.
+	 * @param context A context object that is provided when executing selected routes
+	 * @param path The path
+	 * @return A task, allowing dispatching to be canceled. The task will be resolved with a boolean depending
+	 *   on whether dispatching succeeded.
+	 */
 	dispatch(context: Context, path: string): Task<boolean>;
+
+	/**
+	 * Optional fallback handler used when no routes matched the dispatch path.
+	 * @param request An object whose `context` property contains the dispatch context. No extracted parameters
+	 *   are available.
+	 * @private
+	 */
 	fallback?(request: Request<any>): void;
 
+	/**
+	 * Event emitted when dispatch is called, but before routes are selected.
+	 */
 	on(type: 'navstart', listener: EventedListener<NavigationStartEvent>): Handle;
+
 	on(type: string, listener: EventedListener<EventObject>): Handle;
 }
 
+/**
+ * The options for the router.
+ */
 export interface RouterOptions extends EventedOptions {
+	/**
+	 * A handler called when no routes match the dispatch path.
+	 * @param request An object whose `context` property contains the dispatch context. No extracted parameters
+	 *   are available.
+	 */
 	fallback?(request: Request<any>): void;
 }
 
-export interface RouterFactory extends ComposeFactory<Router, RouterOptions> {}
+export interface RouterFactory extends ComposeFactory<Router, RouterOptions> {
+	/**
+	 * Create a new instance of a Router.
+	 * @param options Options to use during creation.
+	 */
+	(options?: RouterOptions): Router;
+}
 
 const createRouter: RouterFactory = compose({
 	append (routes: Route<Parameters> | Route<Parameters>[]) {
@@ -57,54 +132,65 @@ const createRouter: RouterFactory = compose({
 				let cancel: () => void;
 				let resume: () => void;
 				deferrals.push(new Promise<void>((resolve, reject) => {
-					cancel = () => reject();
+					cancel = reject;
+					// Wrap resolve to avoid resume being called with a thenable if type checking is not used.
 					resume = () => resolve();
 				}));
 				return { cancel, resume };
 			}
 		});
 
+		// Synchronous cancelation.
 		if (canceled) {
 			return Task.resolve(false);
 		}
 
 		const { searchParams, segments, trailingSlash } = getSegments(path);
 		return new Task((resolve, reject) => {
-			Promise.all(deferrals).then(() => {
-				if (canceled) {
-					return false;
-				}
-
-				const dispatched = (<Router> this).routes.some(route => {
-					const hierarchy = route.select(context, segments, trailingSlash, searchParams);
-					if (hierarchy.length === 0) {
+			// *Always* start dispatching in a future turn, even if there were no deferrals.
+			Promise.all(deferrals).then(
+				() => {
+					// The cancel() function used in the NavigationStartEvent is reused as the Task canceler.
+					// Strictly speaking any navstart listener can cancel the dispatch asynchronously, as long as it
+					// manages to do so before this turn.
+					if (canceled) {
 						return false;
 					}
 
-					for (const { method, route, params } of hierarchy) {
-						switch (method) {
-							case ExecutionMethod.Exec:
-								route.exec({ context, params });
-								break;
-							case ExecutionMethod.Fallback:
-								route.fallback({ context, params });
-								break;
-							case ExecutionMethod.Index:
-								route.index({ context, params });
-								break;
+					const dispatched = (<Router> this).routes.some(route => {
+						const hierarchy = route.select(context, segments, trailingSlash, searchParams);
+						if (hierarchy.length === 0) {
+							return false;
 						}
+
+						for (const { method, route, params } of hierarchy) {
+							switch (method) {
+								case ExecutionMethod.Exec:
+									route.exec({ context, params });
+									break;
+								case ExecutionMethod.Fallback:
+									route.fallback({ context, params });
+									break;
+								case ExecutionMethod.Index:
+									route.index({ context, params });
+									break;
+							}
+						}
+
+						return true;
+					});
+
+					if (!dispatched && this.fallback) {
+						this.fallback({ context, params: {} });
+						return true;
 					}
 
-					return true;
-				});
-
-				if (!dispatched && this.fallback) {
-					this.fallback({ context, params: {} });
-					return true;
-				}
-
-				return dispatched;
-			}, () => false).then(resolve, reject);
+					return dispatched;
+				},
+				// When deferrals are canceled their corresponding promise is rejected. Ensure the task resolves
+				// with `false` instead of being rejected too.
+				() => false
+			).then(resolve, reject);
 		}, cancel);
 	}
 }).mixin({
