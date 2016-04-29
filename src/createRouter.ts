@@ -3,7 +3,7 @@ import { EventObject, Handle } from 'dojo-core/interfaces';
 import Task from 'dojo-core/async/Task';
 import createEvented, { Evented, EventedOptions, EventedListener } from 'dojo-widgets/mixins/createEvented';
 
-import { Route, ExecutionMethod } from './createRoute';
+import { Route, Handler } from './createRoute';
 import { Context, Parameters, Request } from './interfaces';
 import { getSegments } from './util/path';
 
@@ -166,15 +166,15 @@ const createRouter: RouterFactory = compose<RouterMixin, RouterOptions>({
 							return false;
 						}
 
-						for (const { method, route, params } of hierarchy) {
-							switch (method) {
-								case ExecutionMethod.Exec:
+						for (const { handler, route, params } of hierarchy) {
+							switch (handler) {
+								case Handler.Exec:
 									route.exec({ context, params });
 									break;
-								case ExecutionMethod.Fallback:
+								case Handler.Fallback:
 									route.fallback({ context, params });
 									break;
-								case ExecutionMethod.Index:
+								case Handler.Index:
 									route.index({ context, params });
 									break;
 							}
