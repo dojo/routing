@@ -119,11 +119,12 @@ const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parame
 
 	select (context: Context, segments: string[], hasTrailingSlash: boolean, searchParams: UrlSearchParams): Selection[] {
 		const { isMatch, hasRemaining, offset, params } = this.match(segments, hasTrailingSlash, searchParams);
-		if (!isMatch) {
+
+		if (!isMatch || hasRemaining && this.routes.length === 0 && !this.fallback) {
 			return [];
 		}
 
-		if ((!hasRemaining || this.routes.length > 0) && !this.guard({ context, params })) {
+		if (!this.guard({ context, params })) {
 			return [];
 		}
 

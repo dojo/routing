@@ -430,6 +430,37 @@ suite('createRoute', () => {
 		assert.deepEqual(third, { param: 'deeper' });
 	});
 
+	test('guard() is not called unnecessarily', () => {
+		let called: string[];
+		const root = createRoute({
+			path: '/root',
+			guard () {
+				called.push('root');
+				return true;
+			}
+		});
+		const deep = createRoute({
+			path: '/deep',
+			guard () {
+				called.push('deep');
+				return true;
+			}
+		});
+		root.append(deep);
+
+		called = [];
+		root.select({} as C, ['root'], false, new UrlSearchParams());
+		assert.deepEqual(called, ['root'], '/root');
+
+		called = [];
+		root.select({} as C, ['root', 'deep'], false, new UrlSearchParams());
+		assert.deepEqual(called, ['root', 'deep'], '/root/deep');
+
+		called = [];
+		root.select({} as C, ['root', 'deep', 'deeper'], false, new UrlSearchParams());
+		assert.deepEqual(called, ['root'], '/root/deep/deeper (deep isn’t selected because it doesn’t have a fallback)');
+	});
+
 	test('can append several routes at once', () => {
 		const root = createRoute({ path: '/foo' });
 		const deep = createRoute({ path: '/bar' });
