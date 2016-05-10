@@ -85,8 +85,9 @@ const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parame
 		}
 
 		const knownSearchParams = (<DeconstructedPath> this.path).searchParameters.reduce((list, name) => {
-			if (searchParams.has(name)) {
-				list[name] = searchParams.getAll(name);
+			const value = searchParams.getAll(name);
+			if (value !== null) {
+				list[name] = value;
 			}
 			return list;
 		}, {} as Hash<string[]>);
@@ -107,8 +108,9 @@ const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parame
 			params[name] = fromPath[index];
 		});
 		searchParameters.forEach(name => {
-			if (searchParams.has(name)) {
-				params[name] = searchParams.getAll(name)[0];
+			const value = searchParams.get(name);
+			if (value !== null) {
+				params[name] = value;
 			}
 		});
 
