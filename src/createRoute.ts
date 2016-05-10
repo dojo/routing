@@ -128,7 +128,7 @@ const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parame
 		}
 
 		if (!hasRemaining) {
-			const method = (<Route<Parameters>> this).index ? ExecutionMethod.Index : ExecutionMethod.Exec;
+			const method = this.index ? ExecutionMethod.Index : ExecutionMethod.Exec;
 			return [{ method, params, route: this }];
 		}
 
@@ -140,7 +140,7 @@ const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parame
 			}
 		}
 
-		if ((<Route<Parameters>> this).fallback) {
+		if (this.fallback) {
 			return [{ method: ExecutionMethod.Fallback, params, route: this }];
 		}
 
