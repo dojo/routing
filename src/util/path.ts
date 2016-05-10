@@ -1,16 +1,17 @@
 import UrlSearchParams from 'dojo-core/UrlSearchParams';
 
-interface Segment {
-	literal?: string;
-	name?: string;
-}
-
-interface LiteralSegment extends Segment {
+interface LiteralSegment {
 	literal: string;
 }
 
-interface NamedSegment extends Segment {
+interface NamedSegment {
 	name: string;
+}
+
+type Segment = LiteralSegment | NamedSegment;
+
+function isNamedSegment(segment: Segment): segment is NamedSegment {
+	return (<NamedSegment> segment).name !== undefined;
 }
 
 interface MatchResult {
@@ -93,11 +94,11 @@ export function match ({ expectedSegments }: DeconstructedPath, segments: string
 
 	for (let i = 0; isMatch && i < expectedSegments.length; i++) {
 		const value = segments[i];
-		const { literal, name } = expectedSegments[i];
-		if (name) {
+		const expected = expectedSegments[i];
+		if (isNamedSegment(expected)) {
 			values.push(value);
 		}
-		else if (literal !== value) {
+		else if (expected.literal !== value) {
 			isMatch = false;
 		}
 	}
