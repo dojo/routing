@@ -8,6 +8,21 @@ import { Context, Parameters, Request } from './interfaces';
 import { getSegments } from './util/path';
 
 /**
+ * An object to resume or cancel router dispatch.
+ */
+interface DispatchDeferral {
+	/**
+	 * Call to prevent a path from being dispatched.
+	 */
+	cancel(): void;
+
+	/**
+	 * Call to resume a path being dispatched.
+	 */
+	resume(): void;
+}
+
+/**
  * Event object that is emitted for the 'navstart' event.
  */
 export interface NavigationStartEvent extends EventObject {
@@ -26,21 +41,6 @@ export interface NavigationStartEvent extends EventObject {
 	 * @return an object which allows the caller to resume or cancel dispatch.
 	 */
 	defer(): DispatchDeferral;
-}
-
-/**
- * An object to resume or cancel router dispatch.
- */
-export interface DispatchDeferral {
-	/**
-	 * Call to prevent a path from being dispatched.
-	 */
-	cancel(): void;
-
-	/**
-	 * Call to resume a path being dispatched.
-	 */
-	resume(): void;
 }
 
 /**

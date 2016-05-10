@@ -1,16 +1,23 @@
 import UrlSearchParams from 'dojo-core/UrlSearchParams';
 
-export interface Segment {
+interface Segment {
 	literal?: string;
 	name?: string;
 }
 
-export interface LiteralSegment extends Segment {
+interface LiteralSegment extends Segment {
 	literal: string;
 }
 
-export interface NamedSegment extends Segment {
+interface NamedSegment extends Segment {
 	name: string;
+}
+
+interface MatchResult {
+	isMatch: boolean;
+	hasRemaining: boolean;
+	offset: number;
+	values: string[];
 }
 
 export interface DeconstructedPath {
@@ -18,13 +25,6 @@ export interface DeconstructedPath {
 	parameters: string[];
 	searchParameters: string[];
 	trailingSlash: boolean;
-}
-
-export interface MatchResult {
-	isMatch: boolean;
-	hasRemaining: boolean;
-	offset: number;
-	values: string[];
 }
 
 function tokenizeParameterizedPathname (pathname: string): string[] {

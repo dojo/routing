@@ -1,7 +1,7 @@
-import createRoute, { DefaultParameters, Route } from './createRoute';
+import createRoute, { Route } from './createRoute';
 import createRouter from './createRouter';
 import { createMemoryHistory } from './history';
-import { Context, Parameters, Request } from './interfaces';
+import { DefaultParameters, Context, Parameters, Request } from './interfaces';
 
 const context: Context = {};
 

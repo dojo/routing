@@ -2,7 +2,7 @@ import compose, { ComposeFactory } from 'dojo-compose/compose';
 import UrlSearchParams from 'dojo-core/UrlSearchParams';
 import { Hash } from 'dojo-core/interfaces';
 
-import { Context, Parameters, Request } from './interfaces';
+import { DefaultParameters, Context, Parameters, Request } from './interfaces';
 import {
 	deconstruct as deconstructPath,
 	match as matchPath,
@@ -10,16 +10,9 @@ import {
 } from './util/path';
 
 /**
- * Routes created without a `params()` function will receive a `params` object of this type.
- */
-export interface DefaultParameters extends Parameters {
-	[param: string]: string;
-}
-
-/**
  * Describes whether a route matched.
  */
-export interface MatchResult<PP> {
+interface MatchResult<PP> {
 	/**
 	 * Whether there are path segments that weren't matched by this route.
 	 */
@@ -39,6 +32,31 @@ export interface MatchResult<PP> {
 	 * Any extracted parameters. Only available if the route matched.
 	 */
 	params?: PP;
+}
+
+/**
+ * Indicates which handler should be called when the route is executed.
+ */
+export const enum Handler { Exec, Fallback, Index }
+
+/**
+ * Describes the selection of a particular route.
+ */
+interface Selection {
+	/**
+	 * Which handler should be called when the route is executed.
+	 */
+	handler: Handler;
+
+	/**
+	 * The extracted parameters.
+	 */
+	params: Parameters;
+
+	/**
+	 * The selected route.
+	 */
+	route: Route<Parameters>;
 }
 
 /**
@@ -190,31 +208,6 @@ export interface RouteOptions<PP> {
 	 * @return If `null` prevents the route from being selected, else the value for the `params` object.
 	 */
 	params?(fromPathname: string[], searchParams: UrlSearchParams): void | PP;
-}
-
-/**
- * Indicates which handler should be called when the route is executed.
- */
-export const enum Handler { Exec, Fallback, Index }
-
-/**
- * Describes the selection of a particular route.
- */
-export interface Selection {
-	/**
-	 * Which handler should be called when the route is executed.
-	 */
-	handler: Handler;
-
-	/**
-	 * The extracted parameters.
-	 */
-	params: Parameters;
-
-	/**
-	 * The selected route.
-	 */
-	route: Route<Parameters>;
 }
 
 export interface RouteFactory extends ComposeFactory<Route<Parameters>, RouteOptions<Parameters>> {

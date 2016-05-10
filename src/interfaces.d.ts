@@ -1,4 +1,11 @@
 /**
+ * Routes created without a `params()` function will receive a `params` object of this type.
+ */
+export interface DefaultParameters extends Parameters {
+	[param: string]: string;
+}
+
+/**
  * Describes the context object used when dispatching. Extend this interface for custom contexts.
  */
 export interface Context {
