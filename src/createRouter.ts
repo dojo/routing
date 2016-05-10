@@ -44,9 +44,9 @@ export interface DispatchDeferral {
 }
 
 /**
- * A router.
+ * A router mixin.
  */
-export interface Router extends Evented {
+export interface RouterMixin {
 	/**
 	 * Holds top-level routes.
 	 * @private
@@ -75,7 +75,9 @@ export interface Router extends Evented {
 	 * @private
 	 */
 	fallback?(request: Request<any>): void;
+}
 
+export interface Router extends RouterMixin, Evented {
 	/**
 	 * Event emitted when dispatch is called, but before routes are selected.
 	 */
@@ -104,7 +106,7 @@ export interface RouterFactory extends ComposeFactory<Router, RouterOptions> {
 	(options?: RouterOptions): Router;
 }
 
-const createRouter: RouterFactory = compose({
+const createRouter: RouterFactory = compose<RouterMixin, RouterOptions>({
 	append (routes: Route<Parameters> | Route<Parameters>[]) {
 		if (Array.isArray(routes)) {
 			for (const route of routes) {
@@ -131,6 +133,7 @@ const createRouter: RouterFactory = compose({
 			defer () {
 				let cancel: () => void;
 				let resume: () => void;
+				// TODO: remove casting to void when dojo/core#156 is resolved
 				deferrals.push(new Promise<void>((resolve, reject) => {
 					cancel = reject;
 					// Wrap resolve to avoid resume being called with a thenable if type checking is not used.

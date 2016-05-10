@@ -159,7 +159,7 @@ export interface RouteFactory extends ComposeFactory<Route<Parameters>, RouteOpt
 	<PP extends Parameters>(options?: RouteOptions<PP>): Route<PP>;
 }
 
-const createRoute: RouteFactory = compose({
+const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parameters>>({
 	append (routes: Route<Parameters> | Route<Parameters>[]) {
 		if (Array.isArray(routes)) {
 			for (const route of routes) {
@@ -247,7 +247,7 @@ const createRoute: RouteFactory = compose({
 
 		return [];
 	}
-}, (instance: Route<Parameters>, { exec, fallback, guard, index, params, path, trailingSlashMustMatch = true }: RouteOptions<Parameters> = {}) => {
+}, (instance, { exec, fallback, guard, index, params, path, trailingSlashMustMatch = true } = {}) => {
 	if (path && /#/.test(path)) {
 		throw new TypeError('Path must not contain \'#\'');
 	}
