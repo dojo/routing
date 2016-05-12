@@ -3,8 +3,8 @@ import { EventObject, Handle } from 'dojo-core/interfaces';
 import Task from 'dojo-core/async/Task';
 import createEvented, { Evented, EventedOptions, EventedListener } from 'dojo-widgets/mixins/createEvented';
 
-import { Route, Handler } from './createRoute';
-import { Context, Parameters, Request } from './interfaces';
+import { Route, Handler } from './_createRoute';
+import { Context, Parameters, Request } from './_interfaces';
 import { parse as parsePath } from './_path';
 
 /**

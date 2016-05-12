@@ -20,7 +20,7 @@ The examples below are provided in TypeScript syntax. The package does work unde
 ### Creating a router
 
 ```ts
-import createRouter from 'dojo-routing/createRouter';
+import { createRouter } from 'dojo-routing';
 
 const router = createRouter();
 ```
@@ -30,7 +30,7 @@ const router = createRouter();
 With the `router` from the previous example:
 
 ```ts
-import createRoute from 'dojo-routing/createRoute'
+import { createRoute } from 'dojo-routing'
 
 router.append(createRoute({ path: '/' }));
 router.append(createRoute({ path: '/about' }));
@@ -52,7 +52,7 @@ router.append([
 The router doesn't track navigation events by itself. Changed paths need to be dispatched by application code. Context must be provided, this is made available to the matched routes.
 
 ```ts
-import { Context } from 'dojo-routing/interfaces';
+import { Context } from 'dojo-routing';
 
 interface AppContext extends Context {
 	someKey: string;
@@ -72,7 +72,7 @@ Route selection starts in a future turn. An async Task is returned (see [`dojo-c
 The following creates a simple route. The `exec()` function is called when the route is executed.
 
 ```ts
-import createRoute from 'dojo-routing/createRoute'
+import { createRoute } from 'dojo-routing'
 
 const route = createRoute({
 	path: '/',
@@ -108,7 +108,7 @@ const route = createRoute({
 Routes can be appended to other routes:
 
 ```ts
-import createRoute from 'dojo-routing/createRoute'
+import { createRoute } from 'dojo-routing'
 
 const posts = createRoute({
 	path: '/posts',
@@ -165,7 +165,7 @@ const posts = createRoute({
 You can extract pathname segments. These will be added to the `params` object of the `request`:
 
 ```ts
-import createRoute, { DefaultParameters } from 'dojo-routing/createRoute';
+import { createRoute, DefaultParameters } from 'dojo-routing';
 
 createRoute({
 	path: '/posts/{id}',
@@ -182,8 +182,7 @@ Parameter names must not be repeated in the route's path. They can't contain `{`
 You can customize the `params` object:
 
 ```ts
-import createRoute, { Route } from 'dojo-routing/createRoute';
-import { Parameters } from 'dojo-routing/interfaces';
+import { createRoute, Parameters, Route } from 'dojo-routing';
 
 interface MyParams extends Parameters {
 	id: number;
@@ -233,7 +232,7 @@ This also prevents any nested routes from being selected.
 Each route's path may include a search component. Name parameters to extract them into the `params` object:
 
 ```ts
-import createRoute, { DefaultParameters } from 'dojo-routing/createRoute';
+import { createRoute, DefaultParameters } from 'dojo-routing';
 
 createRoute({
 	path: '/posts/{id}?{comment}',
@@ -272,8 +271,7 @@ createRoute({
 By default the `params` object will contain the *first* occurrence of each query parameter. However if you specify a `params()` function you'll get access to *all* values:
 
 ```ts
-import createRoute, { Route } from 'dojo-routing/createRoute';
-import { Parameters } from 'dojo-routing/interfaces';
+import { createRoute, Parameters, Route } from 'dojo-routing';
 
 interface MyParams extends Parameters {
 	id: number;
