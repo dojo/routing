@@ -1,7 +1,7 @@
 import { EventObject, Handle } from 'dojo-core/interfaces';
 import { Evented, EventedListener, EventedOptions } from 'dojo-widgets/mixins/createEvented';
 
-export { BrowserHistory } from './_browser';
+export { BrowserHistory } from './alias-ambient-history';
 
 export interface HistoryChangeEvent extends EventObject {
 	value: string;

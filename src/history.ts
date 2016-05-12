@@ -1,7 +1,7 @@
-import createHashHistory from './history/hashHistory';
-import { History, HistoryChangeEvent } from './history/interfaces';
-import createMemoryHistory from './history/memoryHistory';
-import createHistory from './history/stateHistory';
+import createHashHistory from './_history/hashHistory';
+import { History, HistoryChangeEvent } from './_history/interfaces';
+import createMemoryHistory from './_history/memoryHistory';
+import createHistory from './_history/stateHistory';
 
 export {
 	createHashHistory,

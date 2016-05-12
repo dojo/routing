@@ -7,7 +7,7 @@ import {
 	deconstruct as deconstructPath,
 	match as matchPath,
 	DeconstructedPath
-} from './util/path';
+} from './_path';
 
 /**
  * Describes whether a route matched.

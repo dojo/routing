@@ -5,7 +5,7 @@ import createEvented, { Evented, EventedOptions, EventedListener } from 'dojo-wi
 
 import { Route, Handler } from './createRoute';
 import { Context, Parameters, Request } from './interfaces';
-import { parse as parsePath } from './util/path';
+import { parse as parsePath } from './_path';
 
 /**
  * An object to resume or cancel router dispatch.
