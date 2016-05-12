@@ -3,15 +3,31 @@ import createEvented from 'dojo-widgets/mixins/createEvented';
 
 import { History, HistoryOptions } from './interfaces';
 
+/**
+ * A memory-backed history manager. Can be used outside of browsers.
+ */
 interface MemoryHistory extends History {
 	_current?: string;
 }
 
+/**
+ * Options for creating MemoryHistory instances.
+ */
 interface MemoryHistoryOptions extends HistoryOptions {
-	path?: string;
+	/**
+	 * The current value is set to the path.
+	 */
+	path: string;
 }
 
-interface MemoryHistoryFactory extends ComposeFactory<MemoryHistory, MemoryHistoryOptions> {}
+interface MemoryHistoryFactory extends ComposeFactory<MemoryHistory, MemoryHistoryOptions> {
+	/**
+	 * Create a new MemoryHistory instance.
+	 * @param options Options to use during creation. If not specified the instance sets
+	 *   the current value to an empty string.
+	 */
+	(options?: MemoryHistoryOptions): MemoryHistory;
+}
 
 const createMemoryHistory: MemoryHistoryFactory = compose({
 	get current () {
@@ -31,8 +47,8 @@ const createMemoryHistory: MemoryHistoryFactory = compose({
 	}
 }).mixin({
 	mixin: createEvented,
-	initialize(instance: MemoryHistory, { path }: MemoryHistoryOptions = {}) {
-		instance._current = path || '';
+	initialize(instance: MemoryHistory, { path }: MemoryHistoryOptions = { path: '' }) {
+		instance._current = path;
 	}
 });
 
