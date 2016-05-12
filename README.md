@@ -413,6 +413,27 @@ Now the `posts` and `byId` routes will be selected both for `/posts/5` and `/pos
 
 Note that it's irrelevant whether any intermediate routes' paths end with a `/`.
 
+### Repeated slashes
+
+You cannot create routes with repeated slashes:
+
+```ts
+createRoute({
+	path: '/foo//bar'
+}); // Throws!
+```
+
+However repeated slashes are ignored when dispatching:
+
+```ts
+const router = createRouter();
+router.append(createRoute({
+	path: '/foo/bar'
+}));
+
+router.dispatch(context, '//foo///bar'); // Selects the /foo/bar route
+```
+
 ### History management
 
 This library ships with three history managers. They share the same interface but have different ways of monitoring and changing the navigation state.

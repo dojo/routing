@@ -93,6 +93,12 @@ suite('createRoute', () => {
 		}, TypeError, 'Path segment must not contain \'&\'');
 	});
 
+	test('path segments cannot be empty', () => {
+		assert.throws(() => {
+			createRoute({ path: '/foo//bar' });
+		}, TypeError, 'Path segment must not be empty');
+	});
+
 	test('path parameters are extracted', () => {
 		const route = <Route<DefaultParameters>> createRoute({
 			path: '/{foo}/{bar}?{baz}&{qux}'
@@ -180,6 +186,10 @@ suite('createRoute', () => {
 		assert.throws(() => {
 			createRoute({ path: '/?{foo}&?bar' });
 		}, TypeError, 'Expected parameter in search component, got \'?\'');
+
+		assert.throws(() => {
+			createRoute({ path: '/?{foo}&&bar' });
+		}, TypeError, 'Expected parameter in search component, got \'&\'');
 	});
 
 	test('path parameters must have unique names', () => {

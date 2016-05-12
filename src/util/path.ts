@@ -29,8 +29,7 @@ export interface DeconstructedPath {
 }
 
 function tokenizeParameterizedPathname (pathname: string): string[] {
-	const tokens: string[] = pathname.split(/([/{}?&])/).filter(Boolean);
-	return tokens[0] === '/' ? tokens.slice(1) : tokens;
+	return pathname.split(/([/{}?&])/).filter(Boolean);
 }
 
 function tokenizePath (path: string): { search: string, tokens: string[] } {
@@ -55,19 +54,20 @@ function tokenizePath (path: string): { search: string, tokens: string[] } {
 		end = hashStart;
 	}
 
-	const segmentStart = tokens[0] === '/' ? 1 : 0;
 	return {
 		search,
-		tokens: tokens.slice(segmentStart, end)
+		tokens: tokens.slice(0, end)
 	};
 }
 
 export function getSegments (path: string): { searchParams: UrlSearchParams, segments: string[], trailingSlash: boolean } {
 	const { search, tokens } = tokenizePath(path);
+	const segments = tokens.filter(t => t !== '/');
+
 	return {
 		searchParams: new UrlSearchParams(search),
-		segments: tokens.filter(t => t !== '/'),
-		trailingSlash: tokens[tokens.length - 1] === '/'
+		segments,
+		trailingSlash: tokens[tokens.length - 1] === '/' && segments.length > 0
 	};
 }
 
@@ -170,8 +170,11 @@ export function deconstruct (path: string): DeconstructedPath {
 
 				if (t === '/') {
 					const next = tokens[i]; // peek next
+					if (next === '/') {
+						throw new TypeError('Path segment must not be empty');
+					}
 					if (!next || next === '?') {
-						trailingSlash = true;
+						trailingSlash = expectedSegments.length > 0;
 					}
 				}
 
@@ -180,6 +183,11 @@ export function deconstruct (path: string): DeconstructedPath {
 			case '&':
 				if (!inSearchComponent) {
 					throw new TypeError('Path segment must not contain \'&\'');
+				}
+
+				const next = tokens[i]; // peek next
+				if (next === '&') {
+					throw new TypeError('Expected parameter in search component, got \'&\'');
 				}
 
 				break;

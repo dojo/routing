@@ -3,7 +3,7 @@ import * as assert from 'intern/chai!assert';
 
 import createRoute from '../../src/createRoute';
 import createRouter from '../../src/createRouter';
-import { Context as C, Request, Parameters } from '../../src/interfaces';
+import { DefaultParameters, Context as C, Request, Parameters } from '../../src/interfaces';
 
 interface R extends Request<Parameters> {};
 
@@ -381,7 +381,46 @@ suite('createRouter', () => {
 		router.append(createRoute({ path: '/foo' }));
 
 		return router.dispatch({} as C, '/foo?bar#baz').then(d => {
+			assert.isTrue(d, '/foo?bar#baz');
+
+			return router.dispatch({} as C, '/foo#bar?baz');
+		}).then(d => {
 			assert.isTrue(d);
+		});
+	});
+
+	test('repeated slashes have no effect', () => {
+		const router = createRouter();
+		router.append(createRoute({ path: '/foo/bar' }));
+
+		return router.dispatch({} as C, '//foo///bar').then(d => {
+			assert.isTrue(d);
+		});
+	});
+
+	test('query parameters are extracted', () => {
+		const router = createRouter();
+
+		let extracted: DefaultParameters = {};
+		router.append(createRoute({
+			path: '/foo?{bar}&{baz}',
+			exec ({ params }) {
+				extracted = <DefaultParameters> params;
+			}
+		}));
+
+		return router.dispatch({} as C, '/foo?bar=1&baz=2').then(d => {
+			assert.deepEqual(extracted, {bar: '1', baz: '2'});
+
+			extracted = {};
+			return router.dispatch({} as C, '/foo?bar=3#baz=4');
+		}).then(d => {
+			assert.deepEqual(extracted, {bar: '3'});
+
+			extracted = {};
+			return router.dispatch({} as C, '/foo#bar=5?baz=6');
+		}).then(d => {
+			assert.deepEqual(extracted, {});
 		});
 	});
 });
