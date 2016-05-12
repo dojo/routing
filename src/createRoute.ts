@@ -26,7 +26,7 @@ interface MatchResult<PP> {
 	/**
 	 * Position in the segments array that the remaining unmatched segments start.
 	 */
-	offset: number;
+	offset?: number;
 
 	/**
 	 * Any extracted parameters. Only available if the route matched.
@@ -239,11 +239,11 @@ const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parame
 	match (segments: string[], hasTrailingSlash: boolean, searchParams: UrlSearchParams): MatchResult<Parameters> {
 		const { hasRemaining, isMatch, offset, values } = matchPath(this.path, segments);
 		if (!isMatch) {
-			return { hasRemaining: false, isMatch: false, offset: 0 };
+			return { hasRemaining: false, isMatch: false };
 		}
 
 		if (!hasRemaining && this.trailingSlashMustMatch && this.path.trailingSlash !== hasTrailingSlash) {
-			return { hasRemaining: false, isMatch: false, offset: 0 };
+			return { hasRemaining: false, isMatch: false };
 		}
 
 		// Only extract the search params defined in the route's path.
@@ -257,7 +257,7 @@ const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parame
 
 		const params = this.params(values, new UrlSearchParams(knownSearchParams));
 		if (params === null) {
-			return { hasRemaining: false, isMatch: false, offset: 0 };
+			return { hasRemaining: false, isMatch: false };
 		}
 
 		return { hasRemaining, isMatch: true, offset, params };

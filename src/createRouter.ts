@@ -5,7 +5,7 @@ import createEvented, { Evented, EventedOptions, EventedListener } from 'dojo-wi
 
 import { Route, Handler } from './createRoute';
 import { Context, Parameters, Request } from './interfaces';
-import { getSegments } from './util/path';
+import { parse as parsePath } from './util/path';
 
 /**
  * An object to resume or cancel router dispatch.
@@ -148,7 +148,7 @@ const createRouter: RouterFactory = compose<RouterMixin, RouterOptions>({
 			return Task.resolve(false);
 		}
 
-		const { searchParams, segments, trailingSlash } = getSegments(path);
+		const { searchParams, segments, trailingSlash } = parsePath(path);
 		return new Task((resolve, reject) => {
 			// *Always* start dispatching in a future turn, even if there were no deferrals.
 			Promise.all(deferrals).then(
