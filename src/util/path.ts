@@ -127,7 +127,7 @@ export function deconstruct (path: string): DeconstructedPath {
 				if (name === '{' || name === '&' || /:/.test(name)) {
 					throw new TypeError('Parameter name must not contain \'{\', \'&\' or \':\'');
 				}
-				if (parameters.indexOf(name) !== -1) {
+				if (parameters.indexOf(name) !== -1 || searchParameters.indexOf(name) !== -1) {
 					throw new TypeError(`Parameter must have a unique name, got '${name}'`);
 				}
 

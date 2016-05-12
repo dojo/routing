@@ -200,6 +200,9 @@ suite('createRoute', () => {
 		assert.throws(() => {
 			createRoute({ path: '/{foo}?{foo}' });
 		}, TypeError, 'Parameter must have a unique name, got \'foo\'');
+		assert.throws(() => {
+			createRoute({ path: '?{foo}&{foo}' });
+		}, TypeError, 'Parameter must have a unique name, got \'foo\'');
 	});
 
 	test('guard() receives the extracted parameters', () => {
