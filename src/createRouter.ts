@@ -180,7 +180,7 @@ const createRouter: RouterFactory = compose<RouterMixin, RouterOptions>({
 
 						this.prevHierarchy = hierarchy;
 
-						exits.map(({ route }) => route.exit());
+						exits.reverse().map(({ route }) => route.exit());
 
 						if (hierarchy.length === 0) {
 							return false;

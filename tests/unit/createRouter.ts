@@ -392,8 +392,8 @@ suite('createRouter', () => {
 			return router.dispatch({}, 'foo/bar/baz').then(() => {
 				assert.equal(0, exited.length);
 				return router.dispatch({}, 'foo/qux').then(() => {
-					assert.equal(bar, exited[0]);
-					assert.equal(baz, exited[1]);
+					assert.equal(baz, exited[0]);
+					assert.equal(bar, exited[1]);
 					assert.equal(2, exited.length);
 				});
 			});
