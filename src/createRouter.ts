@@ -7,6 +7,7 @@ import Task from 'dojo-core/async/Task';
 import { Route, Handler } from './createRoute';
 import { Context, Parameters, Request } from './interfaces';
 import { parse as parsePath } from './_path';
+import { Selection } from './createRoute';
 
 /**
  * An object to resume or cancel router dispatch.
@@ -53,6 +54,8 @@ export interface RouterMixin {
 	 * @private
 	 */
 	routes?: Route<Parameters>[];
+
+	prevHierarchy?: Selection[];
 
 	/**
 	 * Append one or more routes.
@@ -107,6 +110,12 @@ export interface RouterFactory extends ComposeFactory<Router, RouterOptions> {
 	 * @param options Options to use during creation.
 	 */
 	(options?: RouterOptions): Router;
+}
+
+function diffHeirarchy(a: Selection[], b: Selection[]): Selection[] {
+	return a.filter((selection, i) => {
+		return !(b[i] && b[i].route === selection.route);
+	});
 }
 
 const createRouter: RouterFactory = compose<RouterMixin, RouterOptions>({
@@ -165,9 +174,19 @@ const createRouter: RouterFactory = compose<RouterMixin, RouterOptions>({
 
 					const dispatched = (<Router> this).routes.some(route => {
 						const hierarchy = route.select(context, segments, trailingSlash, searchParams);
+
+						const exits = diffHeirarchy(this.prevHierarchy, hierarchy);
+						const enters = diffHeirarchy(hierarchy, this.prevHierarchy);
+
+						this.prevHierarchy = hierarchy;
+
+						exits.map(({ route }) => route.exit());
+
 						if (hierarchy.length === 0) {
 							return false;
 						}
+
+						enters.map(({ route, params }) => route.enter({ context, params }));
 
 						for (const { handler, route, params } of hierarchy) {
 							switch (handler) {
@@ -203,6 +222,7 @@ const createRouter: RouterFactory = compose<RouterMixin, RouterOptions>({
 	mixin: createEvented,
 	initialize(instance: Router, { fallback }: RouterOptions = {}) {
 		instance.routes = [];
+		instance.prevHierarchy = [];
 
 		if (fallback) {
 			instance.fallback = fallback;

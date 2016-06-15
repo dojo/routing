@@ -340,6 +340,64 @@ suite('createRouter', () => {
 		}));
 	});
 
+	test('enter called for new routes in the hierarchy', () => {
+			let entered: any[] = [];
+			function enter() {
+				entered.push(this);
+			}
+
+			const router = createRouter();
+			const foo = createRoute({ path: '/foo', enter });
+			const bar = createRoute({ path: 'bar', enter });
+			const baz = createRoute({ path: 'baz', enter });
+			const qux = createRoute({ path: 'qux', enter });
+
+			foo.append(bar);
+			bar.append(baz);
+			bar.append(qux);
+			router.append(foo);
+
+			return router.dispatch({}, 'foo/bar/baz').then(() => {
+				assert.equal(foo, entered[0]);
+				assert.equal(bar, entered[1]);
+				assert.equal(baz, entered[2]);
+				assert.equal(3, entered.length);
+
+				entered = [];
+
+				return router.dispatch({}, 'foo/bar/qux').then(() => {
+					assert.equal(qux, entered[0]);
+					assert.equal(1, entered.length);
+				});
+			});
+	});
+
+	test('exit called for routes no longer in the hierarchy', () => {
+			let exited: any[] = [];
+			function exit() {
+				exited.push(this);
+			}
+
+			const router = createRouter();
+			const foo = createRoute({ path: '/foo', exit });
+			const bar = createRoute({ path: 'bar', exit });
+			const baz = createRoute({ path: 'baz', exit });
+			const qux = createRoute({ path: 'qux', exit });
+
+			foo.append(bar);
+			bar.append(baz);
+			bar.append(qux);
+			router.append(foo);
+
+			return router.dispatch({}, 'foo/bar/baz').then(() => {
+				assert.equal(0, exited.length);
+				return router.dispatch({}, 'foo/bar/qux').then(() => {
+					assert.equal(baz, exited[0]);
+					assert.equal(1, exited.length);
+				});
+			});
+	});
+
 	test('routes can be configured to ignore trailing slash discrepancies', () => {
 		return Promise.all([true, false].map(withSlash => {
 			const router = createRouter();
