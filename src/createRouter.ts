@@ -57,8 +57,6 @@ export interface RouterMixin {
 	 */
 	routes?: Route<Parameters>[];
 
-	prevHierarchy?: Selection[];
-
 	/**
 	 * Append one or more routes.
 	 * @param routes A single route or an array containing 0 or more routes.
