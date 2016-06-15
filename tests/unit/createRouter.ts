@@ -385,15 +385,16 @@ suite('createRouter', () => {
 			const qux = createRoute({ path: 'qux', exit });
 
 			foo.append(bar);
+			foo.append(qux);
 			bar.append(baz);
-			bar.append(qux);
 			router.append(foo);
 
 			return router.dispatch({}, 'foo/bar/baz').then(() => {
 				assert.equal(0, exited.length);
-				return router.dispatch({}, 'foo/bar/qux').then(() => {
-					assert.equal(baz, exited[0]);
-					assert.equal(1, exited.length);
+				return router.dispatch({}, 'foo/qux').then(() => {
+					assert.equal(bar, exited[0]);
+					assert.equal(baz, exited[1]);
+					assert.equal(2, exited.length);
 				});
 			});
 	});
