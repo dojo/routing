@@ -1,8 +1,10 @@
 import compose, { ComposeFactory } from 'dojo-compose/compose';
 import createEvented, { Evented, EventedOptions, EventedListener, TargettedEventObject } from 'dojo-compose/mixins/createEvented';
+
 import { Handle } from 'dojo-core/interfaces';
 import Promise from 'dojo-core/Promise';
 import Task from 'dojo-core/async/Task';
+import WeakMap from 'dojo-core/WeakMap';
 
 import { Route, Handler } from './createRoute';
 import { Context, Parameters, Request } from './interfaces';
@@ -112,7 +114,9 @@ export interface RouterFactory extends ComposeFactory<Router, RouterOptions> {
 	(options?: RouterOptions): Router;
 }
 
-function diffHeirarchy(a: Selection[], b: Selection[]): Selection[] {
+const selectedCache = new WeakMap<Router, Selection[]>();
+
+function diffSelected(a: Selection[], b: Selection[]): Selection[] {
 	return a.filter((selection, i) => {
 		return !(b[i] && b[i].route === selection.route);
 	});
@@ -172,23 +176,25 @@ const createRouter: RouterFactory = compose<RouterMixin, RouterOptions>({
 						return false;
 					}
 
-					const dispatched = (<Router> this).routes.some(route => {
-						const hierarchy = route.select(context, segments, trailingSlash, searchParams);
+					const router: Router = this;
+					const dispatched = router.routes.some(route => {
+						const selected = route.select(context, segments, trailingSlash, searchParams);
+						const previouslySelected = selectedCache.get(router) || [];
 
-						const removed = diffHeirarchy(this.prevHierarchy, hierarchy);
-						const added = diffHeirarchy(hierarchy, this.prevHierarchy);
+						const removed = diffSelected(previouslySelected, selected);
+						const added = diffSelected(selected, previouslySelected);
 
-						this.prevHierarchy = hierarchy;
+						selectedCache.set(router, selected);
 
-						removed.reverse().map(({ route }) => route.removed());
+						removed.reverse().forEach(({ route }) => route.removed());
 
-						if (hierarchy.length === 0) {
+						if (selected.length === 0) {
 							return false;
 						}
 
-						added.map(({ route, params }) => route.added({ context, params }));
+						added.forEach(({ route, params }) => route.added({ context, params }));
 
-						for (const { handler, route, params } of hierarchy) {
+						for (const { handler, route, params } of selected) {
 							switch (handler) {
 								case Handler.Exec:
 									route.exec({ context, params });
@@ -222,7 +228,6 @@ const createRouter: RouterFactory = compose<RouterMixin, RouterOptions>({
 	mixin: createEvented,
 	initialize(instance: Router, { fallback }: RouterOptions = {}) {
 		instance.routes = [];
-		instance.prevHierarchy = [];
 
 		if (fallback) {
 			instance.fallback = fallback;
