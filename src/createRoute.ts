@@ -96,9 +96,9 @@ export interface Route<PP extends Parameters> {
 	 */
 	exec(request: Request<PP>): void;
 
-	enter(request: Request<PP>): void;
+	added(request: Request<PP>): void;
 
-	exit(): void;
+	removed(): void;
 
 	/**
 	 * If specified, causes the route to be selected if there are no nested routes that match the remainder of
@@ -181,9 +181,9 @@ export interface RouteOptions<PP> {
 	 */
 	exec?(request: Request<PP>): void;
 
-	enter?(request: Request<PP>): void;
+	added?(request: Request<PP>): void;
 
-	exit?(): void;
+	removed?(): void;
 
 	/**
 	 * If specified, causes the route to be selected if there are no nested routes that match the remainder of
@@ -238,9 +238,9 @@ const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parame
 		}
 	},
 
-	enter (request: Request<Parameters>) {},
+	added (request: Request<Parameters>) {},
 
-	exit () {},
+	removed () {},
 
 	exec (request: Request<Parameters>) {},
 
@@ -334,8 +334,8 @@ const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parame
 		index,
 		params,
 		path,
-		enter,
-		exit,
+		added,
+		removed,
 		trailingSlashMustMatch = true
 	} = {}) => {
 	if (path && /#/.test(path)) {
@@ -358,12 +358,12 @@ const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parame
 		instance.index = index;
 	}
 
-	if (enter) {
-		instance.enter = enter;
+	if (added) {
+		instance.added = added;
 	}
 
-	if (exit) {
-		instance.exit = exit;
+	if (removed) {
+		instance.removed = removed;
 	}
 
 	if (params) {

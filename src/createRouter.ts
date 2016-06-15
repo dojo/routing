@@ -175,18 +175,18 @@ const createRouter: RouterFactory = compose<RouterMixin, RouterOptions>({
 					const dispatched = (<Router> this).routes.some(route => {
 						const hierarchy = route.select(context, segments, trailingSlash, searchParams);
 
-						const exits = diffHeirarchy(this.prevHierarchy, hierarchy);
-						const enters = diffHeirarchy(hierarchy, this.prevHierarchy);
+						const removed = diffHeirarchy(this.prevHierarchy, hierarchy);
+						const added = diffHeirarchy(hierarchy, this.prevHierarchy);
 
 						this.prevHierarchy = hierarchy;
 
-						exits.reverse().map(({ route }) => route.exit());
+						removed.reverse().map(({ route }) => route.removed());
 
 						if (hierarchy.length === 0) {
 							return false;
 						}
 
-						enters.map(({ route, params }) => route.enter({ context, params }));
+						added.map(({ route, params }) => route.added({ context, params }));
 
 						for (const { handler, route, params } of hierarchy) {
 							switch (handler) {

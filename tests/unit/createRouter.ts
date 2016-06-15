@@ -2,7 +2,7 @@ import Promise from 'dojo-core/Promise';
 import { suite, test } from 'intern!tdd';
 import * as assert from 'intern/chai!assert';
 
-import createRoute from '../../src/createRoute';
+import createRoute, { Route } from '../../src/createRoute';
 import createRouter from '../../src/createRouter';
 import { DefaultParameters, Context as C, Request, Parameters } from '../../src/interfaces';
 
@@ -340,17 +340,17 @@ suite('createRouter', () => {
 		}));
 	});
 
-	test('enter called for new routes in the hierarchy', () => {
-			let entered: any[] = [];
-			function enter() {
-				entered.push(this);
+	test('added called for new routes in the hierarchy', () => {
+			let adds: Route<Parameters>[] = [];
+			function added() {
+				adds.push(this);
 			}
 
 			const router = createRouter();
-			const foo = createRoute({ path: '/foo', enter });
-			const bar = createRoute({ path: 'bar', enter });
-			const baz = createRoute({ path: 'baz', enter });
-			const qux = createRoute({ path: 'qux', enter });
+			const foo = createRoute({ path: '/foo', added });
+			const bar = createRoute({ path: 'bar', added });
+			const baz = createRoute({ path: 'baz', added });
+			const qux = createRoute({ path: 'qux', added });
 
 			foo.append(bar);
 			bar.append(baz);
@@ -358,31 +358,31 @@ suite('createRouter', () => {
 			router.append(foo);
 
 			return router.dispatch({}, 'foo/bar/baz').then(() => {
-				assert.equal(foo, entered[0]);
-				assert.equal(bar, entered[1]);
-				assert.equal(baz, entered[2]);
-				assert.equal(3, entered.length);
+				assert.equal(foo, adds[0]);
+				assert.equal(bar, adds[1]);
+				assert.equal(baz, adds[2]);
+				assert.equal(3, adds.length);
 
-				entered = [];
+				adds = [];
 
 				return router.dispatch({}, 'foo/bar/qux').then(() => {
-					assert.equal(qux, entered[0]);
-					assert.equal(1, entered.length);
+					assert.equal(qux, adds[0]);
+					assert.equal(1, adds.length);
 				});
 			});
 	});
 
-	test('exit called for routes no longer in the hierarchy', () => {
-			let exited: any[] = [];
-			function exit() {
-				exited.push(this);
+	test('removed called for routes no longer in the hierarchy', () => {
+			let removes: Route<Parameters>[] = [];
+			function removed() {
+				removes.push(this);
 			}
 
 			const router = createRouter();
-			const foo = createRoute({ path: '/foo', exit });
-			const bar = createRoute({ path: 'bar', exit });
-			const baz = createRoute({ path: 'baz', exit });
-			const qux = createRoute({ path: 'qux', exit });
+			const foo = createRoute({ path: '/foo', removed });
+			const bar = createRoute({ path: 'bar', removed });
+			const baz = createRoute({ path: 'baz', removed });
+			const qux = createRoute({ path: 'qux', removed });
 
 			foo.append(bar);
 			foo.append(qux);
@@ -390,11 +390,11 @@ suite('createRouter', () => {
 			router.append(foo);
 
 			return router.dispatch({}, 'foo/bar/baz').then(() => {
-				assert.equal(0, exited.length);
+				assert.equal(0, removes.length);
 				return router.dispatch({}, 'foo/qux').then(() => {
-					assert.equal(baz, exited[0]);
-					assert.equal(bar, exited[1]);
-					assert.equal(2, exited.length);
+					assert.equal(baz, removes[0]);
+					assert.equal(bar, removes[1]);
+					assert.equal(2, removes.length);
 				});
 			});
 	});
