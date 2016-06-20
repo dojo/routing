@@ -96,6 +96,10 @@ export interface Route<PP extends Parameters> {
 	 */
 	exec(request: Request<PP>): void;
 
+	added(request: Request<PP>): void;
+
+	removed(): void;
+
 	/**
 	 * If specified, causes the route to be selected if there are no nested routes that match the remainder of
 	 * the dispatched path. When the route is executed, this handler is called rather than `exec()`.
@@ -177,6 +181,10 @@ export interface RouteOptions<PP> {
 	 */
 	exec?(request: Request<PP>): void;
 
+	added?(request: Request<PP>): void;
+
+	removed?(): void;
+
 	/**
 	 * If specified, causes the route to be selected if there are no nested routes that match the remainder of
 	 * the dispatched path. When the route is executed, this handler is called rather than `exec()`.
@@ -229,6 +237,10 @@ const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parame
 			this.routes.push(routes);
 		}
 	},
+
+	added (request: Request<Parameters>) {},
+
+	removed () {},
 
 	exec (request: Request<Parameters>) {},
 
@@ -315,11 +327,20 @@ const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parame
 
 		return [];
 	}
-}, (instance, { exec, fallback, guard, index, params, path, trailingSlashMustMatch = true } = {}) => {
+}, (instance, {
+		exec,
+		fallback,
+		guard,
+		index,
+		params,
+		path,
+		added,
+		removed,
+		trailingSlashMustMatch = true
+	} = {}) => {
 	if (path && /#/.test(path)) {
 		throw new TypeError('Path must not contain \'#\'');
 	}
-
 	instance.path = deconstructPath(path || '/');
 	instance.routes = [];
 	instance.trailingSlashMustMatch = trailingSlashMustMatch;
@@ -336,6 +357,15 @@ const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parame
 	if (index) {
 		instance.index = index;
 	}
+
+	if (added) {
+		instance.added = added;
+	}
+
+	if (removed) {
+		instance.removed = removed;
+	}
+
 	if (params) {
 		const { parameters, searchParameters } = instance.path;
 		if (parameters.length === 0 && searchParameters.length === 0) {

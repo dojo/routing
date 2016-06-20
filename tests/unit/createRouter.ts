@@ -2,7 +2,7 @@ import Promise from 'dojo-core/Promise';
 import { suite, test } from 'intern!tdd';
 import * as assert from 'intern/chai!assert';
 
-import createRoute from '../../src/createRoute';
+import createRoute, { Route } from '../../src/createRoute';
 import createRouter from '../../src/createRouter';
 import { DefaultParameters, Context as C, Request, Parameters } from '../../src/interfaces';
 
@@ -338,6 +338,65 @@ suite('createRouter', () => {
 				assert.isTrue(d !== withSlash, `there is ${withSlash ? 'a' : 'no'} trailing slash`);
 			});
 		}));
+	});
+
+	test('added called for new routes in the hierarchy', () => {
+			let adds: Route<Parameters>[] = [];
+			function added() {
+				adds.push(this);
+			}
+
+			const router = createRouter();
+			const foo = createRoute({ path: '/foo', added });
+			const bar = createRoute({ path: 'bar', added });
+			const baz = createRoute({ path: 'baz', added });
+			const qux = createRoute({ path: 'qux', added });
+
+			foo.append(bar);
+			bar.append(baz);
+			bar.append(qux);
+			router.append(foo);
+
+			return router.dispatch({}, 'foo/bar/baz').then(() => {
+				assert.equal(foo, adds[0]);
+				assert.equal(bar, adds[1]);
+				assert.equal(baz, adds[2]);
+				assert.equal(3, adds.length);
+
+				adds = [];
+
+				return router.dispatch({}, 'foo/bar/qux').then(() => {
+					assert.equal(qux, adds[0]);
+					assert.equal(1, adds.length);
+				});
+			});
+	});
+
+	test('removed called for routes no longer in the hierarchy', () => {
+			let removes: Route<Parameters>[] = [];
+			function removed() {
+				removes.push(this);
+			}
+
+			const router = createRouter();
+			const foo = createRoute({ path: '/foo', removed });
+			const bar = createRoute({ path: 'bar', removed });
+			const baz = createRoute({ path: 'baz', removed });
+			const qux = createRoute({ path: 'qux', removed });
+
+			foo.append(bar);
+			foo.append(qux);
+			bar.append(baz);
+			router.append(foo);
+
+			return router.dispatch({}, 'foo/bar/baz').then(() => {
+				assert.equal(0, removes.length);
+				return router.dispatch({}, 'foo/qux').then(() => {
+					assert.equal(baz, removes[0]);
+					assert.equal(bar, removes[1]);
+					assert.equal(2, removes.length);
+				});
+			});
 	});
 
 	test('routes can be configured to ignore trailing slash discrepancies', () => {

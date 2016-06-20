@@ -1,12 +1,15 @@
 import compose, { ComposeFactory } from 'dojo-compose/compose';
 import createEvented, { Evented, EventedOptions, EventedListener, TargettedEventObject } from 'dojo-compose/mixins/createEvented';
+
 import { Handle } from 'dojo-core/interfaces';
 import Promise from 'dojo-core/Promise';
 import Task from 'dojo-core/async/Task';
+import WeakMap from 'dojo-core/WeakMap';
 
 import { Route, Handler } from './createRoute';
 import { Context, Parameters, Request } from './interfaces';
 import { parse as parsePath } from './_path';
+import { Selection } from './createRoute';
 
 /**
  * An object to resume or cancel router dispatch.
@@ -109,6 +112,14 @@ export interface RouterFactory extends ComposeFactory<Router, RouterOptions> {
 	(options?: RouterOptions): Router;
 }
 
+const selectedCache = new WeakMap<Router, Selection[]>();
+
+function diffSelected(a: Selection[], b: Selection[]): Selection[] {
+	return a.filter((selection, i) => {
+		return !(b[i] && b[i].route === selection.route);
+	});
+}
+
 const createRouter: RouterFactory = compose<RouterMixin, RouterOptions>({
 	append (routes: Route<Parameters> | Route<Parameters>[]) {
 		if (Array.isArray(routes)) {
@@ -163,13 +174,25 @@ const createRouter: RouterFactory = compose<RouterMixin, RouterOptions>({
 						return false;
 					}
 
-					const dispatched = (<Router> this).routes.some(route => {
-						const hierarchy = route.select(context, segments, trailingSlash, searchParams);
-						if (hierarchy.length === 0) {
+					const router: Router = this;
+					const dispatched = router.routes.some(route => {
+						const selected = route.select(context, segments, trailingSlash, searchParams);
+						const previouslySelected = selectedCache.get(router) || [];
+
+						const removed = diffSelected(previouslySelected, selected);
+						const added = diffSelected(selected, previouslySelected);
+
+						selectedCache.set(router, selected);
+
+						removed.reverse().forEach(({ route }) => route.removed());
+
+						if (selected.length === 0) {
 							return false;
 						}
 
-						for (const { handler, route, params } of hierarchy) {
+						added.forEach(({ route, params }) => route.added({ context, params }));
+
+						for (const { handler, route, params } of selected) {
 							switch (handler) {
 								case Handler.Exec:
 									route.exec({ context, params });
