@@ -143,19 +143,21 @@ const createRouter: RouterFactory = compose<RouterMixin, RouterOptions>({
 		}
 	},
 
-	observeHistory(history: History, context: Context, dispatchInitial: boolean): PausableHandle {
-		if (!historyMap.has(this)) {
-			const listener = pausable(history, 'change', (event: HistoryChangeEvent) => {
-				this.dispatch(context, event.value);
-			});
-			historyMap.set(this, { history, listener, context });
-			if (dispatchInitial) {
-				this.dispatch(context, history.current);
-			}
-			this.own(listener);
-			this.own(history);
-			return listener;
+	observeHistory(history: History, context: Context, dispatchInitial: boolean = false): PausableHandle {
+		const router: Router = this;
+		if (historyMap.has(router)) {
+			throw new Error('observeHistory can only be called once');
 		}
+		const listener = pausable(history, 'change', (event: HistoryChangeEvent) => {
+			router.dispatch(context, event.value);
+		});
+		historyMap.set(router, { history, listener, context });
+		if (dispatchInitial) {
+			router.dispatch(context, history.current);
+		}
+		router.own(listener);
+		router.own(history);
+		return listener;
 	},
 
 	dispatch (context: Context, path: string): Task<boolean> {

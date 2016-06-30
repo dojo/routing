@@ -466,4 +466,17 @@ suite('createRouter', () => {
 		router.observeHistory(history, context, true);
 		assert.isTrue(dispatch.calledWith(context, '/foo'));
 	});
+
+	test('#observeHistory throws if already called', () => {
+		const router = createRouter();
+		const history = createMemoryHistory();
+
+		function observeHistory() {
+			router.observeHistory(history, {}, false);
+		};
+
+		observeHistory();
+
+		assert.throws(observeHistory, /observeHistory can only be called once/);
+	});
 });
