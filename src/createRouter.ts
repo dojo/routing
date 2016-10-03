@@ -55,7 +55,7 @@ export interface RouterMixin {
 	 * Holds top-level routes.
 	 * @private
 	 */
-	routes?: Route<Parameters>[];
+	routes: Route<Parameters>[];
 
 	/**
 	 * Append one or more routes.
@@ -146,6 +146,8 @@ function createDeferral() {
 }
 
 const createRouter: RouterFactory = compose<RouterMixin, RouterOptions>({
+	// N.B. Set per instance in the initializer
+	routes: [],
 
 	append (this: Router, routes: Route<Parameters> | Route<Parameters>[]) {
 		if (Array.isArray(routes)) {

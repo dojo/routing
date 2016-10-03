@@ -68,19 +68,19 @@ export interface Route<PP extends Parameters> {
 	 * A deconstructed form of the path the route was created for. Used for matching.
 	 * @private
 	 */
-	path?: DeconstructedPath;
+	path: DeconstructedPath;
 
 	/**
 	 * Holds the next level of the route hierarchy.
 	 * @private
 	 */
-	routes?: Route<Parameters>[];
+	routes: Route<Parameters>[];
 
 	/**
 	 * Whether trailing slashes in the matching path must match trailing slashes in this route's path.
 	 * @private
 	 */
-	trailingSlashMustMatch?: boolean;
+	trailingSlashMustMatch: boolean;
 
 	/**
 	 * Append one or more routes.
@@ -218,7 +218,14 @@ export interface RouteFactory extends ComposeFactory<Route<Parameters>, RouteOpt
 	<PP extends Parameters>(options?: RouteOptions<PP>): Route<PP>;
 }
 
+const DEFAULT_PATH = deconstructPath('/');
+
 const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parameters>>({
+	// N.B. Set per instance in the initializer
+	path: DEFAULT_PATH,
+	routes: [],
+	trailingSlashMustMatch: true,
+
 	append (this: Route<Parameters>, routes: Route<Parameters> | Route<Parameters>[]) {
 		if (Array.isArray(routes)) {
 			for (const route of routes) {

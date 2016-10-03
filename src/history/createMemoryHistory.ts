@@ -4,7 +4,7 @@ import createEvented from 'dojo-compose/mixins/createEvented';
 import { History, HistoryOptions } from './interfaces';
 
 export interface MemoryHistoryMixin {
-	_current?: string;
+	_current: string;
 }
 
 /**
@@ -32,6 +32,9 @@ export interface MemoryHistoryFactory extends ComposeFactory<MemoryHistory, Memo
 }
 
 const createMemoryHistory: MemoryHistoryFactory = compose({
+	// N.B. Set per instance in the initializer
+	_current: '',
+
 	get current (this: MemoryHistory) {
 		return this._current;
 	},

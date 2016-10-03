@@ -6,8 +6,8 @@ import on from 'dojo-core/on';
 import { BrowserHistory, History, HistoryOptions } from './interfaces';
 
 export interface StateHistoryMixin {
-	_current?: string;
-	_history?: BrowserHistory;
+	_current: string;
+	_history: BrowserHistory;
 	_onPopstate(path: string): void;
 }
 
@@ -37,6 +37,10 @@ export interface StateHistoryFactory extends ComposeFactory<StateHistory, StateH
 }
 
 const createStateHistory: StateHistoryFactory = compose({
+	// N.B. Set per instance in the initializer
+	_current: '',
+	_history: {} as BrowserHistory,
+
 	get current (this: StateHistory) {
 		return this._current;
 	},
