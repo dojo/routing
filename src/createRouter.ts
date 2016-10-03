@@ -184,15 +184,16 @@ const createRouter: RouterFactory = compose<RouterMixin, RouterOptions>({
 
 		const deferrals: Promise<void>[] = [];
 
-		this.emit({
-			type: 'navstart',
-			path,
+		this.emit<NavigationStartEvent>({
 			cancel,
 			defer () {
 				const { cancel, promise, resume } = createDeferral();
 				deferrals.push(promise);
 				return { cancel, resume };
-			}
+			},
+			path,
+			target: null,
+			type: 'navstart'
 		});
 
 		// Synchronous cancelation.
