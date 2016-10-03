@@ -139,7 +139,7 @@ export interface Route<PP extends Parameters> {
 	 * @return If `null` prevents the route from being selected, else the value for the `params` object.
 	 * @private
 	 */
-	params(fromPathname: string[], searchParams: UrlSearchParams): void | PP;
+	params(fromPathname: string[], searchParams: UrlSearchParams): null | PP;
 
 	/**
 	 * Attempt to select this and any nested routes.
@@ -207,7 +207,7 @@ export interface RouteOptions<PP> {
 	 * @param searchParams Parameters extracted from the search component.
 	 * @return If `null` prevents the route from being selected, else the value for the `params` object.
 	 */
-	params?(fromPathname: string[], searchParams: UrlSearchParams): void | PP;
+	params?(fromPathname: string[], searchParams: UrlSearchParams): null | PP;
 }
 
 export interface RouteFactory extends ComposeFactory<Route<Parameters>, RouteOptions<Parameters>> {
@@ -270,7 +270,7 @@ const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parame
 		return { hasRemaining, isMatch: true, offset, params };
 	},
 
-	params (this: Route<Parameters>, fromPathname: string[], searchParams: UrlSearchParams): DefaultParameters {
+	params (this: Route<Parameters>, fromPathname: string[], searchParams: UrlSearchParams): null | DefaultParameters {
 		const params: DefaultParameters = {};
 
 		const { parameters, searchParameters } = this.path;
