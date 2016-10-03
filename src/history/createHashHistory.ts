@@ -2,19 +2,14 @@ import compose, { ComposeFactory } from 'dojo-compose/compose';
 import createEvented from 'dojo-compose/mixins/createEvented';
 import global from 'dojo-core/global';
 import on from 'dojo-core/on';
+import WeakMap from 'dojo-shim/WeakMap';
 
 import { History, HistoryOptions } from './interfaces';
-
-export interface HashHistoryMixin {
-	_current: string;
-	_location: Location;
-	_onHashchange(path: string): void;
-}
 
 /**
  * A browser-based history manager that uses the location hash to store the current value.
  */
-export type HashHistory = History & HashHistoryMixin;
+export type HashHistory = History;
 
 /**
  * Options for creating HashHistory instances.
@@ -37,18 +32,22 @@ export interface HashHistoryFactory extends ComposeFactory<HashHistory, HashHist
 	(options?: HashHistoryOptions): HashHistory;
 }
 
-const createHashHistory: HashHistoryFactory = compose({
-	// N.B. Set per instance in the initializer
-	_current: '',
-	_location: {} as Location,
+interface PrivateState {
+	current: string;
+	browserLocation: Location;
+}
 
+const privateStateMap = new WeakMap<HashHistory, PrivateState>();
+
+const createHashHistory: HashHistoryFactory = compose({
 	get current (this: HashHistory) {
-		return this._current;
+		return privateStateMap.get(this).current;
 	},
 
 	set (this: HashHistory, path: string) {
-		this._current = path;
-		this._location.hash = '#' + path;
+		const privateState = privateStateMap.get(this);
+		privateState.current = path;
+		privateState.browserLocation.hash = '#' + path;
 		this.emit({
 			type: 'change',
 			value: path
@@ -56,19 +55,12 @@ const createHashHistory: HashHistoryFactory = compose({
 	},
 
 	replace (this: HashHistory, path: string) {
-		this._current = path;
+		const privateState = privateStateMap.get(this);
+		privateState.current = path;
 
-		const { pathname, search } = this._location;
-		this._location.replace(pathname + search + '#' + path);
+		const { pathname, search } = privateState.browserLocation;
+		privateState.browserLocation.replace(pathname + search + '#' + path);
 
-		this.emit({
-			type: 'change',
-			value: path
-		});
-	},
-
-	_onHashchange (this: HashHistory, path: string) {
-		this._current = path;
 		this.emit({
 			type: 'change',
 			value: path
@@ -77,12 +69,21 @@ const createHashHistory: HashHistoryFactory = compose({
 }).mixin({
 	mixin: createEvented,
 	initialize(instance: HashHistory, { window }: HashHistoryOptions = { window: global }) {
-		const { location } = window;
-		instance._current = location.hash.slice(1);
-		instance._location = location;
+		const { location: browserLocation } = window;
+
+		const privateState: PrivateState = {
+			current: browserLocation.hash.slice(1),
+			browserLocation
+		};
+		privateStateMap.set(instance, privateState);
 
 		instance.own(on(window, 'hashchange', () => {
-			instance._onHashchange(location.hash.slice(1));
+			const path = browserLocation.hash.slice(1);
+			privateState.current = path;
+			instance.emit({
+				type: 'change',
+				value: path
+			});
 		}));
 	}
 });

@@ -1,6 +1,7 @@
 import compose, { ComposeFactory } from 'dojo-compose/compose';
 import UrlSearchParams from 'dojo-core/UrlSearchParams';
 import { Hash } from 'dojo-core/interfaces';
+import WeakMap from 'dojo-shim/WeakMap';
 
 import { DefaultParameters, Context, Parameters, Request } from './interfaces';
 import {
@@ -60,28 +61,10 @@ export interface Selection {
  */
 export interface Route<P extends Parameters> {
 	/**
-	 * A deconstructed form of the path the route was created for. Used for matching.
-	 * @private
-	 */
-	path: DeconstructedPath;
-
-	/**
-	 * Holds the next level of the route hierarchy.
-	 * @private
-	 */
-	routes: Route<Parameters>[];
-
-	/**
-	 * Whether trailing slashes in the matching path must match trailing slashes in this route's path.
-	 * @private
-	 */
-	trailingSlashMustMatch: boolean;
-
-	/**
 	 * Append one or more routes.
 	 * @param routes A single route or an array containing 0 or more routes.
 	 */
-	append(routes: Route<Parameters> | Route<Parameters>[]): void;
+	append(add: Route<Parameters> | Route<Parameters>[]): void;
 
 	/**
 	 * Callback used to execute the route if it's been selected.
@@ -213,22 +196,24 @@ export interface RouteFactory extends ComposeFactory<Route<Parameters>, RouteOpt
 	<P extends Parameters>(options?: RouteOptions<P>): Route<P>;
 }
 
-const DEFAULT_PATH = deconstructPath('/');
+interface PrivateState {
+	path: DeconstructedPath;
+	routes: Route<Parameters>[];
+	trailingSlashMustMatch: boolean;
+}
+
+const privateStateMap = new WeakMap<Route<Parameters>, PrivateState>();
 
 const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parameters>>({
-	// N.B. Set per instance in the initializer
-	path: DEFAULT_PATH,
-	routes: [],
-	trailingSlashMustMatch: true,
-
-	append (this: Route<Parameters>, routes: Route<Parameters> | Route<Parameters>[]) {
-		if (Array.isArray(routes)) {
-			for (const route of routes) {
-				this.routes.push(route);
+	append (this: Route<Parameters>, add: Route<Parameters> | Route<Parameters>[]) {
+		const { routes } = privateStateMap.get(this);
+		if (Array.isArray(add)) {
+			for (const route of add) {
+				routes.push(route);
 			}
 		}
 		else {
-			this.routes.push(routes);
+			routes.push(add);
 		}
 	},
 
@@ -239,17 +224,18 @@ const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parame
 	},
 
 	match (this: Route<Parameters>, segments: string[], hasTrailingSlash: boolean, searchParams: UrlSearchParams): null | MatchResult<Parameters> {
-		const result = matchPath(this.path, segments);
+		const { path, trailingSlashMustMatch } = privateStateMap.get(this);
+		const result = matchPath(path, segments);
 		if (result === null) {
 			return null;
 		}
 
-		if (!result.hasRemaining && this.trailingSlashMustMatch && this.path.trailingSlash !== hasTrailingSlash) {
+		if (!result.hasRemaining && trailingSlashMustMatch && path.trailingSlash !== hasTrailingSlash) {
 			return null;
 		}
 
 		// Only extract the search params defined in the route's path.
-		const knownSearchParams = this.path.searchParameters.reduce((list, name) => {
+		const knownSearchParams = path.searchParameters.reduce((list, name) => {
 			const value = searchParams.getAll(name);
 			if (value !== undefined) {
 				list[name] = value;
@@ -267,9 +253,14 @@ const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parame
 	},
 
 	params (this: Route<Parameters>, fromPathname: string[], searchParams: UrlSearchParams): null | DefaultParameters {
-		const params: DefaultParameters = {};
+		const {
+			path: {
+				parameters,
+				searchParameters
+			}
+		} = privateStateMap.get(this);
 
-		const { parameters, searchParameters } = this.path;
+		const params: DefaultParameters = {};
 		parameters.forEach((name, index) => {
 			params[name] = fromPathname[index];
 		});
@@ -284,10 +275,12 @@ const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parame
 	},
 
 	select (this: Route<Parameters>, context: Context, segments: string[], hasTrailingSlash: boolean, searchParams: UrlSearchParams): Selection[] {
+		const { routes } = privateStateMap.get(this);
+
 		const result = this.match(segments, hasTrailingSlash, searchParams);
 
 		// Return early if possible.
-		if (!result || result.hasRemaining && this.routes.length === 0 && !this.fallback) {
+		if (!result || result.hasRemaining && routes.length === 0 && !this.fallback) {
 			return [];
 		}
 
@@ -305,7 +298,7 @@ const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parame
 
 		// Match the remaining segments. Return a hierarchy if nested routes were selected.
 		const remainingSegments = segments.slice(offset);
-		for (const nested of this.routes) {
+		for (const nested of routes) {
 			const hierarchy = nested.select(context, remainingSegments, hasTrailingSlash, searchParams);
 			if (hierarchy.length > 0) {
 				return [{ handler: Handler.Exec, params, route: this }, ...hierarchy];
@@ -324,9 +317,12 @@ const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parame
 		throw new TypeError('Path must not contain \'#\'');
 	}
 
-	instance.path = deconstructPath(path || '/');
-	instance.routes = [];
-	instance.trailingSlashMustMatch = trailingSlashMustMatch;
+	const deconstructedPath = deconstructPath(path || '/');
+	privateStateMap.set(instance, {
+		path: deconstructedPath,
+		routes: [],
+		trailingSlashMustMatch
+	});
 
 	if (exec) {
 		instance.exec = exec;
@@ -341,7 +337,7 @@ const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parame
 		instance.index = index;
 	}
 	if (params) {
-		const { parameters, searchParameters } = instance.path;
+		const { parameters, searchParameters } = deconstructedPath;
 		if (parameters.length === 0 && searchParameters.length === 0) {
 			throw new TypeError('Can\'t specify params() if path doesn\'t contain any');
 		}

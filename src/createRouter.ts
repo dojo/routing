@@ -52,16 +52,10 @@ export interface NavigationStartEvent extends TargettedEventObject {
  */
 export interface RouterMixin {
 	/**
-	 * Holds top-level routes.
-	 * @private
-	 */
-	routes: Route<Parameters>[];
-
-	/**
 	 * Append one or more routes.
 	 * @param routes A single route or an array containing 0 or more routes.
 	 */
-	append(routes: Route<Parameters> | Route<Parameters>[]): void;
+	append(add: Route<Parameters> | Route<Parameters>[]): void;
 
 	/**
 	 * Observe History, auto-wires the History change event to dispatch
@@ -79,14 +73,6 @@ export interface RouterMixin {
 	 *   on whether dispatching succeeded.
 	 */
 	dispatch(context: Context, path: string): Task<boolean>;
-
-	/**
-	 * Optional fallback handler used when no routes matched the dispatch path.
-	 * @param request An object whose `context` property contains the dispatch context. No extracted parameters
-	 *   are available.
-	 * @private
-	 */
-	fallback?(request: Request<any>): void;
 }
 
 export interface RouterOverrides {
@@ -112,14 +98,6 @@ export interface RouterOptions extends EventedOptions {
 	fallback?(request: Request<any>): void;
 }
 
-interface HistoryManager {
-	history: History;
-
-	context: Context;
-
-	listener: PausableHandle;
-}
-
 export interface RouterFactory extends ComposeFactory<Router, RouterOptions> {
 	/**
 	 * Create a new instance of a Router.
@@ -128,7 +106,17 @@ export interface RouterFactory extends ComposeFactory<Router, RouterOptions> {
 	(options?: RouterOptions): Router;
 }
 
-const historyMap = new WeakMap<Router, HistoryManager>();
+interface PrivateState {
+	fallback?(request: Request<any>): void;
+	observedHistory: null | {
+		history: History;
+		context: Context;
+		listener: PausableHandle;
+	};
+	routes: Route<Parameters>[];
+}
+
+const privateStateMap = new WeakMap<Router, PrivateState>();
 
 // istanbul ignore next
 const noop = () => {};
@@ -146,28 +134,27 @@ function createDeferral() {
 }
 
 const createRouter: RouterFactory = compose<RouterMixin, RouterOptions>({
-	// N.B. Set per instance in the initializer
-	routes: [],
-
-	append (this: Router, routes: Route<Parameters> | Route<Parameters>[]) {
-		if (Array.isArray(routes)) {
-			for (const route of routes) {
-				this.routes.push(route);
+	append (this: Router, add: Route<Parameters> | Route<Parameters>[]) {
+		const { routes } = privateStateMap.get(this);
+		if (Array.isArray(add)) {
+			for (const route of add) {
+				routes.push(route);
 			}
 		}
 		else {
-			this.routes.push(routes);
+			routes.push(add);
 		}
 	},
 
 	observeHistory(this: Router, history: History, context: Context, dispatchInitial: boolean = false): PausableHandle {
-		if (historyMap.has(this)) {
+		const state = privateStateMap.get(this);
+		if (state.observedHistory) {
 			throw new Error('observeHistory can only be called once');
 		}
 		const listener = pausable(history, 'change', (event: HistoryChangeEvent) => {
 			this.dispatch(context, event.value);
 		});
-		historyMap.set(this, { history, listener, context });
+		state.observedHistory = { history, listener, context };
 		if (dispatchInitial) {
 			this.dispatch(context, history.current);
 		}
@@ -213,7 +200,8 @@ const createRouter: RouterFactory = compose<RouterMixin, RouterOptions>({
 						return false;
 					}
 
-					const dispatched = this.routes.some((route: Route<Parameters>) => {
+					const { fallback, routes } = privateStateMap.get(this);
+					const dispatched = routes.some((route: Route<Parameters>) => {
 						const hierarchy = route.select(context, segments, trailingSlash, searchParams);
 						if (hierarchy.length === 0) {
 							return false;
@@ -242,8 +230,8 @@ const createRouter: RouterFactory = compose<RouterMixin, RouterOptions>({
 						return true;
 					});
 
-					if (!dispatched && this.fallback) {
-						this.fallback({ context, params: {} });
+					if (!dispatched && fallback) {
+						fallback.call(this, { context, params: {} });
 						return true;
 					}
 
@@ -258,11 +246,11 @@ const createRouter: RouterFactory = compose<RouterMixin, RouterOptions>({
 }).mixin({
 	mixin: createEvented,
 	initialize(instance: Router, { fallback }: RouterOptions = {}) {
-		instance.routes = [];
-
-		if (fallback) {
-			instance.fallback = fallback;
-		}
+		privateStateMap.set(instance, {
+			fallback,
+			observedHistory: null,
+			routes: []
+		});
 	}
 });
 
