@@ -12,7 +12,7 @@ import {
 /**
  * Describes whether a route matched.
  */
-export interface MatchResult<PP> {
+export interface MatchResult<P> {
 	/**
 	 * Whether there are path segments that weren't matched by this route.
 	 */
@@ -26,7 +26,7 @@ export interface MatchResult<PP> {
 	/**
 	 * Any extracted parameters. Only available if the route matched.
 	 */
-	params: PP;
+	params: P;
 }
 
 /**
@@ -58,7 +58,7 @@ export interface Selection {
  * A route.
  * The generic should be specified if parameter access is required.
  */
-export interface Route<PP extends Parameters> {
+export interface Route<P extends Parameters> {
 	/**
 	 * A deconstructed form of the path the route was created for. Used for matching.
 	 * @private
@@ -89,7 +89,7 @@ export interface Route<PP extends Parameters> {
 	 *   available under `params`.
 	 * @protected
 	 */
-	exec(request: Request<PP>): void;
+	exec(request: Request<P>): void;
 
 	/**
 	 * If specified, causes the route to be selected if there are no nested routes that match the remainder of
@@ -98,7 +98,7 @@ export interface Route<PP extends Parameters> {
 	 *   are available.
 	 * @protected
 	 */
-	fallback?(request: Request<PP>): void;
+	fallback?(request: Request<P>): void;
 
 	/**
 	 * Callback used to determine whether the route should be selected after it's been matched.
@@ -106,7 +106,7 @@ export interface Route<PP extends Parameters> {
 	 *   available under `params`.
 	 * @private
 	 */
-	guard(request: Request<PP>): boolean;
+	guard(request: Request<P>): boolean;
 
 	/**
 	 * If specified, and the route is the final route in the hierarchy, when the route is executed, this handler is
@@ -115,7 +115,7 @@ export interface Route<PP extends Parameters> {
 	 *   available under `params`.
 	 * @protected
 	 */
-	index?(request: Request<PP>): void;
+	index?(request: Request<P>): void;
 
 	/**
 	 * Determine whether the route matches.
@@ -125,7 +125,7 @@ export interface Route<PP extends Parameters> {
 	 * @return Whether and how the route matched.
 	 * @private
 	 */
-	match(segments: string[], hasTrailingSlash: boolean, searchParams: UrlSearchParams): null | MatchResult<PP>;
+	match(segments: string[], hasTrailingSlash: boolean, searchParams: UrlSearchParams): null | MatchResult<P>;
 
 	/**
 	 * Callback used for constructing the `params` object from extracted parameters, and validating the parameters.
@@ -134,7 +134,7 @@ export interface Route<PP extends Parameters> {
 	 * @return If `null` prevents the route from being selected, else the value for the `params` object.
 	 * @private
 	 */
-	params(fromPathname: string[], searchParams: UrlSearchParams): null | PP;
+	params(fromPathname: string[], searchParams: UrlSearchParams): null | P;
 
 	/**
 	 * Attempt to select this and any nested routes.
@@ -151,7 +151,7 @@ export interface Route<PP extends Parameters> {
 /**
  * The options for the route.
  */
-export interface RouteOptions<PP> {
+export interface RouteOptions<P> {
 	/**
 	 * Path the route matches against. Pathname segments may be named, same for query parameters. Leading slashes are
 	 * ignored. Defaults to `/`.
@@ -170,7 +170,7 @@ export interface RouteOptions<PP> {
 	 * @param request An object whose `context` property contains the dispatch context. Extracted parameters are
 	 *   available under `params`.
 	 */
-	exec?(request: Request<PP>): void;
+	exec?(request: Request<P>): void;
 
 	/**
 	 * If specified, causes the route to be selected if there are no nested routes that match the remainder of
@@ -178,7 +178,7 @@ export interface RouteOptions<PP> {
 	 * @param request An object whose `context` property contains the dispatch context. Extracted parameters are
 	 *   available under `params`.
 	 */
-	fallback?(request: Request<PP>): void;
+	fallback?(request: Request<P>): void;
 
 	/**
 	 * Callback used to determine whether the route should be selected after it's been matched.
@@ -186,7 +186,7 @@ export interface RouteOptions<PP> {
 	 *   available under `params`.
 	 * @return Returning `true` causes the route to be selected.
 	 */
-	guard?(request: Request<PP>): boolean;
+	guard?(request: Request<P>): boolean;
 
 	/**
 	 * If specified, and the route is the final route in the hierarchy, when the route is executed, this handler is
@@ -194,7 +194,7 @@ export interface RouteOptions<PP> {
 	 * @param request An object whose `context` property contains the dispatch context. Extracted parameters are
 	 *   available under `params`.
 	 */
-	index?(request: Request<PP>): void;
+	index?(request: Request<P>): void;
 
 	/**
 	 * Callback used for constructing the `params` object from extracted parameters, and validating the parameters.
@@ -202,7 +202,7 @@ export interface RouteOptions<PP> {
 	 * @param searchParams Parameters extracted from the search component.
 	 * @return If `null` prevents the route from being selected, else the value for the `params` object.
 	 */
-	params?(fromPathname: string[], searchParams: UrlSearchParams): null | PP;
+	params?(fromPathname: string[], searchParams: UrlSearchParams): null | P;
 }
 
 export interface RouteFactory extends ComposeFactory<Route<Parameters>, RouteOptions<Parameters>> {
@@ -210,7 +210,7 @@ export interface RouteFactory extends ComposeFactory<Route<Parameters>, RouteOpt
 	 * Create a new instance of a route.
 	 * @param options Options to use during creation.
 	 */
-	<PP extends Parameters>(options?: RouteOptions<PP>): Route<PP>;
+	<P extends Parameters>(options?: RouteOptions<P>): Route<P>;
 }
 
 const DEFAULT_PATH = deconstructPath('/');
