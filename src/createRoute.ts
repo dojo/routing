@@ -19,19 +19,14 @@ export interface MatchResult<PP> {
 	hasRemaining: boolean;
 
 	/**
-	 * Whether the route matched.
-	 */
-	isMatch: boolean;
-
-	/**
 	 * Position in the segments array that the remaining unmatched segments start.
 	 */
-	offset?: number;
+	offset: number;
 
 	/**
 	 * Any extracted parameters. Only available if the route matched.
 	 */
-	params?: PP;
+	params: PP;
 }
 
 /**
@@ -130,7 +125,7 @@ export interface Route<PP extends Parameters> {
 	 * @return Whether and how the route matched.
 	 * @private
 	 */
-	match(segments: string[], hasTrailingSlash: boolean, searchParams: UrlSearchParams): MatchResult<PP>;
+	match(segments: string[], hasTrailingSlash: boolean, searchParams: UrlSearchParams): null | MatchResult<PP>;
 
 	/**
 	 * Callback used for constructing the `params` object from extracted parameters, and validating the parameters.
@@ -243,14 +238,14 @@ const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parame
 		return true;
 	},
 
-	match (this: Route<Parameters>, segments: string[], hasTrailingSlash: boolean, searchParams: UrlSearchParams): MatchResult<Parameters> {
-		const { hasRemaining, isMatch, offset, values } = matchPath(this.path, segments);
-		if (!isMatch) {
-			return { hasRemaining: false, isMatch: false };
+	match (this: Route<Parameters>, segments: string[], hasTrailingSlash: boolean, searchParams: UrlSearchParams): null | MatchResult<Parameters> {
+		const result = matchPath(this.path, segments);
+		if (result === null) {
+			return null;
 		}
 
-		if (!hasRemaining && this.trailingSlashMustMatch && this.path.trailingSlash !== hasTrailingSlash) {
-			return { hasRemaining: false, isMatch: false };
+		if (!result.hasRemaining && this.trailingSlashMustMatch && this.path.trailingSlash !== hasTrailingSlash) {
+			return null;
 		}
 
 		// Only extract the search params defined in the route's path.
@@ -262,12 +257,13 @@ const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parame
 			return list;
 		}, {} as Hash<string[]>);
 
-		const params = this.params(values, new UrlSearchParams(knownSearchParams));
+		const params = this.params(result.values, new UrlSearchParams(knownSearchParams));
 		if (params === null) {
-			return { hasRemaining: false, isMatch: false };
+			return null;
 		}
 
-		return { hasRemaining, isMatch: true, offset, params };
+		const { hasRemaining, offset } = result;
+		return { hasRemaining, offset, params };
 	},
 
 	params (this: Route<Parameters>, fromPathname: string[], searchParams: UrlSearchParams): null | DefaultParameters {
@@ -288,13 +284,14 @@ const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parame
 	},
 
 	select (this: Route<Parameters>, context: Context, segments: string[], hasTrailingSlash: boolean, searchParams: UrlSearchParams): Selection[] {
-		const { isMatch, hasRemaining, offset, params } = this.match(segments, hasTrailingSlash, searchParams);
+		const result = this.match(segments, hasTrailingSlash, searchParams);
 
 		// Return early if possible.
-		if (!isMatch || hasRemaining && this.routes.length === 0 && !this.fallback) {
+		if (!result || result.hasRemaining && this.routes.length === 0 && !this.fallback) {
 			return [];
 		}
 
+		const { hasRemaining, offset, params } = result;
 		// Always guard.
 		if (!this.guard({ context, params })) {
 			return [];
