@@ -223,11 +223,13 @@ const createRouter: RouterFactory = compose<RouterMixin, RouterOptions>({
 									route.exec({ context, params });
 									break;
 								case Handler.Fallback:
+									// istanbul ignore else
 									if (route.fallback) {
 										route.fallback({ context, params });
 									}
 									break;
 								case Handler.Index:
+									// istanbul ignore else
 									if (route.index) {
 										route.index({ context, params });
 									}
