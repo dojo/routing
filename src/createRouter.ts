@@ -69,7 +69,7 @@ export interface RouterMixin {
 	 * @param context A context object that is provided when executing selected routes.
 	 * @param dispatchInitial Whether to immediately dispatch with the History's current value.
 	 */
-	observeHistory(history: History, context: Context, dispatchInitial: boolean): PausableHandle;
+	observeHistory(history: History, context: Context, dispatchInitial?: boolean): PausableHandle;
 
 	/**
 	 * Select and execute routes for a given path.
