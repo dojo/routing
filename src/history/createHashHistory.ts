@@ -38,11 +38,11 @@ export interface HashHistoryFactory extends ComposeFactory<HashHistory, HashHist
 }
 
 const createHashHistory: HashHistoryFactory = compose({
-	get current () {
+	get current (this: HashHistory) {
 		return this._current;
 	},
 
-	set (path: string) {
+	set (this: HashHistory, path: string) {
 		this._current = path;
 		this._location.hash = '#' + path;
 		this.emit({
@@ -51,7 +51,7 @@ const createHashHistory: HashHistoryFactory = compose({
 		});
 	},
 
-	replace (path: string) {
+	replace (this: HashHistory, path: string) {
 		this._current = path;
 
 		const { pathname, search } = this._location;
@@ -63,7 +63,7 @@ const createHashHistory: HashHistoryFactory = compose({
 		});
 	},
 
-	_onHashchange (path: string) {
+	_onHashchange (this: HashHistory, path: string) {
 		this._current = path;
 		this.emit({
 			type: 'change',

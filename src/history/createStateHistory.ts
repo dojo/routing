@@ -37,11 +37,11 @@ export interface StateHistoryFactory extends ComposeFactory<StateHistory, StateH
 }
 
 const createStateHistory: StateHistoryFactory = compose({
-	get current () {
+	get current (this: StateHistory) {
 		return this._current;
 	},
 
-	set (path: string) {
+	set (this: StateHistory, path: string) {
 		this._current = path;
 		this._history.pushState({}, '', path);
 		this.emit({
@@ -50,7 +50,7 @@ const createStateHistory: StateHistoryFactory = compose({
 		});
 	},
 
-	replace (path: string) {
+	replace (this: StateHistory, path: string) {
 		this._current = path;
 		this._history.replaceState({}, '', path);
 		this.emit({
@@ -59,7 +59,7 @@ const createStateHistory: StateHistoryFactory = compose({
 		});
 	},
 
-	_onPopstate (path: string) {
+	_onPopstate (this: StateHistory, path: string) {
 		// Ignore popstate for the current path. Guards against browsers firing
 		// popstate on page load, see
 		// <https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onpopstate>.

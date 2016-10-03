@@ -219,7 +219,7 @@ export interface RouteFactory extends ComposeFactory<Route<Parameters>, RouteOpt
 }
 
 const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parameters>>({
-	append (routes: Route<Parameters> | Route<Parameters>[]) {
+	append (this: Route<Parameters>, routes: Route<Parameters> | Route<Parameters>[]) {
 		if (Array.isArray(routes)) {
 			for (const route of routes) {
 				this.routes.push(route);
@@ -236,7 +236,7 @@ const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parame
 		return true;
 	},
 
-	match (segments: string[], hasTrailingSlash: boolean, searchParams: UrlSearchParams): MatchResult<Parameters> {
+	match (this: Route<Parameters>, segments: string[], hasTrailingSlash: boolean, searchParams: UrlSearchParams): MatchResult<Parameters> {
 		const { hasRemaining, isMatch, offset, values } = matchPath(this.path, segments);
 		if (!isMatch) {
 			return { hasRemaining: false, isMatch: false };
@@ -247,7 +247,7 @@ const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parame
 		}
 
 		// Only extract the search params defined in the route's path.
-		const knownSearchParams = (<DeconstructedPath> this.path).searchParameters.reduce((list, name) => {
+		const knownSearchParams = this.path.searchParameters.reduce((list, name) => {
 			const value = searchParams.getAll(name);
 			if (value !== undefined) {
 				list[name] = value;
@@ -263,10 +263,10 @@ const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parame
 		return { hasRemaining, isMatch: true, offset, params };
 	},
 
-	params (fromPathname: string[], searchParams: UrlSearchParams): DefaultParameters {
+	params (this: Route<Parameters>, fromPathname: string[], searchParams: UrlSearchParams): DefaultParameters {
 		const params: DefaultParameters = {};
 
-		const { parameters, searchParameters } = <DeconstructedPath> this.path;
+		const { parameters, searchParameters } = this.path;
 		parameters.forEach((name, index) => {
 			params[name] = fromPathname[index];
 		});
@@ -280,7 +280,7 @@ const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parame
 		return params;
 	},
 
-	select (context: Context, segments: string[], hasTrailingSlash: boolean, searchParams: UrlSearchParams): Selection[] {
+	select (this: Route<Parameters>, context: Context, segments: string[], hasTrailingSlash: boolean, searchParams: UrlSearchParams): Selection[] {
 		const { isMatch, hasRemaining, offset, params } = this.match(segments, hasTrailingSlash, searchParams);
 
 		// Return early if possible.
