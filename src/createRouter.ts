@@ -1,5 +1,10 @@
 import compose, { ComposeFactory } from 'dojo-compose/compose';
-import createEvented, { Evented, EventedOptions, EventedListener, TargettedEventObject } from 'dojo-compose/mixins/createEvented';
+import createEvented, {
+	Evented,
+	EventedOptions,
+	EventedListener,
+	TargettedEventObject
+} from 'dojo-compose/mixins/createEvented';
 import { Handle } from 'dojo-core/interfaces';
 import { pausable, PausableHandle } from 'dojo-core/on';
 import Task from 'dojo-core/async/Task';
@@ -135,7 +140,7 @@ function createDeferral() {
 
 const createRouter: RouterFactory = compose.mixin(createEvented, {
 	mixin: {
-		append (this: Router, add: Route<Parameters> | Route<Parameters>[]) {
+		append(this: Router, add: Route<Parameters> | Route<Parameters>[]) {
 			const { routes } = privateStateMap.get(this);
 			if (Array.isArray(add)) {
 				for (const route of add) {
@@ -147,7 +152,12 @@ const createRouter: RouterFactory = compose.mixin(createEvented, {
 			}
 		},
 
-		observeHistory(this: Router, history: History, context: Context, dispatchInitial: boolean = false): PausableHandle {
+		observeHistory(
+			this: Router,
+			history: History,
+			context: Context,
+			dispatchInitial: boolean = false
+		): PausableHandle {
 			const state = privateStateMap.get(this);
 			if (state.observedHistory) {
 				throw new Error('observeHistory can only be called once');
@@ -164,7 +174,7 @@ const createRouter: RouterFactory = compose.mixin(createEvented, {
 			return listener;
 		},
 
-		dispatch (this: Router, context: Context, path: string): Task<boolean> {
+		dispatch(this: Router, context: Context, path: string): Task<boolean> {
 			let canceled = false;
 			const cancel = () => {
 				canceled = true;

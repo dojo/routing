@@ -40,11 +40,11 @@ const privateStateMap = new WeakMap<StateHistory, PrivateState>();
 
 const createStateHistory: StateHistoryFactory = compose.mixin(createEvented, {
 	mixin: {
-		get current (this: StateHistory) {
+		get current(this: StateHistory) {
 			return privateStateMap.get(this).current;
 		},
 
-		set (this: StateHistory, path: string) {
+		set(this: StateHistory, path: string) {
 			const privateState = privateStateMap.get(this);
 			privateState.current = path;
 			privateState.browserHistory.pushState({}, '', path);
@@ -54,7 +54,7 @@ const createStateHistory: StateHistoryFactory = compose.mixin(createEvented, {
 			});
 		},
 
-		replace (this: StateHistory, path: string) {
+		replace(this: StateHistory, path: string) {
 			const privateState = privateStateMap.get(this);
 			privateState.current = path;
 			privateState.browserHistory.replaceState({}, '', path);

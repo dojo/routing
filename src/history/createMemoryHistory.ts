@@ -36,11 +36,11 @@ const privateStateMap = new WeakMap<MemoryHistory, PrivateState>();
 
 const createMemoryHistory: MemoryHistoryFactory = compose.mixin(createEvented, {
 	mixin: {
-		get current (this: MemoryHistory) {
+		get current(this: MemoryHistory) {
 			return privateStateMap.get(this).current;
 		},
 
-		set (this: MemoryHistory, path: string) {
+		set(this: MemoryHistory, path: string) {
 			const privateState = privateStateMap.get(this);
 			privateState.current = path;
 			this.emit({
@@ -49,7 +49,7 @@ const createMemoryHistory: MemoryHistoryFactory = compose.mixin(createEvented, {
 			});
 		},
 
-		replace (this: MemoryHistory, path: string) {
+		replace(this: MemoryHistory, path: string) {
 			this.set(path);
 		}
 	},

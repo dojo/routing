@@ -41,11 +41,11 @@ const privateStateMap = new WeakMap<HashHistory, PrivateState>();
 
 const createHashHistory: HashHistoryFactory = compose.mixin(createEvented, {
 	mixin: {
-		get current (this: HashHistory) {
+		get current(this: HashHistory) {
 			return privateStateMap.get(this).current;
 		},
 
-		set (this: HashHistory, path: string) {
+		set(this: HashHistory, path: string) {
 			const privateState = privateStateMap.get(this);
 			privateState.current = path;
 			privateState.browserLocation.hash = '#' + path;
@@ -55,7 +55,7 @@ const createHashHistory: HashHistoryFactory = compose.mixin(createEvented, {
 			});
 		},
 
-		replace (this: HashHistory, path: string) {
+		replace(this: HashHistory, path: string) {
 			const privateState = privateStateMap.get(this);
 			privateState.current = path;
 

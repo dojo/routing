@@ -183,129 +183,142 @@ function computeDefaultParams(
 	return params;
 }
 
-const createRoute: RouteFactory<Parameters> = compose({
-	append (this: Route<Parameters>, add: Route<Parameters> | Route<Parameters>[]) {
-		const { routes } = privateStateMap.get(this);
-		if (Array.isArray(add)) {
-			for (const route of add) {
-				routes.push(route);
+const createRoute: RouteFactory<Parameters> =
+	compose({
+		append(this: Route<Parameters>, add: Route<Parameters> | Route<Parameters>[]) {
+			const { routes } = privateStateMap.get(this);
+			if (Array.isArray(add)) {
+				for (const route of add) {
+					routes.push(route);
+				}
+			}
+			else {
+				routes.push(add);
+			}
+		},
+
+		match(
+			this: Route<Parameters>,
+			segments: string[],
+			hasTrailingSlash: boolean,
+			searchParams: UrlSearchParams
+		): null | MatchResult<Parameters> {
+			const { computeParams, path, trailingSlashMustMatch } = privateStateMap.get(this);
+			const result = matchPath(path, segments);
+			if (result === null) {
+				return null;
+			}
+
+			if (!result.hasRemaining && trailingSlashMustMatch && path.trailingSlash !== hasTrailingSlash) {
+				return null;
+			}
+
+			// Only extract the search params defined in the route's path.
+			const knownSearchParams = path.searchParameters.reduce((list, name) => {
+				const value = searchParams.getAll(name);
+				if (value !== undefined) {
+					list[name] = value;
+				}
+				return list;
+			}, {} as Hash<string[]>);
+
+			const params = computeParams(result.values, new UrlSearchParams(knownSearchParams));
+			if (params === null) {
+				return null;
+			}
+
+			const { hasRemaining, offset } = result;
+			return { hasRemaining, offset, params };
+		},
+
+		select(
+			this: Route<Parameters>,
+			context: Context,
+			segments: string[],
+			hasTrailingSlash: boolean,
+			searchParams: UrlSearchParams
+		): Selection[] {
+			const { exec, index, fallback, guard, routes } = privateStateMap.get(this);
+
+			const result = this.match(segments, hasTrailingSlash, searchParams);
+
+			// Return early if possible.
+			if (!result || result.hasRemaining && routes.length === 0 && !fallback) {
+				return [];
+			}
+
+			const { hasRemaining, offset, params } = result;
+			// Always guard.
+			if (guard && !guard({ context, params })) {
+				return [];
+			}
+
+			// Use a noop handler if exec was not provided. Something needs to be
+			// returned otherwise the router may think no routes were selected.
+			const handler = exec || noop;
+
+			// Select this route, configure the index handler if specified.
+			if (!hasRemaining) {
+				return [{ handler: index || handler, params, route: this }];
+			}
+
+			// Match the remaining segments. Return a hierarchy if nested routes were selected.
+			const remainingSegments = segments.slice(offset);
+			for (const nested of routes) {
+				const hierarchy = nested.select(context, remainingSegments, hasTrailingSlash, searchParams);
+				if (hierarchy.length > 0) {
+					return [{ handler, params, route: this }, ...hierarchy];
+				}
+			}
+
+			// No remaining segments matched, only select this route if a fallback handler was specified.
+			if (fallback) {
+				return [{ handler: fallback, params, route: this }];
+			}
+
+			return [];
+		}
+	},
+	(
+		instance: Route<Parameters>,
+		{
+			exec,
+			fallback,
+			guard,
+			index,
+			params: computeParams,
+			path,
+			trailingSlashMustMatch = true
+		}: RouteOptions<Parameters> = {}
+	) => {
+		if (path && /#/.test(path)) {
+			throw new TypeError('Path must not contain \'#\'');
+		}
+
+		const deconstructedPath = deconstructPath(path || '/');
+		const { parameters, searchParameters } = deconstructedPath;
+
+		if (computeParams) {
+			if (parameters.length === 0 && searchParameters.length === 0) {
+				throw new TypeError('Can\'t specify params() if path doesn\'t contain any');
 			}
 		}
 		else {
-			routes.push(add);
-		}
-	},
-
-	match (this: Route<Parameters>, segments: string[], hasTrailingSlash: boolean, searchParams: UrlSearchParams): null | MatchResult<Parameters> {
-		const { computeParams, path, trailingSlashMustMatch } = privateStateMap.get(this);
-		const result = matchPath(path, segments);
-		if (result === null) {
-			return null;
+			computeParams = (fromPathname: string[], searchParams: UrlSearchParams) => {
+				return computeDefaultParams(parameters, searchParameters, fromPathname, searchParams);
+			};
 		}
 
-		if (!result.hasRemaining && trailingSlashMustMatch && path.trailingSlash !== hasTrailingSlash) {
-			return null;
-		}
-
-		// Only extract the search params defined in the route's path.
-		const knownSearchParams = path.searchParameters.reduce((list, name) => {
-			const value = searchParams.getAll(name);
-			if (value !== undefined) {
-				list[name] = value;
-			}
-			return list;
-		}, {} as Hash<string[]>);
-
-		const params = computeParams(result.values, new UrlSearchParams(knownSearchParams));
-		if (params === null) {
-			return null;
-		}
-
-		const { hasRemaining, offset } = result;
-		return { hasRemaining, offset, params };
-	},
-
-	select (this: Route<Parameters>, context: Context, segments: string[], hasTrailingSlash: boolean, searchParams: UrlSearchParams): Selection[] {
-		const { exec, index, fallback, guard, routes } = privateStateMap.get(this);
-
-		const result = this.match(segments, hasTrailingSlash, searchParams);
-
-		// Return early if possible.
-		if (!result || result.hasRemaining && routes.length === 0 && !fallback) {
-			return [];
-		}
-
-		const { hasRemaining, offset, params } = result;
-		// Always guard.
-		if (guard && !guard({ context, params })) {
-			return [];
-		}
-
-		// Use a noop handler if exec was not provided. Something needs to be
-		// returned otherwise the router may think no routes were selected.
-		const handler = exec || noop;
-
-		// Select this route, configure the index handler if specified.
-		if (!hasRemaining) {
-			return [{ handler: index || handler, params, route: this }];
-		}
-
-		// Match the remaining segments. Return a hierarchy if nested routes were selected.
-		const remainingSegments = segments.slice(offset);
-		for (const nested of routes) {
-			const hierarchy = nested.select(context, remainingSegments, hasTrailingSlash, searchParams);
-			if (hierarchy.length > 0) {
-				return [{ handler, params, route: this }, ...hierarchy];
-			}
-		}
-
-		// No remaining segments matched, only select this route if a fallback handler was specified.
-		if (fallback) {
-			return [{ handler: fallback, params, route: this }];
-		}
-
-		return [];
-	}
-}, (
-	instance: Route<Parameters>,
-	{
-		exec,
-		fallback,
-		guard,
-		index,
-		params: computeParams,
-		path,
-		trailingSlashMustMatch = true
-	}: RouteOptions<Parameters> = {}
-) => {
-	if (path && /#/.test(path)) {
-		throw new TypeError('Path must not contain \'#\'');
-	}
-
-	const deconstructedPath = deconstructPath(path || '/');
-	const { parameters, searchParameters } = deconstructedPath;
-
-	if (computeParams) {
-		if (parameters.length === 0 && searchParameters.length === 0) {
-			throw new TypeError('Can\'t specify params() if path doesn\'t contain any');
-		}
-	}
-	else {
-		computeParams = (fromPathname: string[], searchParams: UrlSearchParams) => {
-			return computeDefaultParams(parameters, searchParameters, fromPathname, searchParams);
-		};
-	}
-
-	privateStateMap.set(instance, {
-		computeParams,
-		exec,
-		fallback,
-		guard,
-		index,
-		path: deconstructedPath,
-		routes: [],
-		trailingSlashMustMatch
+		privateStateMap.set(instance, {
+			computeParams,
+			exec,
+			fallback,
+			guard,
+			index,
+			path: deconstructedPath,
+			routes: [],
+			trailingSlashMustMatch
+		});
 	});
-});
 
 export default createRoute;
