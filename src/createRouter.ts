@@ -6,7 +6,7 @@ import Task from 'dojo-core/async/Task';
 import Promise from 'dojo-shim/Promise';
 import WeakMap from 'dojo-shim/WeakMap';
 
-import { Route, Handler } from './createRoute';
+import { Route } from './createRoute';
 import { Context, Parameters, Request } from './interfaces';
 import { History, HistoryChangeEvent } from './history/interfaces';
 import { parse as parsePath } from './_path';
@@ -207,31 +207,15 @@ const createRouter: RouterFactory = compose<RouterMixin, RouterOptions>({
 							return false;
 						}
 
-						for (const { handler, route, params } of hierarchy) {
-							switch (handler) {
-								case Handler.Exec:
-									route.exec({ context, params });
-									break;
-								case Handler.Fallback:
-									// istanbul ignore else
-									if (route.fallback) {
-										route.fallback({ context, params });
-									}
-									break;
-								case Handler.Index:
-									// istanbul ignore else
-									if (route.index) {
-										route.index({ context, params });
-									}
-									break;
-							}
+						for (const { handler, params } of hierarchy) {
+							handler({ context, params });
 						}
 
 						return true;
 					});
 
 					if (!dispatched && fallback) {
-						fallback.call(this, { context, params: {} });
+						fallback({ context, params: {} });
 						return true;
 					}
 
