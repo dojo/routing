@@ -139,12 +139,12 @@ export interface RouteOptions<P> {
 	params?(fromPathname: string[], searchParams: UrlSearchParams): null | P;
 }
 
-export interface RouteFactory extends ComposeFactory<Route<Parameters>, RouteOptions<Parameters>> {
+export interface RouteFactory<P extends Parameters> extends ComposeFactory<Route<P>, RouteOptions<P>> {
 	/**
 	 * Create a new instance of a route.
 	 * @param options Options to use during creation.
 	 */
-	<P extends Parameters>(options?: RouteOptions<P>): Route<P>;
+	<P>(options?: RouteOptions<P>): Route<P>;
 }
 
 interface PrivateState {
@@ -183,7 +183,7 @@ function computeDefaultParams(
 	return params;
 }
 
-const createRoute: RouteFactory = compose<Route<Parameters>, RouteOptions<Parameters>>({
+const createRoute: RouteFactory<Parameters> = compose({
 	append (this: Route<Parameters>, add: Route<Parameters> | Route<Parameters>[]) {
 		const { routes } = privateStateMap.get(this);
 		if (Array.isArray(add)) {
