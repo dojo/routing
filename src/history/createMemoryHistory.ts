@@ -34,25 +34,25 @@ interface PrivateState {
 
 const privateStateMap = new WeakMap<MemoryHistory, PrivateState>();
 
-const createMemoryHistory: MemoryHistoryFactory = compose({
-	get current (this: MemoryHistory) {
-		return privateStateMap.get(this).current;
-	},
+const createMemoryHistory: MemoryHistoryFactory = compose.mixin(createEvented, {
+	mixin: {
+		get current (this: MemoryHistory) {
+			return privateStateMap.get(this).current;
+		},
 
-	set (this: MemoryHistory, path: string) {
-		const privateState = privateStateMap.get(this);
-		privateState.current = path;
-		this.emit({
-			type: 'change',
-			value: path
-		});
-	},
+		set (this: MemoryHistory, path: string) {
+			const privateState = privateStateMap.get(this);
+			privateState.current = path;
+			this.emit({
+				type: 'change',
+				value: path
+			});
+		},
 
-	replace (this: MemoryHistory, path: string) {
-		this.set(path);
-	}
-}).mixin({
-	mixin: createEvented,
+		replace (this: MemoryHistory, path: string) {
+			this.set(path);
+		}
+	},
 	initialize(instance: MemoryHistory, { path: current }: MemoryHistoryOptions = { path: '' }) {
 		privateStateMap.set(instance, { current });
 	}

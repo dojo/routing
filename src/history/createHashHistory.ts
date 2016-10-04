@@ -39,35 +39,35 @@ interface PrivateState {
 
 const privateStateMap = new WeakMap<HashHistory, PrivateState>();
 
-const createHashHistory: HashHistoryFactory = compose({
-	get current (this: HashHistory) {
-		return privateStateMap.get(this).current;
+const createHashHistory: HashHistoryFactory = compose.mixin(createEvented, {
+	mixin: {
+		get current (this: HashHistory) {
+			return privateStateMap.get(this).current;
+		},
+
+		set (this: HashHistory, path: string) {
+			const privateState = privateStateMap.get(this);
+			privateState.current = path;
+			privateState.browserLocation.hash = '#' + path;
+			this.emit({
+				type: 'change',
+				value: path
+			});
+		},
+
+		replace (this: HashHistory, path: string) {
+			const privateState = privateStateMap.get(this);
+			privateState.current = path;
+
+			const { pathname, search } = privateState.browserLocation;
+			privateState.browserLocation.replace(pathname + search + '#' + path);
+
+			this.emit({
+				type: 'change',
+				value: path
+			});
+		}
 	},
-
-	set (this: HashHistory, path: string) {
-		const privateState = privateStateMap.get(this);
-		privateState.current = path;
-		privateState.browserLocation.hash = '#' + path;
-		this.emit({
-			type: 'change',
-			value: path
-		});
-	},
-
-	replace (this: HashHistory, path: string) {
-		const privateState = privateStateMap.get(this);
-		privateState.current = path;
-
-		const { pathname, search } = privateState.browserLocation;
-		privateState.browserLocation.replace(pathname + search + '#' + path);
-
-		this.emit({
-			type: 'change',
-			value: path
-		});
-	}
-}).mixin({
-	mixin: createEvented,
 	initialize(instance: HashHistory, { window }: HashHistoryOptions = { window: global }) {
 		const { location: browserLocation } = window;
 

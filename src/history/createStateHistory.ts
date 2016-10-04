@@ -38,32 +38,32 @@ interface PrivateState {
 
 const privateStateMap = new WeakMap<StateHistory, PrivateState>();
 
-const createStateHistory: StateHistoryFactory = compose({
-	get current (this: StateHistory) {
-		return privateStateMap.get(this).current;
-	},
+const createStateHistory: StateHistoryFactory = compose.mixin(createEvented, {
+	mixin: {
+		get current (this: StateHistory) {
+			return privateStateMap.get(this).current;
+		},
 
-	set (this: StateHistory, path: string) {
-		const privateState = privateStateMap.get(this);
-		privateState.current = path;
-		privateState.browserHistory.pushState({}, '', path);
-		this.emit({
-			type: 'change',
-			value: path
-		});
-	},
+		set (this: StateHistory, path: string) {
+			const privateState = privateStateMap.get(this);
+			privateState.current = path;
+			privateState.browserHistory.pushState({}, '', path);
+			this.emit({
+				type: 'change',
+				value: path
+			});
+		},
 
-	replace (this: StateHistory, path: string) {
-		const privateState = privateStateMap.get(this);
-		privateState.current = path;
-		privateState.browserHistory.replaceState({}, '', path);
-		this.emit({
-			type: 'change',
-			value: path
-		});
-	}
-}).mixin({
-	mixin: createEvented,
+		replace (this: StateHistory, path: string) {
+			const privateState = privateStateMap.get(this);
+			privateState.current = path;
+			privateState.browserHistory.replaceState({}, '', path);
+			this.emit({
+				type: 'change',
+				value: path
+			});
+		}
+	},
 	initialize(instance: StateHistory, { window }: StateHistoryOptions = { window: global }) {
 		const { history: browserHistory, location } = window;
 
