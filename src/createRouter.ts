@@ -9,7 +9,7 @@ import WeakMap from 'dojo-shim/WeakMap';
 import { Route } from './createRoute';
 import { Context, Parameters, Request } from './interfaces';
 import { History, HistoryChangeEvent } from './history/interfaces';
-import { parse as parsePath } from './_path';
+import { parse as parsePath } from './lib/path';
 
 /**
  * An object to resume or cancel router dispatch.
