@@ -133,102 +133,102 @@ function createDeferral() {
 	return { cancel, promise, resume };
 }
 
-const createRouter: RouterFactory = compose<RouterMixin, RouterOptions>({
-	append (this: Router, add: Route<Parameters> | Route<Parameters>[]) {
-		const { routes } = privateStateMap.get(this);
-		if (Array.isArray(add)) {
-			for (const route of add) {
-				routes.push(route);
+const createRouter: RouterFactory = compose.mixin(createEvented, {
+	mixin: {
+		append (this: Router, add: Route<Parameters> | Route<Parameters>[]) {
+			const { routes } = privateStateMap.get(this);
+			if (Array.isArray(add)) {
+				for (const route of add) {
+					routes.push(route);
+				}
 			}
-		}
-		else {
-			routes.push(add);
-		}
-	},
+			else {
+				routes.push(add);
+			}
+		},
 
-	observeHistory(this: Router, history: History, context: Context, dispatchInitial: boolean = false): PausableHandle {
-		const state = privateStateMap.get(this);
-		if (state.observedHistory) {
-			throw new Error('observeHistory can only be called once');
-		}
-		const listener = pausable(history, 'change', (event: HistoryChangeEvent) => {
-			this.dispatch(context, event.value);
-		});
-		state.observedHistory = { history, listener, context };
-		if (dispatchInitial) {
-			this.dispatch(context, history.current);
-		}
-		this.own(listener);
-		this.own(history);
-		return listener;
-	},
+		observeHistory(this: Router, history: History, context: Context, dispatchInitial: boolean = false): PausableHandle {
+			const state = privateStateMap.get(this);
+			if (state.observedHistory) {
+				throw new Error('observeHistory can only be called once');
+			}
+			const listener = pausable(history, 'change', (event: HistoryChangeEvent) => {
+				this.dispatch(context, event.value);
+			});
+			state.observedHistory = { history, listener, context };
+			if (dispatchInitial) {
+				this.dispatch(context, history.current);
+			}
+			this.own(listener);
+			this.own(history);
+			return listener;
+		},
 
-	dispatch (this: Router, context: Context, path: string): Task<boolean> {
-		let canceled = false;
-		const cancel = () => {
-			canceled = true;
-		};
+		dispatch (this: Router, context: Context, path: string): Task<boolean> {
+			let canceled = false;
+			const cancel = () => {
+				canceled = true;
+			};
 
-		const deferrals: Promise<void>[] = [];
+			const deferrals: Promise<void>[] = [];
 
-		this.emit<NavigationStartEvent>({
-			cancel,
-			defer () {
-				const { cancel, promise, resume } = createDeferral();
-				deferrals.push(promise);
-				return { cancel, resume };
-			},
-			path,
-			target: null,
-			type: 'navstart'
-		});
+			this.emit<NavigationStartEvent>({
+				cancel,
+				defer () {
+					const { cancel, promise, resume } = createDeferral();
+					deferrals.push(promise);
+					return { cancel, resume };
+				},
+				path,
+				target: null,
+				type: 'navstart'
+			});
 
-		// Synchronous cancelation.
-		if (canceled) {
-			return Task.resolve(false);
-		}
+			// Synchronous cancelation.
+			if (canceled) {
+				return Task.resolve(false);
+			}
 
-		const { searchParams, segments, trailingSlash } = parsePath(path);
-		return new Task((resolve, reject) => {
-			// *Always* start dispatching in a future turn, even if there were no deferrals.
-			Promise.all(deferrals).then(
-				() => {
-					// The cancel() function used in the NavigationStartEvent is reused as the Task canceler.
-					// Strictly speaking any navstart listener can cancel the dispatch asynchronously, as long as it
-					// manages to do so before this turn.
-					if (canceled) {
-						return false;
-					}
-
-					const { fallback, routes } = privateStateMap.get(this);
-					const dispatched = routes.some((route: Route<Parameters>) => {
-						const hierarchy = route.select(context, segments, trailingSlash, searchParams);
-						if (hierarchy.length === 0) {
+			const { searchParams, segments, trailingSlash } = parsePath(path);
+			return new Task((resolve, reject) => {
+				// *Always* start dispatching in a future turn, even if there were no deferrals.
+				Promise.all(deferrals).then(
+					() => {
+						// The cancel() function used in the NavigationStartEvent is reused as the Task canceler.
+						// Strictly speaking any navstart listener can cancel the dispatch asynchronously, as long as it
+						// manages to do so before this turn.
+						if (canceled) {
 							return false;
 						}
 
-						for (const { handler, params } of hierarchy) {
-							handler({ context, params });
+						const { fallback, routes } = privateStateMap.get(this);
+						const dispatched = routes.some((route: Route<Parameters>) => {
+							const hierarchy = route.select(context, segments, trailingSlash, searchParams);
+							if (hierarchy.length === 0) {
+								return false;
+							}
+
+							for (const { handler, params } of hierarchy) {
+								handler({ context, params });
+							}
+
+							return true;
+						});
+
+						if (!dispatched && fallback) {
+							fallback({ context, params: {} });
+							return true;
 						}
 
-						return true;
-					});
-
-					if (!dispatched && fallback) {
-						fallback({ context, params: {} });
-						return true;
-					}
-
-					return dispatched;
-				},
-				// When deferrals are canceled their corresponding promise is rejected. Ensure the task resolves
-				// with `false` instead of being rejected too.
-				() => false
-			).then(resolve, reject);
-		}, cancel);
-	}
-}).mixin({
-	mixin: createEvented,
+						return dispatched;
+					},
+					// When deferrals are canceled their corresponding promise is rejected. Ensure the task resolves
+					// with `false` instead of being rejected too.
+					() => false
+				).then(resolve, reject);
+			}, cancel);
+		}
+	},
 	initialize(instance: Router, { fallback }: RouterOptions = {}) {
 		privateStateMap.set(instance, {
 			fallback,
