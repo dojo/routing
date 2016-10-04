@@ -67,7 +67,6 @@ export interface Route<P extends Parameters> {
 	 * @param hasTrailingSlash Whether the pathname that's being matched ended with a slashes.
 	 * @param searchParams Parameters extracted from the search component.
 	 * @return Whether and how the route matched.
-	 * @private
 	 */
 	match(segments: string[], hasTrailingSlash: boolean, searchParams: UrlSearchParams): null | MatchResult<P>;
 
