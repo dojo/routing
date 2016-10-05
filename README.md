@@ -518,7 +518,7 @@ By default `start()` dispatches for the current history value. You can disable t
 router.start({ dispatchCurrent: false });
 ```
 
-The context for these dispatches defaults to a frozen, empty object. You can configure it when creating the router:
+The context for these dispatches defaults to an empty object. A new object is used for every dispatch. You can configure the context when creating the router:
 
 ```ts
 const router = createRouter({

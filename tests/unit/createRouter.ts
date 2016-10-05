@@ -502,19 +502,19 @@ suite('createRouter', () => {
 		assert.throws(start, /start can only be called once/);
 	});
 
-	test('without a provided context, #start dispatches with a frozen empty object as the context', () => {
+	test('without a provided context, #start dispatches with an empty object as the context', () => {
 		const history = createMemoryHistory({ path: '/foo' });
 		const router = createRouter({ history });
 		const dispatch = stub(router, 'dispatch');
 
 		router.start();
 		const { args: [ initialContext ] } = dispatch.firstCall;
-		assert.isTrue(Object.isFrozen(initialContext));
 		assert.deepEqual(initialContext, {});
 
 		history.set('/bar');
 		const { args: [ nextContext ] } = dispatch.secondCall;
-		assert.strictEqual(nextContext, initialContext);
+		assert.notStrictEqual(nextContext, initialContext);
+		assert.deepEqual(nextContext, {});
 	});
 
 	test('with a provided context, #start dispatches with that object as the context', () => {

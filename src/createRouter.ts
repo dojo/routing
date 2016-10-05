@@ -266,13 +266,21 @@ const createRouter: RouterFactory = compose.mixin(createEvented, {
 			return listener;
 		}
 	},
-	initialize(instance: Router, { context = Object.freeze({}), fallback, history }: RouterOptions = {}) {
+	initialize(instance: Router, { context, fallback, history }: RouterOptions = {}) {
 		let contextFactory: () => Context;
 		if (typeof context === 'function') {
 			contextFactory = context;
 		}
+		else if (typeof context === 'undefined') {
+			contextFactory = () => {
+				return {};
+			};
+		}
 		else {
-			contextFactory = () => context;
+			// Assign to a constant since the context variable may be changed after the function is defined,
+			// which would violate its typing.
+			const sharedContext = context;
+			contextFactory = () => sharedContext;
 		}
 
 		if (history) {
