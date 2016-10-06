@@ -2,7 +2,7 @@ import UrlSearchParams from 'dojo-core/UrlSearchParams';
 import { suite, test } from 'intern!tdd';
 import * as assert from 'intern/chai!assert';
 
-import createRoute, { Route } from '../../src/createRoute';
+import createRoute from '../../src/createRoute';
 import { DefaultParameters, Context, Request, Parameters } from '../../src/interfaces';
 
 interface R extends Request<Parameters> {};
@@ -58,7 +58,7 @@ suite('createRoute', () => {
 	});
 
 	test('path parameters are extracted', () => {
-		const route = <Route<DefaultParameters>> createRoute({
+		const route = createRoute<DefaultParameters>({
 			path: '/{foo}/{bar}?{baz}&{qux}'
 		});
 
@@ -77,7 +77,7 @@ suite('createRoute', () => {
 	});
 
 	test('search parameters are optional', () => {
-		const route = <Route<DefaultParameters>> createRoute({
+		const route = createRoute<DefaultParameters>({
 			path: '/{foo}/{bar}?{baz}&{qux}'
 		});
 
@@ -95,7 +95,7 @@ suite('createRoute', () => {
 	});
 
 	test('only the first search parameter value is extracted', () => {
-		const route = <Route<DefaultParameters>> createRoute({
+		const route = createRoute<DefaultParameters>({
 			path: '/{foo}/{bar}?{baz}&{qux}'
 		});
 
@@ -183,7 +183,7 @@ suite('createRoute', () => {
 
 	test('guard() receives the extracted parameters', () => {
 		let received: Parameters = <any> undefined;
-		const route = <Route<DefaultParameters>> createRoute({
+		const route = createRoute<DefaultParameters>({
 			path: '/{foo}/{bar}?{baz}&{qux}',
 			guard ({ params }: R) {
 				received = params;
@@ -204,7 +204,7 @@ suite('createRoute', () => {
 			upper: string;
 			barIsQux: boolean;
 		}
-		const route = <Route<Customized>> createRoute({
+		const route = createRoute<Customized>({
 			path: '/{foo}/{bar}',
 			params (fromPath) {
 				const [foo, bar] = fromPath;
@@ -232,11 +232,11 @@ suite('createRoute', () => {
 			fooArr: string[];
 			barIsQux: boolean;
 		}
-		const route = <Route<Customized>> createRoute({
+		const route = createRoute<Customized>({
 			path: '/?{foo}&{bar}',
 			params (fromPath, searchParams) {
 				return {
-					fooArr: searchParams.getAll('foo'),
+					fooArr: searchParams.getAll('foo') || [],
 					barIsQux: searchParams.get('bar') === 'qux'
 				};
 			}
