@@ -511,4 +511,22 @@ suite('createRoute', () => {
 		const selections = root.select({} as Context, ['foo', 'bar', 'baz'], false, new UrlSearchParams());
 		assert.lengthOf(selections, 2);
 	});
+
+	// This test is mostly there to verify the typings at compile time.
+	test('createRoute takes a Context type', () => {
+		interface Refined extends Context {
+			refined: boolean;
+		}
+		const route = createRoute<Refined, any>({
+			path: '/foo',
+			exec({ context }) {
+				assert.isTrue(context.refined);
+			}
+		});
+		const context: Refined = { refined: true };
+		const result = route.select(context, ['foo'], false, new UrlSearchParams());
+		if (Array.isArray(result)) {
+			result[0].handler({ context, params: {} });
+		}
+	});
 });

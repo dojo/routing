@@ -670,7 +670,7 @@ suite('createRouter', () => {
 		let context: Context = {};
 		let dispatch = () => new Promise(() => {});
 		let fallback: any = null;
-		let events: ErrorEvent[] = [];
+		let events: ErrorEvent<Context>[] = [];
 		const path = '/foo/bar';
 		let router = createRouter();
 
@@ -792,5 +792,26 @@ suite('createRouter', () => {
 			fallback = () => { return Promise.reject(error); };
 			return verify(dispatch(), error);
 		});
+	});
+
+	// This test is mostly there to verify the typings at compile time.
+	test('createRouter takes a Context type', () => {
+		interface Refined extends Context {
+			refined: boolean;
+		}
+		const router = createRouter<Refined>({
+			context: { refined: true },
+			fallback({ context }) {
+				assert.isTrue(context.refined);
+			}
+		});
+		router.append(createRoute<Refined, any>({
+			path: '/foo',
+			exec({ context }) {
+				assert.isTrue(context.refined);
+			}
+		}));
+		router.dispatch({ refined: true }, '/foo');
+		router.dispatch({ refined: true }, '/bar');
 	});
 });
