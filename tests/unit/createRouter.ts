@@ -9,8 +9,6 @@ import createRouter, { DispatchResult, ErrorEvent, NavigationStartEvent } from '
 import createMemoryHistory from '../../src/history/createMemoryHistory';
 import { DefaultParameters, Context, Request, Parameters } from '../../src/interfaces';
 
-interface R extends Request<Parameters> {};
-
 suite('createRouter', () => {
 	test('dispatch resolves to unsuccessful result if no route was executed', () => {
 		return createRouter().dispatch({} as Context, '/').then(result => {
@@ -299,7 +297,7 @@ suite('createRouter', () => {
 	});
 
 	test('router can be created with a fallback route', () => {
-		let received: R;
+		let received: Request<Context, Parameters>;
 
 		const router = createRouter({
 			fallback (request) {
