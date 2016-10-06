@@ -3,9 +3,7 @@ import { suite, test } from 'intern!tdd';
 import * as assert from 'intern/chai!assert';
 
 import createRoute from '../../src/createRoute';
-import { DefaultParameters, Context, Request, Parameters } from '../../src/interfaces';
-
-interface R extends Request<Parameters> {};
+import { DefaultParameters, Context, Parameters } from '../../src/interfaces';
 
 suite('createRoute', () => {
 	test('can create route without options', () => {
@@ -29,7 +27,7 @@ suite('createRoute', () => {
 		const context: Context = {};
 		let received: Context = <any> undefined;
 		const route = createRoute({
-			guard ({ context }: R) {
+			guard ({ context }) {
 				received = context;
 				return true;
 			}
@@ -185,7 +183,7 @@ suite('createRoute', () => {
 		let received: Parameters = <any> undefined;
 		const route = createRoute<DefaultParameters>({
 			path: '/{foo}/{bar}?{baz}&{qux}',
-			guard ({ params }: R) {
+			guard ({ params }) {
 				received = params;
 				return true;
 			}
