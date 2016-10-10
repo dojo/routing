@@ -215,7 +215,7 @@ export function deconstruct(path: string): DeconstructedPath {
 					searchParameters.push(name);
 				} else {
 					parameters.push(name);
-					expectedSegments.push({ name });
+					expectedSegments.push(Object.freeze({ name }));
 				}
 
 				break;
@@ -263,9 +263,14 @@ export function deconstruct(path: string): DeconstructedPath {
 					throw new TypeError(`Expected parameter in search component, got '${t}'`);
 				}
 
-				expectedSegments.push({ literal: t });
+				expectedSegments.push(Object.freeze({ literal: t }));
 		}
 	}
 
-	return { expectedSegments, parameters, searchParameters, trailingSlash };
+	return Object.freeze({
+		expectedSegments: Object.freeze(expectedSegments),
+		parameters: Object.freeze(parameters),
+		searchParameters: Object.freeze(searchParameters),
+		trailingSlash
+	});
 }

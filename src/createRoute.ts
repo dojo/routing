@@ -101,6 +101,11 @@ export interface Route<C extends Context, P extends Parameters> {
 	readonly parent?: Route<Context, Parameters>;
 
 	/**
+	 * Frozen, deconstructed path object.
+	 */
+	readonly path: DeconstructedPath;
+
+	/**
 	 * Append one or more routes.
 	 *
 	 * A route can only appended to another route, or a router itself, once.
@@ -247,6 +252,10 @@ const createRoute: RouteFactory<Context, Parameters> =
 	compose({
 		get parent(this: Route<Context, Parameters>) {
 			return parentMap.get(this);
+		},
+
+		get path(this: Route<Context, Parameters>) {
+			return privateStateMap.get(this).path;
 		},
 
 		append(this: Route<Context, Parameters>, add: Route<Context, Parameters> | Route<Context, Parameters>[]) {

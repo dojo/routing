@@ -194,6 +194,28 @@ suite('createRoute', () => {
 		}, TypeError, 'Parameter must have a unique name, got \'foo\'');
 	});
 
+	test('deconstructed path can be accessed and is deeply frozen', () => {
+		const { path } = createRoute({ path: '/foo/{bar}?{baz}' });
+		assert.isTrue(Object.isFrozen(path));
+
+		const { expectedSegments, parameters, searchParameters, trailingSlash } = path;
+		assert.isTrue(Object.isFrozen(expectedSegments));
+		assert.isTrue(Object.isFrozen(parameters));
+		assert.isTrue(Object.isFrozen(searchParameters));
+
+		assert.lengthOf(expectedSegments, 2);
+		assert.isTrue(Object.isFrozen(expectedSegments[0]));
+		assert.isTrue(Object.isFrozen(expectedSegments[1]));
+		assert.deepEqual(expectedSegments, [
+			{ literal: 'foo' },
+			{ name: 'bar' }
+		]);
+
+		assert.deepEqual(parameters, [ 'bar' ]);
+		assert.deepEqual(searchParameters, [ 'baz' ]);
+		assert.isFalse(trailingSlash);
+	});
+
 	test('guard() receives the extracted parameters', () => {
 		let received: Parameters = <any> undefined;
 		const route = createRoute<DefaultParameters>({
