@@ -12,7 +12,7 @@ import { Thenable } from 'dojo-shim/interfaces';
 import Promise from 'dojo-shim/Promise';
 import WeakMap from 'dojo-shim/WeakMap';
 
-import { Route } from './createRoute';
+import { Route, Selection } from './createRoute';
 import { Context, Parameters, Request } from './interfaces';
 import { History, HistoryChangeEvent } from './history/interfaces';
 import { parse as parsePath } from './lib/path';
@@ -197,6 +197,8 @@ export function hasBeenAppended(route: Route<Context, Parameters>): boolean {
 
 interface PrivateState {
 	contextFactory: () => Context;
+	currentSelection: Selection[];
+	dispatchFromStart: boolean;
 	fallback?: (request: Request<Context, Parameters>) => void | Thenable<any>;
 	history?: History;
 	routes: Route<Context, Parameters>[];
@@ -262,6 +264,12 @@ const createRouter: RouterFactory<Context> = compose.mixin(createEvented, {
 		},
 
 		dispatch(this: Router<Context>, context: Context, path: string): Task<DispatchResult> {
+			const state = privateStateMap.get(this);
+			const { dispatchFromStart } = state;
+			// Reset, any further calls can't have come from start(). This is necessary since the navstart listeners
+			// may call dispatch() themselves.
+			state.dispatchFromStart = false;
+
 			let canceled = false;
 			const cancel = () => {
 				canceled = true;
@@ -298,10 +306,23 @@ const createRouter: RouterFactory<Context> = compose.mixin(createEvented, {
 							return { success: false };
 						}
 
-						const { fallback, routes } = privateStateMap.get(this);
+						const { fallback, routes } = state;
 						let redirect: undefined | string;
 						const dispatched = routes.some((route: Route<Context, Parameters>) => {
 							const result = route.select(context, segments, trailingSlash, searchParams);
+
+							// Update the selected routes after selecting new routes, but before invoking the handlers.
+							// This means the original value is available to guard() and params() functions, and the
+							// new value when the newly selected routes are executed.
+							//
+							// Reset selected routes if not dispatched from start(), or if a redirect was requested.
+							if (!dispatchFromStart || typeof result === 'string') {
+								state.currentSelection = [];
+							}
+							else {
+								state.currentSelection = result;
+							}
+
 							if (typeof result === 'string') {
 								redirect = result;
 								return true;
@@ -372,6 +393,9 @@ const createRouter: RouterFactory<Context> = compose.mixin(createEvented, {
 					redirectCount = 0;
 				}
 
+				// Signal to dispatch() that it was called from here.
+				state.dispatchFromStart = true;
+
 				const context = contextFactory();
 				lastDispatch = this.dispatch(context, path).then(({ redirect, success }) => {
 					if (success && redirect !== undefined) {
@@ -425,6 +449,8 @@ const createRouter: RouterFactory<Context> = compose.mixin(createEvented, {
 
 		privateStateMap.set(instance, {
 			contextFactory,
+			currentSelection: [],
+			dispatchFromStart: false,
 			fallback,
 			history,
 			routes: []
