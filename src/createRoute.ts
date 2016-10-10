@@ -32,13 +32,18 @@ export interface MatchResult<P> {
 }
 
 /**
+ * A request handler.
+ */
+export type Handler = (request: Request<Context, Parameters>) => void | Thenable<any>;
+
+/**
  * Describes the selection of a particular route.
  */
 export interface Selection {
 	/**
 	 * Which handler should be called when the route is executed.
 	 */
-	handler: (request: Request<Context, Parameters>) => void | Thenable<any>;
+	handler: Handler;
 
 	/**
 	 * The extracted parameters.
@@ -162,10 +167,10 @@ interface PrivateState {
 	trailingSlashMustMatch: boolean;
 
 	computeParams<P extends Parameters>(fromPathname: string[], searchParams: UrlSearchParams): null | P;
-	exec?(request: Request<Context, Parameters>): void | Thenable<any>;
-	fallback?(request: Request<Context, Parameters>): void | Thenable<any>;
+	exec?: Handler;
+	fallback?: Handler;
 	guard?(request: Request<Context, Parameters>): string | boolean;
-	index?(request: Request<Context, Parameters>): void | Thenable<any>;
+	index?: Handler;
 }
 
 const privateStateMap = new WeakMap<Route<Context, Parameters>, PrivateState>();
