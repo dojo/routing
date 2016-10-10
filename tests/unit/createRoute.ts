@@ -198,7 +198,7 @@ suite('createRoute', () => {
 		const { path } = createRoute({ path: '/foo/{bar}?{baz}' });
 		assert.isTrue(Object.isFrozen(path));
 
-		const { expectedSegments, parameters, searchParameters, trailingSlash } = path;
+		const { expectedSegments, leadingSlash, parameters, searchParameters, trailingSlash } = path;
 		assert.isTrue(Object.isFrozen(expectedSegments));
 		assert.isTrue(Object.isFrozen(parameters));
 		assert.isTrue(Object.isFrozen(searchParameters));
@@ -211,6 +211,7 @@ suite('createRoute', () => {
 			{ name: 'bar' }
 		]);
 
+		assert.isTrue(leadingSlash);
 		assert.deepEqual(parameters, [ 'bar' ]);
 		assert.deepEqual(searchParameters, [ 'baz' ]);
 		assert.isFalse(trailingSlash);

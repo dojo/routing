@@ -144,6 +144,11 @@ export interface DeconstructedPath {
 	expectedSegments: Segment[];
 
 	/**
+	 * Whether the pathname started with a slash.
+	 */
+	leadingSlash: boolean;
+
+	/**
 	 * Named path parameters, in the order that they occurred in the path.
 	 */
 	parameters: string[];
@@ -154,7 +159,7 @@ export interface DeconstructedPath {
 	searchParameters: string[];
 
 	/**
-	 * Whether the pathname ended with a trailing slash.
+	 * Whether the pathname ended with a slash.
 	 */
 	trailingSlash: boolean;
 }
@@ -171,6 +176,7 @@ export function deconstruct(path: string): DeconstructedPath {
 	let trailingSlash = false;
 
 	const tokens = path.split(/([/{}?&])/).filter(Boolean);
+	const leadingSlash = tokens[0] === '/';
 
 	let i = 0;
 	const consume = () => tokens[i++];
@@ -269,6 +275,7 @@ export function deconstruct(path: string): DeconstructedPath {
 
 	return Object.freeze({
 		expectedSegments: Object.freeze(expectedSegments),
+		leadingSlash,
 		parameters: Object.freeze(parameters),
 		searchParameters: Object.freeze(searchParameters),
 		trailingSlash
