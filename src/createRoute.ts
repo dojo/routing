@@ -35,6 +35,17 @@ export interface MatchResult<P> {
 	 * Any extracted parameters. Only available if the route matched.
 	 */
 	params: P;
+
+	/**
+	 * Values for named segments in the path, in order of occurrence.
+	 */
+	rawPathValues: string[];
+
+	/**
+	 * Values for known named query parameters that were actually present in the
+	 * path.
+	 */
+	rawSearchParams: SearchParams;
 }
 
 /**
@@ -52,9 +63,25 @@ export interface Selection {
 	handler: Handler;
 
 	/**
+	 * The selected path.
+	 */
+	path: DeconstructedPath;
+
+	/**
 	 * The extracted parameters.
 	 */
 	params: Parameters;
+
+	/**
+	 * Values for named segments in the path, in order of occurrence.
+	 */
+	rawPathValues: string[];
+
+	/**
+	 * Values for known named query parameters that were actually present in the
+	 * path.
+	 */
+	rawSearchParams: SearchParams;
 
 	/**
 	 * The selected route.
@@ -224,6 +251,7 @@ const createRoute: RouteFactory<Context, Parameters> =
 			searchParams: UrlSearchParams
 		): null | MatchResult<Parameters> {
 			const { computeParams, path, trailingSlashMustMatch } = privateStateMap.get(this);
+
 			const result = matchPath(path, segments);
 			if (result === null) {
 				return null;
@@ -247,8 +275,13 @@ const createRoute: RouteFactory<Context, Parameters> =
 				return null;
 			}
 
-			const { hasRemaining, offset } = result;
-			return { hasRemaining, offset, params };
+			return {
+				hasRemaining: result.hasRemaining,
+				offset: result.offset,
+				params,
+				rawPathValues: result.values,
+				rawSearchParams: knownSearchParams
+			};
 		},
 
 		select(
@@ -258,7 +291,7 @@ const createRoute: RouteFactory<Context, Parameters> =
 			hasTrailingSlash: boolean,
 			searchParams: UrlSearchParams
 		): string | Selection[] {
-			const { exec, index, fallback, guard, routes } = privateStateMap.get(this);
+			const { exec, index, fallback, guard, path, routes } = privateStateMap.get(this);
 
 			const matchResult = this.match(segments, hasTrailingSlash, searchParams);
 
@@ -267,7 +300,7 @@ const createRoute: RouteFactory<Context, Parameters> =
 				return [];
 			}
 
-			const { hasRemaining, offset, params } = matchResult;
+			const { params } = matchResult;
 			if (guard) {
 				const guardResult = guard({ context, params });
 				if (typeof guardResult === 'string') {
@@ -278,33 +311,61 @@ const createRoute: RouteFactory<Context, Parameters> =
 				}
 			}
 
-			// Use a noop handler if exec was not provided. Something needs to be
-			// returned otherwise the router may think no routes were selected.
-			const handler = exec || noop;
+			let handler = exec;
+			let redirect: string | undefined;
+			let remainingSelection: Selection[] | undefined;
+			let selected = false;
 
+			if (matchResult.hasRemaining) {
+				// Match the remaining segments. Return a hierarchy if nested routes were selected.
+				const remainingSegments = segments.slice(matchResult.offset);
+				selected = routes.some((nested) => {
+					const nestedResult = nested.select(context, remainingSegments, hasTrailingSlash, searchParams);
+					if (typeof nestedResult === 'string') {
+						redirect = nestedResult;
+						return true;
+					}
+					if (nestedResult.length > 0) {
+						remainingSelection = nestedResult;
+						return true;
+					}
+					return false;
+				});
+
+				// No remaining segments matched, only select this route if a fallback handler was specified.
+				if (!selected && fallback) {
+					selected = true;
+					handler = fallback;
+				}
+			}
 			// Select this route, configure the index handler if specified.
-			if (!hasRemaining) {
-				return [{ handler: index || handler, params, route: this }];
-			}
-
-			// Match the remaining segments. Return a hierarchy if nested routes were selected.
-			const remainingSegments = segments.slice(offset);
-			for (const nested of routes) {
-				const nestedResult = nested.select(context, remainingSegments, hasTrailingSlash, searchParams);
-				if (typeof nestedResult === 'string') {
-					return nestedResult;
-				}
-				if (nestedResult.length > 0) {
-					return [{ handler, params, route: this }, ...nestedResult];
+			else {
+				selected = true;
+				if (index) {
+					handler = index;
 				}
 			}
 
-			// No remaining segments matched, only select this route if a fallback handler was specified.
-			if (fallback) {
-				return [{ handler: fallback, params, route: this }];
+			if (!selected) {
+				return [];
 			}
 
-			return [];
+			if (redirect !== undefined) {
+				return redirect;
+			}
+
+			const { rawPathValues, rawSearchParams } = matchResult;
+			const selection = {
+				// Use a noop handler if exec was not provided. Something needs to be returned otherwise the router may
+				// think no routes were selected.
+				handler: handler || noop,
+				path,
+				params,
+				rawPathValues,
+				rawSearchParams,
+				route: this
+			};
+			return remainingSelection ? [selection, ...remainingSelection] : [selection];
 		}
 	},
 	(
