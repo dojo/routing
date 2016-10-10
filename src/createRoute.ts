@@ -12,6 +12,12 @@ import {
 } from './lib/path';
 
 /**
+ * Hash object where keys are parameter names and keys are arrays of one or more
+ * parameter values.
+ */
+export type SearchParams = Hash<string[]>;
+
+/**
  * Describes whether a route matched.
  */
 export interface MatchResult<P> {
@@ -228,13 +234,13 @@ const createRoute: RouteFactory<Context, Parameters> =
 			}
 
 			// Only extract the search params defined in the route's path.
-			const knownSearchParams = path.searchParameters.reduce((list, name) => {
+			const knownSearchParams = path.searchParameters.reduce<SearchParams>((list, name) => {
 				const value = searchParams.getAll(name);
 				if (value !== undefined) {
 					list[name] = value;
 				}
 				return list;
-			}, {} as Hash<string[]>);
+			}, {});
 
 			const params = computeParams(result.values, new UrlSearchParams(knownSearchParams));
 			if (params === null) {
