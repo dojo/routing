@@ -5,6 +5,7 @@ import WeakMap from 'dojo-shim/WeakMap';
 import { Thenable } from 'dojo-shim/interfaces';
 
 import { DefaultParameters, Context, Parameters, Request } from './interfaces';
+import { hasBeenAppended } from './createRouter';
 import {
 	deconstruct as deconstructPath,
 	match as matchPath,
@@ -95,7 +96,15 @@ export interface Selection {
  */
 export interface Route<C extends Context, P extends Parameters> {
 	/**
+	 * The route this route has been appended to.
+	 */
+	readonly parent?: Route<Context, Parameters>;
+
+	/**
 	 * Append one or more routes.
+	 *
+	 * A route can only appended to another route, or a router itself, once.
+	 *
 	 * @param routes A single route or an array containing 0 or more routes.
 	 */
 	append(add: Route<Context, Parameters> | Route<Context, Parameters>[]): void;
@@ -208,6 +217,10 @@ interface PrivateState {
 
 const privateStateMap = new WeakMap<Route<Context, Parameters>, PrivateState>();
 
+// Store parent relationships in a separate map, since it's the parent that adds entries to this map. Parents shouldn't
+// change the private state of their children.
+const parentMap = new WeakMap<Route<Context, Parameters>, Route<Context, Parameters>>();
+
 const noop = () => {};
 
 function computeDefaultParams(
@@ -232,15 +245,28 @@ function computeDefaultParams(
 
 const createRoute: RouteFactory<Context, Parameters> =
 	compose({
+		get parent(this: Route<Context, Parameters>) {
+			return parentMap.get(this);
+		},
+
 		append(this: Route<Context, Parameters>, add: Route<Context, Parameters> | Route<Context, Parameters>[]) {
 			const { routes } = privateStateMap.get(this);
+			const append = (route: Route<Context, Parameters>) => {
+				if (hasBeenAppended(route)) {
+					throw new Error('Cannot append route that has already been appended');
+				}
+
+				routes.push(route);
+				parentMap.set(route, this);
+			};
+
 			if (Array.isArray(add)) {
 				for (const route of add) {
-					routes.push(route);
+					append(route);
 				}
 			}
 			else {
-				routes.push(add);
+				append(add);
 			}
 		},
 

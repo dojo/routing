@@ -544,6 +544,23 @@ suite('createRoute', () => {
 		assert.lengthOf(selections, 2);
 	});
 
+	test('routes can only be appended once', () => {
+		const foo = createRoute({ path: '/foo' });
+		const bar = createRoute({ path: '/bar' });
+		const baz = createRoute({ path: '/baz' });
+
+		foo.append(bar);
+		assert.throws(() => {
+			foo.append(bar);
+		}, Error, 'Cannot append route that has already been appended');
+		assert.throws(() => {
+			foo.append([ bar, baz ]);
+		}, Error, 'Cannot append route that has already been appended');
+		assert.throws(() => {
+			baz.append(bar);
+		}, Error, 'Cannot append route that has already been appended');
+	});
+
 	// This test is mostly there to verify the typings at compile time.
 	test('createRoute() takes a Context type', () => {
 		interface Refined extends Context {

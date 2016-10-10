@@ -339,6 +339,31 @@ suite('createRouter', () => {
 		});
 	});
 
+	test('routes can only be appended once', () => {
+		const router = createRouter();
+		const foo = createRoute({ path: '/foo' });
+		const bar = createRoute({ path: '/bar' });
+		const baz = createRoute({ path: '/baz' });
+
+		router.append(foo);
+		assert.throws(() => {
+			router.append(foo);
+		}, Error, 'Cannot append route that has already been appended');
+		assert.throws(() => {
+			router.append([ foo, bar ]);
+		}, Error, 'Cannot append route that has already been appended');
+
+		foo.append(bar);
+		assert.throws(() => {
+			router.append(bar);
+		}, Error, 'Cannot append route that has already been appended');
+
+		router.append(baz);
+		assert.throws(() => {
+			router.append(baz);
+		}, Error, 'Cannot append route that has already been appended');
+	});
+
 	test('leading slashes are irrelevant', () => {
 		const router = createRouter();
 		const root = createRoute({ path: '/foo' });

@@ -48,6 +48,8 @@ router.append([
 ]);
 ```
 
+Routes can only be appended to a router once.
+
 ### Dispatching paths
 
 The router doesn't track navigation events by itself. Changed paths need to be dispatched by application code. Context must be provided, this is made available to the matched routes.
@@ -146,6 +148,8 @@ posts.append([
 	createRoute({ path: 'other' })
 ]);
 ```
+
+Routes can only be appended to another route, or a router, once.
 
 Starting the path of a nested route with a leading slash will not make it absolute. The nested route's path will still be relative to that of the route it's appended to.
 

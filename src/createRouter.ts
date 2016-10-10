@@ -104,6 +104,9 @@ export interface DispatchResult {
 export interface RouterMixin<C extends Context> {
 	/**
 	 * Append one or more routes.
+	 *
+	 * A route can only appended to another route, or a router itself, once.
+	 *
 	 * @param routes A single route or an array containing 0 or more routes.
 	 */
 	append(add: Route<Context, Parameters> | Route<Context, Parameters>[]): void;
@@ -187,6 +190,11 @@ export interface RouterFactory<C extends Context> extends ComposeFactory<Router<
 	<C>(options?: RouterOptions<C>): Router<C>;
 }
 
+const parentMap = new WeakMap<Route<Context, Parameters>, Router<Context>>();
+export function hasBeenAppended(route: Route<Context, Parameters>): boolean {
+	return parentMap.has(route) || route.parent !== undefined;
+}
+
 interface PrivateState {
 	contextFactory: () => Context;
 	fallback?: (request: Request<Context, Parameters>) => void | Thenable<any>;
@@ -234,13 +242,22 @@ const createRouter: RouterFactory<Context> = compose.mixin(createEvented, {
 	mixin: {
 		append(this: Router<Context>, add: Route<Context, Parameters> | Route<Context, Parameters>[]) {
 			const { routes } = privateStateMap.get(this);
+			const append = (route: Route<Context, Parameters>) => {
+				if (hasBeenAppended(route)) {
+					throw new Error('Cannot append route that has already been appended');
+				}
+
+				routes.push(route);
+				parentMap.set(route, this);
+			};
+
 			if (Array.isArray(add)) {
 				for (const route of add) {
-					routes.push(route);
+					append(route);
 				}
 			}
 			else {
-				routes.push(add);
+				append(add);
 			}
 		},
 
