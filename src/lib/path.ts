@@ -130,7 +130,13 @@ export interface NamedSegment {
 
 export type Segment = LiteralSegment | NamedSegment;
 
-function isNamedSegment(segment: Segment): segment is NamedSegment {
+/**
+ * Determine whether the segment is a NamedSegment.
+ *
+ * @param segment The segment to be checked
+ * @return true if the segment is a NamedSegment, false otherwise
+ */
+export function isNamedSegment(segment: Segment): segment is NamedSegment {
 	return (<NamedSegment> segment).name !== undefined;
 }
 

@@ -5,17 +5,19 @@ import createEvented, {
 	EventedListener,
 	TargettedEventObject
 } from 'dojo-compose/mixins/createEvented';
-import { Handle } from 'dojo-core/interfaces';
-import { pausable, PausableHandle } from 'dojo-core/on';
+import { Handle, Hash } from 'dojo-core/interfaces';
 import Task from 'dojo-core/async/Task';
+import { pausable, PausableHandle } from 'dojo-core/on';
+import UrlSearchParams from 'dojo-core/UrlSearchParams';
+import { includes } from 'dojo-shim/array';
 import { Thenable } from 'dojo-shim/interfaces';
 import Promise from 'dojo-shim/Promise';
 import WeakMap from 'dojo-shim/WeakMap';
 
-import { Route, Selection } from './createRoute';
+import { Route, SearchParams, Selection } from './createRoute';
 import { Context, Parameters, Request } from './interfaces';
 import { History, HistoryChangeEvent } from './history/interfaces';
-import { parse as parsePath } from './lib/path';
+import { isNamedSegment, parse as parsePath } from './lib/path';
 
 /**
  * An object to resume or cancel router dispatch.
@@ -98,6 +100,8 @@ export interface DispatchResult {
 	success: boolean;
 }
 
+export type LinkParams = Hash<string | string[] | undefined>;
+
 /**
  * A router mixin.
  */
@@ -117,6 +121,16 @@ export interface RouterMixin<C extends Context> {
 	 * @param path The path.
 	 */
 	dispatch(context: C, path: string): Task<DispatchResult>;
+
+	/**
+	 * Generate a link for the route.
+	 *
+	 * Route hierarchies may require parameters to be present. Parameters are automatically derived from the currently
+	 * selected routes. Errors are thrown if parameters are missing or if the route is not in this router's hierarchy.
+	 *
+	 * @
+	 */
+	link(route: Route<Context, Parameters>, params?: LinkParams): string;
 
 	/**
 	 * Start the router.
@@ -308,20 +322,8 @@ const createRouter: RouterFactory<Context> = compose.mixin(createEvented, {
 
 						const { fallback, routes } = state;
 						let redirect: undefined | string;
-						const dispatched = routes.some((route: Route<Context, Parameters>) => {
+						const dispatched = routes.some((route) => {
 							const result = route.select(context, segments, trailingSlash, searchParams);
-
-							// Update the selected routes after selecting new routes, but before invoking the handlers.
-							// This means the original value is available to guard() and params() functions, and the
-							// new value when the newly selected routes are executed.
-							//
-							// Reset selected routes if not dispatched from start(), or if a redirect was requested.
-							if (!dispatchFromStart || typeof result === 'string') {
-								state.currentSelection = [];
-							}
-							else {
-								state.currentSelection = result;
-							}
 
 							if (typeof result === 'string') {
 								redirect = result;
@@ -331,12 +333,24 @@ const createRouter: RouterFactory<Context> = compose.mixin(createEvented, {
 								return false;
 							}
 
+							// Update the selected routes after selecting new routes, but before invoking the handlers.
+							// This means the original value is available to guard() and params() functions, and the
+							// new value when the newly selected routes are executed.
+							//
+							// Reset selected routes if not dispatched from start().
+							state.currentSelection = dispatchFromStart ? result : [];
+
 							for (const { handler, params } of result) {
 								catchRejection(this, context, path, handler({ context, params }));
 							}
 
 							return true;
 						});
+
+						// Reset the selected routes if the dispatch was unsuccessful, or if a redirect was requested.
+						if (!dispatched || redirect !== undefined) {
+							state.currentSelection = [];
+						}
 
 						if (!dispatched && fallback) {
 							catchRejection(this, context, path, fallback({ context, params: {} }));
@@ -359,6 +373,113 @@ const createRouter: RouterFactory<Context> = compose.mixin(createEvented, {
 					reject(error);
 				});
 			}, cancel);
+		},
+
+		link(this: Router<Context>, route: Route<Context, Parameters>, params: LinkParams = {}): string {
+			const { history, routes: roots, currentSelection } = privateStateMap.get(this);
+
+			const hierarchy = [ route ];
+			for (let parent = route.parent; parent !== undefined; parent = parent.parent) {
+				hierarchy.unshift(parent);
+			}
+
+			if (!includes(roots, hierarchy[0])) {
+				throw new Error('Cannot generate link for route that is not in the hierarchy');
+			}
+
+			const { leadingSlash: addLeadingSlash } = hierarchy[0].path;
+			let addTrailingSlash = false;
+			const segments: string[] = [];
+			const searchParams = new UrlSearchParams();
+
+			hierarchy
+				.map((route, index) => {
+					const { path } = route;
+					let currentPathValues: string[] | undefined;
+					let currentSearchParams: SearchParams | undefined;
+
+					const selection = currentSelection[index];
+					if (selection && selection.route === route) {
+						currentPathValues = selection.rawPathValues;
+						currentSearchParams = selection.rawSearchParams;
+					}
+
+					return { currentPathValues, currentSearchParams, path };
+				})
+				.forEach(({ currentPathValues, currentSearchParams, path }) => {
+					const { expectedSegments, searchParameters, trailingSlash } = path;
+					addTrailingSlash = trailingSlash;
+
+					let namedOffset = 0;
+					for (const segment of expectedSegments) {
+						if (isNamedSegment(segment)) {
+							const value = params[segment.name];
+							if (typeof value === 'string') {
+								segments.push(value);
+							}
+							else if (Array.isArray(value)) {
+								if (value.length === 1) {
+									segments.push(value[0]);
+								}
+								else {
+									throw new TypeError(`Cannot generate link, multiple values for parameter '${segment.name}'`);
+								}
+							}
+							else if (currentPathValues) {
+								segments.push(currentPathValues[namedOffset]);
+							}
+							else {
+								throw new Error(`Cannot generate link, missing parameter '${segment.name}'`);
+							}
+							namedOffset++;
+						}
+						else {
+							segments.push(segment.literal);
+						}
+					}
+
+					for (const key of searchParameters) {
+						// Don't repeat the search parameter if a previous route in the hierarchy has already appended
+						// it.
+						if (searchParams.has(key)) {
+							continue;
+						}
+
+						const value = params[key];
+						if (typeof value === 'string') {
+							searchParams.append(key, value);
+						}
+						else if (Array.isArray(value)) {
+							for (const item of value) {
+								searchParams.append(key, item);
+							}
+						}
+						else if (currentSearchParams) {
+							for (const item of currentSearchParams[key]) {
+								searchParams.append(key, item);
+							}
+						}
+						else {
+							throw new Error(`Cannot generate link, missing search parameter '${key}'`);
+						}
+					}
+				});
+
+			let pathname = segments.join('/');
+			if (addLeadingSlash) {
+				pathname = '/' + pathname;
+			}
+			if (addTrailingSlash) {
+				pathname += '/';
+			}
+			if (history) {
+				pathname = history.prefix(pathname);
+			}
+
+			const search = searchParams.toString();
+			const path = search ? `${pathname}?${search}` : pathname;
+
+			return path;
 		},
 
 		start(this: Router<Context>, { dispatchCurrent }: StartOptions = { dispatchCurrent: true }): PausableHandle {
