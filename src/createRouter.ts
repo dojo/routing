@@ -577,6 +577,7 @@ const createRouter: RouterFactory<Context> = compose.mixin(createEvented, {
 						history.replace(redirect);
 						redirecting = false;
 					}
+					return dispatchResult;
 				});
 			};
 
