@@ -204,7 +204,9 @@ export class Router<C extends Context> extends Evented {
 
 	on: RouterEvents<C>;
 
-	constructor({ context, fallback, history }: RouterOptions<C> = {}) {
+	constructor(options: RouterOptions<C> = { }) {
+		const { context, fallback, history } = options;
+
 		super({});
 
 		let contextFactory: () => C;

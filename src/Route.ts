@@ -182,7 +182,9 @@ export class Route<C extends Context, P extends Parameters> {
 		return this._path;
 	}
 
-	constructor({ exec, fallback, guard, index, params: computeParams, path, trailingSlashMustMatch = true }: RouteOptions<C, P> = {}) {
+	constructor(options: RouteOptions<C, P> = {}) {
+		const { exec, fallback, guard, index, params: computeParams, path, trailingSlashMustMatch = true } = options;
+
 		if (path && /#/.test(path)) {
 			throw new TypeError('Path must not contain \'#\'');
 		}
