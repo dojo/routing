@@ -474,7 +474,9 @@ export class Router<C extends Context> extends Evented {
 		this._history.set(path);
 	}
 
-	start({ dispatchCurrent }: StartOptions = { dispatchCurrent: true }): PausableHandle {
+	start(startOptions: StartOptions = { dispatchCurrent : true }): PausableHandle {
+		const { dispatchCurrent } = startOptions;
+
 		if (this._started) {
 			throw new Error('start can only be called once');
 		}

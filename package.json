@@ -23,9 +23,9 @@
     "test": "grunt test"
   },
   "peerDependencies": {
-    "@dojo/core": "2.0.0-alpha.23",
+    "@dojo/core": "2.0.0-alpha.24",
     "@dojo/has": "2.0.0-alpha.7",
-    "@dojo/shim": "2.0.0-beta.8"
+    "@dojo/shim": "2.0.0-beta.9"
   },
   "devDependencies": {
     "@types/chai": "~3.4.0",
