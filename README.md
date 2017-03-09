@@ -603,7 +603,7 @@ import HashHistory from '@dojo/routing/history/HashHistory';
 const history = new HashHistory();
 ```
 
-The `history` object has the same `current` getter and `set()` and `replace()` methods. The `HashHistory` class too assumes the global object is a browser `window` object, but an explicit object can be provided. It'll access `window.history` and add an event listener for the `hashchange` event.
+The `history` object has the same `current` getter and `set()` and `replace()` methods. The `HashHistory` class assumes the global object is a browser `window` object, but an explicit object can be provided. It'll access `window.history` and add an event listener for the `hashchange` event.
 
 Path strings are stored in the fragment identifier. `history.current` returns the current path, without a `#` prefix. The same goes for the `value` property of the `change` event object.
 
