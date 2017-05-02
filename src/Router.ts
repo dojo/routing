@@ -301,6 +301,7 @@ export class Router<C extends Context> extends Evented {
 					}
 
 					let redirect: undefined | string;
+					const dispatchPromises: Promise<any>[] = [];
 					const dispatched = this._routes.some((route) => {
 						const result = route.select(context, segments, trailingSlash, searchParams);
 
@@ -318,11 +319,10 @@ export class Router<C extends Context> extends Evented {
 						//
 						// Reset selected routes if not dispatched from start().
 						this._currentSelection = dispatchFromStart ? result : [];
-
-						for (const { handler, params } of result) {
-							catchRejection(this, context, path, handler({ context, params }));
-						}
-
+						const promise = result.reduce((promise, { handler, params }) => {
+							return promise.then(() => handler({ context, params }));
+						}, Promise.resolve());
+						dispatchPromises.push(promise);
 						return true;
 					});
 
@@ -340,7 +340,10 @@ export class Router<C extends Context> extends Evented {
 					if (redirect !== undefined) {
 						result.redirect = redirect;
 					}
-					return result;
+					return Promise.all(dispatchPromises).then(() => result, (error) => {
+						reportError(this, context, path, error);
+						reject(error);
+					});
 				},
 				// When deferrals are canceled their corresponding promise is rejected. Ensure the task resolves
 				// with `false` instead of being rejected too.
