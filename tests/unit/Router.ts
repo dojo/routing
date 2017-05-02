@@ -1,5 +1,6 @@
 import Task from '@dojo/core/async/Task';
 import Promise from '@dojo/shim/Promise';
+import { delay } from '@dojo/core/async/timing';
 import { beforeEach, suite, test } from 'intern!tdd';
 import * as assert from 'intern/chai!assert';
 import { stub, spy } from 'sinon';
@@ -189,6 +190,36 @@ suite('Router', () => {
 
 		return router.dispatch({} as Context, '/foo').then(() => {
 			assert.deepEqual(order, ['first', 'second']);
+		});
+	});
+
+	test('dispatch() calls wait for the the previous segments to complete before firing', () => {
+		const order: string[] = [];
+
+		let promise: Promise<any> = Promise.resolve();
+		const router = new Router();
+		const routeOne = new Route({
+			path: '/foo',
+			exec () {
+				promise = delay(50)();
+				return promise.then(() => {
+					order.push('first');
+				});
+			}
+		});
+		const routeTwo = new Route({
+			path: '/bar',
+			exec () {
+				order.push('second');
+			}
+		});
+		routeOne.append(routeTwo);
+		router.append(routeOne);
+
+		return router.dispatch({} as Context, '/foo/bar').then(() => {
+			return promise.then(() => {
+				assert.deepEqual(order, ['first', 'second']);
+			});
 		});
 	});
 
