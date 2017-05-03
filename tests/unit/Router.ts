@@ -223,6 +223,32 @@ suite('Router', () => {
 		});
 	});
 
+	test('if a dispatch() call errors subsequent segments are not dispatched', () => {
+		const order: string[] = [];
+		const router = new Router();
+		const routeOne = new Route({
+			path: '/foo',
+			exec () {
+				throw 'error';
+			}
+		});
+		const routeTwo = new Route({
+			path: '/bar',
+			exec () {
+				order.push('second');
+			}
+		});
+		routeOne.append(routeTwo);
+		router.append(routeOne);
+
+		return router.dispatch({} as Context, '/foo/bar').then(() => {
+			assert.fail('Should not be called');
+		}).catch((error) => {
+			assert.strictEqual(error, 'error');
+			assert.deepEqual(order, []);
+		});
+	});
+
 	test('dispatch() emits navstart event', () => {
 		const router = new Router();
 
