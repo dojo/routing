@@ -334,13 +334,10 @@ export class Route<C extends Context, P extends Parameters> {
 			});
 
 			// No remaining segments matched, only select this route if a fallback handler was specified.
-			if (!selected && this._outlet) {
+			if (!selected && (this._outlet || this._fallback)) {
 				type = 'error';
 				selected = true;
-				handler = noop;
-			}
-			if (!selected && this._fallback) {
-				handler = this._fallback;
+				handler = this._fallback || noop;
 			}
 		}
 		// Select this route, configure the index handler if specified.

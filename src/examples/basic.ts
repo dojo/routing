@@ -75,7 +75,7 @@ export const HomeOutlet = Outlet({ index: Home }, 'home');
 export const TopicsOutlet = Outlet(Topics, 'topics', (params: any, type: string, location: string) => {
 	return { showHeading: type === 'index', location };
 });
-export const TopicOutlet = Outlet({ index: Topic, error: ErrorWidget }, 'topic');
+export const TopicOutlet = Outlet({ component: Topic, error: ErrorWidget }, 'topic');
 
 export interface AppProperties extends WidgetProperties {
 	location: string;
