@@ -26,24 +26,24 @@ class Home extends WidgetBase {
 
 interface TopicsProperties extends WidgetProperties {
 	showHeading: string;
-	currentPath: string;
+	location: string;
 }
 
 class Topics extends WidgetBase<TopicsProperties> {
 	render() {
-		const { showHeading, currentPath } = this.properties;
+		const { showHeading, location } = this.properties;
 
 		return v('div', [
 			v('h2', [ 'Topics' ]),
 			v('ul', [
 				v('li', [
-					v('a', { href: `${currentPath}/rendering` }, [ 'Rendering with Dojo 2' ])
+					v('a', { href: `${location}/rendering` }, [ 'Rendering with Dojo 2' ])
 				]),
 				v('li', [
-					v('a', { href: `${currentPath}/widgets` }, [ 'Widgets' ])
+					v('a', { href: `${location}/widgets` }, [ 'Widgets' ])
 				]),
 				v('li', [
-					v('a', { href: `${currentPath}/props-v-state` },  [ 'Props v State' ])
+					v('a', { href: `${location}/props-v-state` },  [ 'Props v State' ])
 				])
 			]),
 			showHeading ? v('h3', [ 'Please select a topic.' ]) : null,
@@ -66,29 +66,29 @@ class Topic extends WidgetBase<TopicProperties> {
 
 const AboutOutlet = Outlet(About, 'about');
 const HomeOutlet = Outlet({ index: Home }, 'home');
-const TopicsOutlet = Outlet(Topics, 'topics', (params: any, type: string, currentPath: string) => {
-	return { showHeading: type === 'index', currentPath };
+const TopicsOutlet = Outlet(Topics, 'topics', (params: any, type: string, location: string) => {
+	return { showHeading: type === 'index', location };
 });
 const TopicOutlet = Outlet(Topic, 'topic');
 
 interface AppProperties extends WidgetProperties {
-	currentPath: string;
+	location: string;
 }
 
 class App extends WidgetBase<AppProperties> {
 	render() {
-		const { currentPath } = this.properties;
+		const { location } = this.properties;
 
 		return v('div', [
 			v('ul', [
 				v('li', [
-					v('a', { href: `${currentPath}/home` }, [ 'Home' ])
+					v('a', { href: `${location}/home` }, [ 'Home' ])
 				]),
 				v('li', [
-					v('a', { href: `${currentPath}/about` }, [ 'About' ])
+					v('a', { href: `${location}/about` }, [ 'About' ])
 				]),
 				v('li', [
-					v('a', { href: `${currentPath}/topics` }, [ 'Topics' ])
+					v('a', { href: `${location}/topics` }, [ 'Topics' ])
 				])
 			]),
 			w(AboutOutlet, {}),

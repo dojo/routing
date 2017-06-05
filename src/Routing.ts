@@ -48,8 +48,8 @@ export class RouterContext extends Evented {
 		return this._router;
 	}
 
-	public addOutlet(outlet: string, params: any, currentPath: string, type: 'outlet' | 'fallback' | 'index' = 'outlet') {
-		this._outletStack.set(outlet, { params, type, currentPath });
+	public addOutlet(outlet: string, params: any, location: string, type: 'outlet' | 'fallback' | 'index' = 'outlet') {
+		this._outletStack.set(outlet, { params, type, location });
 	}
 
 	public getOutlet(outlet: string): any {
@@ -144,10 +144,10 @@ export class RouterInjector extends BaseInjector<RouterContext> {
 	@beforeRender()
 	protected beforeRender(renderFunc: any, properties: any, children: any[]) {
 		const { outlet, mainComponent, indexComponent, mapParams } = properties.getProperties(this.toInject(), properties);
-		const { params = {}, type, currentPath } = this.context.getOutlet(outlet);
+		const { params = {}, type, location } = this.context.getOutlet(outlet);
 
 		properties.getProperties = (injected: RouterContext, properties: any) => {
-			return mapParams(params, type, currentPath);
+			return mapParams(params, type, location);
 		};
 
 		if ((type === 'index' || type === 'fallback') && indexComponent) {
@@ -168,7 +168,7 @@ export type Outlet<W extends WidgetBaseInterface, F extends WidgetBaseInterface>
 export function Outlet<W extends WidgetBaseInterface, F extends WidgetBaseInterface>(
 	outletComponents: Component<W> | OutletComponents<W, F>,
 	outlet: string,
-	mapParams: Function = (params: any, type: string, currentPath: string) => { return { ...params, type, currentPath }; }
+	mapParams: Function = (params: any, type: string, location: string) => { return { ...params, type, location }; }
 ): Outlet<W, F> {
 	const indexComponent = isComponent(outletComponents) ? undefined : outletComponents.index;
 	const mainComponent = isComponent(outletComponents) ? outletComponents : outletComponents.component;

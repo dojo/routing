@@ -37,25 +37,25 @@ const CompanyOutlet = Outlet(Company, 'company');
 const UserOutlet = Outlet(User, 'user', (params: any) => { return { name: params.user }; });
 
 interface AppProperties extends WidgetProperties {
-	currentPath: string;
+	location: string;
 }
 
 class App extends WidgetBase<AppProperties> {
 	render() {
-		const { currentPath } = this.properties;
+		const { location } = this.properties;
 		return v('div', [
 			v('ul', [
 				v('li', [
-					v('a', { href: `${currentPath}/about` }, [ 'About Us (static)' ])
+					v('a', { href: `${location}/about` }, [ 'About Us (static)' ])
 				]),
 				v('li', [
-					v('a', { href: `${currentPath}/company` }, [ 'Company (static)' ])
+					v('a', { href: `${location}/company` }, [ 'Company (static)' ])
 				]),
 				v('li', [
-					v('a', { href: `${currentPath}/kim` }, [ 'Kim (dynamic)' ])
+					v('a', { href: `${location}/kim` }, [ 'Kim (dynamic)' ])
 				]),
 				v('li', [
-					v('a', { href: `${currentPath}/chris` }, [ 'Chris (dyamic)' ])
+					v('a', { href: `${location}/chris` }, [ 'Chris (dyamic)' ])
 				])
 			]),
 			w(AboutOutlet, {}),

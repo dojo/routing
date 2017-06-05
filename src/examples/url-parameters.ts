@@ -20,27 +20,27 @@ class Child extends WidgetBase<ChildProperties> {
 const ChildOutlet = Outlet(Child, 'child', (params: any) => { return { name: params.id }; });
 
 interface AppProperties extends WidgetProperties {
-	currentPath: string;
+	location: string;
 }
 
 class App extends WidgetBase<AppProperties> {
 	render() {
-		const { currentPath } = this.properties;
+		const { location } = this.properties;
 
 		return v('div', [
 			v('h2', [ 'Accounts' ]),
 			v('ul', [
 				v('li', [
-					v('a', { href: `${currentPath}/netflix` }, [ 'Netflix' ])
+					v('a', { href: `${location}/netflix` }, [ 'Netflix' ])
 				]),
 				v('li', [
-					v('a', { href: `${currentPath}/zillow-group` }, [ 'Zillow Group' ])
+					v('a', { href: `${location}/zillow-group` }, [ 'Zillow Group' ])
 				]),
 				v('li', [
-					v('a', { href: `${currentPath}/yahoo` }, [ 'Yahoo' ])
+					v('a', { href: `${location}/yahoo` }, [ 'Yahoo' ])
 				]),
 				v('li', [
-					v('a', { href: `${currentPath}/modus-create` }, [ 'Modus Create' ])
+					v('a', { href: `${location}/modus-create` }, [ 'Modus Create' ])
 				])
 			]),
 			w(ChildOutlet, {})
