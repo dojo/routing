@@ -3,63 +3,14 @@ import { v, w } from '@dojo/widget-core/d';
 import { ProjectorMixin } from '@dojo/widget-core/mixins/Projector';
 
 import { registerRouter, RouteConfig } from './../Routing';
-import { BasicAppOutlet } from './basic';
-import { UrlParametersAppOutlet } from './url-parameters';
-import { AmbiguousMatchesOutlet } from './ambigious-matches';
+import { BasicAppOutlet, BasicAppRouteConfig } from './basic';
+import { UrlParametersAppOutlet, UrlParametersRouteConfig } from './url-parameters';
+import { AmbiguousMatchesOutlet, AmbiguousMatchesRouteConfig } from './ambigious-matches';
 
 const applicationRoutes: RouteConfig[] = [
-	{
-		path: 'basic',
-		outlet: 'basic',
-		children: [
-			{
-				path: 'home',
-				outlet: 'home'
-			},
-			{
-				path: 'about',
-				outlet: 'about'
-			},
-			{
-				path: 'topics',
-				outlet: 'topics',
-				children: [
-					{
-						path: '{topic}',
-						outlet: 'topic'
-					}
-				]
-			}
-		]
-	},
-	{
-		path: 'url-parameters',
-		outlet: 'url-parameters',
-		children: [
-			{
-				path: '{id}',
-				outlet: 'child'
-			}
-		]
-	},
-	{
-		path: 'ambiguous-matches',
-		outlet: 'ambiguous-matches',
-		children: [
-			{
-				path: 'about',
-				outlet: 'about'
-			},
-			{
-				path: 'company',
-				outlet: 'company'
-			},
-			{
-				path: '{user}',
-				outlet: 'user'
-			}
-		]
-	}
+	BasicAppRouteConfig,
+	UrlParametersRouteConfig,
+	AmbiguousMatchesRouteConfig
 ];
 
 const router = registerRouter(applicationRoutes);

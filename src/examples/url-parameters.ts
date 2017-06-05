@@ -1,15 +1,15 @@
 import { WidgetBase } from '@dojo/widget-core/WidgetBase';
 import { v, w } from '@dojo/widget-core/d';
-import { WidgetProperties } from '@dojo/widget-core/interfaces';
+import { WidgetProperties, DNode } from '@dojo/widget-core/interfaces';
 
-import { Outlet } from './../Routing';
+import { Outlet, RouteConfig } from './../Routing';
 
-interface ChildProperties extends WidgetProperties {
+export interface ChildProperties extends WidgetProperties {
 	name: string;
 }
 
-class Child extends WidgetBase<ChildProperties> {
-	render() {
+export class Child extends WidgetBase<ChildProperties> {
+	render(): DNode {
 		console.log('Child Render');
 		return v('div', [
 			v('h3', [ `ID: ${this.properties.name || 'this must be about'}` ])
@@ -17,14 +17,14 @@ class Child extends WidgetBase<ChildProperties> {
 	}
 }
 
-const ChildOutlet = Outlet(Child, 'child', (params: any) => { return { name: params.id }; });
+export const ChildOutlet = Outlet(Child, 'child', (params: any) => { return { name: params.id }; });
 
-interface AppProperties extends WidgetProperties {
+export interface AppProperties extends WidgetProperties {
 	location: string;
 }
 
-class App extends WidgetBase<AppProperties> {
-	render() {
+export class App extends WidgetBase<AppProperties> {
+	render(): DNode {
 		const { location } = this.properties;
 
 		return v('div', [
@@ -47,5 +47,16 @@ class App extends WidgetBase<AppProperties> {
 		]);
 	}
 }
+
+export const UrlParametersRouteConfig: RouteConfig = {
+	path: 'url-parameters',
+	outlet: 'url-parameters',
+	children: [
+		{
+			path: '{id}',
+			outlet: 'child'
+		}
+	]
+};
 
 export const UrlParametersAppOutlet = Outlet(App, 'url-parameters');

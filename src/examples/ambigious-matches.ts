@@ -1,47 +1,47 @@
 import { WidgetBase } from '@dojo/widget-core/WidgetBase';
 import { v, w } from '@dojo/widget-core/d';
-import { WidgetProperties } from '@dojo/widget-core/interfaces';
+import { WidgetProperties, DNode } from '@dojo/widget-core/interfaces';
 
-import { Outlet } from './../Routing';
+import { Outlet, RouteConfig } from './../Routing';
 
-interface ChildProperties extends WidgetProperties {
+export interface ChildProperties extends WidgetProperties {
 	name: string;
 }
 
-class About extends WidgetBase {
-	render() {
+export class About extends WidgetBase {
+	render(): DNode {
 		return v('h2', [ 'About' ]);
 	}
 }
 
-class Company extends WidgetBase {
-	render() {
+export class Company extends WidgetBase {
+	render(): DNode {
 		return v('h2', [ 'Company' ]);
 	}
 }
 
-interface UserProperties extends WidgetProperties {
+export interface UserProperties extends WidgetProperties {
 	name: string;
 }
 
-class User extends WidgetBase<UserProperties> {
-	render() {
+export class User extends WidgetBase<UserProperties> {
+	render(): DNode {
 		return v('div', [
 			v('h2', [ `User: ${this.properties.name}`])
 		]);
 	}
 }
 
-const AboutOutlet = Outlet(About, 'about');
-const CompanyOutlet = Outlet(Company, 'company');
-const UserOutlet = Outlet(User, 'user', (params: any) => { return { name: params.user }; });
+export const AboutOutlet = Outlet(About, 'about');
+export const CompanyOutlet = Outlet(Company, 'company');
+export const UserOutlet = Outlet(User, 'user', (params: any) => { return { name: params.user }; });
 
-interface AppProperties extends WidgetProperties {
+export interface AppProperties extends WidgetProperties {
 	location: string;
 }
 
-class App extends WidgetBase<AppProperties> {
-	render() {
+export class App extends WidgetBase<AppProperties> {
+	render(): DNode {
 		const { location } = this.properties;
 		return v('div', [
 			v('ul', [
@@ -64,5 +64,24 @@ class App extends WidgetBase<AppProperties> {
 		]);
 	}
 }
+
+export const AmbiguousMatchesRouteConfig: RouteConfig = {
+	path: 'ambiguous-matches',
+	outlet: 'ambiguous-matches',
+	children: [
+		{
+			path: 'about',
+			outlet: 'about'
+		},
+		{
+			path: 'company',
+			outlet: 'company'
+		},
+		{
+			path: '{user}',
+			outlet: 'user'
+		}
+	]
+};
 
 export const AmbiguousMatchesOutlet = Outlet(App, 'ambiguous-matches');

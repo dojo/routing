@@ -1,36 +1,36 @@
 import { WidgetBase } from '@dojo/widget-core/WidgetBase';
 import { v, w } from '@dojo/widget-core/d';
-import { WidgetProperties } from '@dojo/widget-core/interfaces';
+import { WidgetProperties, DNode } from '@dojo/widget-core/interfaces';
 
-import { Outlet } from './../Routing';
+import { Outlet, RouteConfig } from './../Routing';
 
-interface ChildProperties extends WidgetProperties {
+export interface ChildProperties extends WidgetProperties {
 	name: string;
 }
 
-class About extends WidgetBase {
-	render() {
+export class About extends WidgetBase {
+	render(): DNode {
 		return v('div', [
 			v('h2', [ 'About' ])
 		]);
 	}
 }
 
-class Home extends WidgetBase {
-	render() {
+export class Home extends WidgetBase {
+	render(): DNode {
 		return v('div', [
 			v('h2', [ 'Home' ])
 		]);
 	}
 }
 
-interface TopicsProperties extends WidgetProperties {
+export interface TopicsProperties extends WidgetProperties {
 	showHeading: string;
 	location: string;
 }
 
-class Topics extends WidgetBase<TopicsProperties> {
-	render() {
+export class Topics extends WidgetBase<TopicsProperties> {
+	render(): DNode {
 		const { showHeading, location } = this.properties;
 
 		return v('div', [
@@ -52,31 +52,31 @@ class Topics extends WidgetBase<TopicsProperties> {
 	}
 }
 
-interface TopicProperties extends WidgetProperties {
+export interface TopicProperties extends WidgetProperties {
 	topic: string;
 }
 
-class Topic extends WidgetBase<TopicProperties> {
-	render() {
+export class Topic extends WidgetBase<TopicProperties> {
+	render(): DNode {
 		return v('div', [
 			v('h3', [ this.properties.topic ])
 		]);
 	}
 }
 
-const AboutOutlet = Outlet(About, 'about');
-const HomeOutlet = Outlet({ index: Home }, 'home');
-const TopicsOutlet = Outlet(Topics, 'topics', (params: any, type: string, location: string) => {
+export const AboutOutlet = Outlet(About, 'about');
+export const HomeOutlet = Outlet({ index: Home }, 'home');
+export const TopicsOutlet = Outlet(Topics, 'topics', (params: any, type: string, location: string) => {
 	return { showHeading: type === 'index', location };
 });
-const TopicOutlet = Outlet(Topic, 'topic');
+export const TopicOutlet = Outlet(Topic, 'topic');
 
-interface AppProperties extends WidgetProperties {
+export interface AppProperties extends WidgetProperties {
 	location: string;
 }
 
-class App extends WidgetBase<AppProperties> {
-	render() {
+export class App extends WidgetBase<AppProperties> {
+	render(): DNode {
 		const { location } = this.properties;
 
 		return v('div', [
@@ -97,5 +97,30 @@ class App extends WidgetBase<AppProperties> {
 		]);
 	}
 }
+
+export const BasicAppRouteConfig: RouteConfig = {
+	path: 'basic',
+	outlet: 'basic',
+	children: [
+		{
+			path: 'home',
+			outlet: 'home'
+		},
+		{
+			path: 'about',
+			outlet: 'about'
+		},
+		{
+			path: 'topics',
+			outlet: 'topics',
+			children: [
+				{
+					path: '{topic}',
+					outlet: 'topic'
+				}
+			]
+		}
+	]
+};
 
 export const BasicAppOutlet = Outlet(App, 'basic');
