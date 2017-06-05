@@ -16,6 +16,7 @@ export interface Context {
  * Describes extracted parameters.
  */
 export interface Parameters {
+	[param: string]: any;
 	// TODO: Does specifying an indexer make sense here?
 }
 

@@ -1,3 +1,4 @@
+import Map from '@dojo/shim/Map';
 import Task from '@dojo/core/async/Task';
 import Evented, { BaseEventedEvents } from '@dojo/core/Evented';
 import { Hash } from '@dojo/core/interfaces';
@@ -99,6 +100,26 @@ export interface RouterEvents<C extends Context> extends BaseEventedEvents {
 }
 
 /**
+ * Config for registering routes
+ */
+export interface RouteConfig {
+	/**
+	 *
+	 */
+	path: string;
+
+	/**
+	 *
+	 */
+	outlet?: string;
+
+	/**
+	 *
+	 */
+	children?: RouteConfig[];
+}
+
+/**
  * The options for the router.
  */
 export interface RouterOptions<C extends Context> extends EventedOptions {
@@ -119,6 +140,11 @@ export interface RouterOptions<C extends Context> extends EventedOptions {
 	 * The history manager. Routes will be dispatched in response to change events emitted by the manager.
 	 */
 	history?: History;
+
+	/**
+	 *
+	 */
+	config?: RouteConfig[];
 }
 
 /**
@@ -158,6 +184,8 @@ export function findRouter(route: Route<Context, Parameters>): Router<Context> {
 		return router;
 	}
 }
+
+export const errorOutlet = 'errorOutlet';
 
 // istanbul ignore next
 const noop = () => {
@@ -201,13 +229,15 @@ export class Router<C extends Context> extends Evented {
 	private _history?: History;
 	private _routes: Route<Context, Parameters>[];
 	private _started?: boolean;
+	private _routeConfig: RouteConfig[];
+	private _outletStack: Map<string, any> = new Map<string, any>();
+	private _outletRouteMap: Map<string, Route<any, any>> = new Map<string, Route<any, any>>();
 
 	on: RouterEvents<C>;
 
 	constructor(options: RouterOptions<C> = { }) {
-		const { context, fallback, history } = options;
-
 		super({});
+		const { context, fallback, history, config } = options;
 
 		let contextFactory: () => C;
 		if (typeof context === 'function') {
@@ -236,6 +266,37 @@ export class Router<C extends Context> extends Evented {
 		this._history = history;
 		this._routes = [];
 		this._started = false;
+
+		if (config) {
+			this.register(config);
+		}
+
+		// do we need this????
+		this._routeConfig = options.config || [];
+	}
+
+	register(config: RouteConfig[], from: string | Router<any> | Route<any, any> = this) {
+		let parent: Router<any> | Route<any, any>;
+		if (typeof from === 'string') {
+			parent = this._outletRouteMap.get(from) || this;
+		}
+		else {
+			parent = from;
+		}
+
+		config.forEach(({ path, outlet = path, children }) => {
+			const route = new Route({
+				path,
+				outlet
+			});
+			if (outlet) {
+				this._outletRouteMap.set(outlet, route);
+			}
+			parent.append(route);
+			if (children) {
+				this.register(children, route);
+			}
+		});
 	}
 
 	append(add: Route<Context, Parameters> | Route<Context, Parameters>[]) {
@@ -271,6 +332,7 @@ export class Router<C extends Context> extends Evented {
 
 		const deferrals: Promise<void>[] = [];
 
+		this._outletStack.clear();
 		this.emit<NavigationStartEvent>({
 			cancel,
 			defer () {
@@ -319,7 +381,14 @@ export class Router<C extends Context> extends Evented {
 						// Reset selected routes if not dispatched from start().
 						this._currentSelection = dispatchFromStart ? result : [];
 
-						for (const { handler, params } of result) {
+						for (const { handler, params, outlet, type, route } of result) {
+							if (outlet) {
+								const location = this.link(route, params);
+								this._outletStack.set(outlet, { type, params, location });
+								if (type === 'error') {
+									this._outletStack.set(errorOutlet, { type: 'outlet', params, location });
+								}
+							}
 							catchRejection(this, context, path, handler({ context, params }));
 						}
 
@@ -331,9 +400,12 @@ export class Router<C extends Context> extends Evented {
 						this._currentSelection = [];
 					}
 
-					if (!dispatched && this._fallback) {
-						catchRejection(this, context, path, this._fallback({ context, params: {} }));
-						return { success: false };
+					if (!dispatched) {
+						this._outletStack.set(errorOutlet, { type: 'outlet' });
+						if (this._fallback) {
+							catchRejection(this, context, path, this._fallback({ context, params: {} }));
+							return { success: false };
+						}
 					}
 
 					const result: DispatchResult = { success: dispatched };
@@ -474,6 +546,14 @@ export class Router<C extends Context> extends Evented {
 		}
 
 		this._history.set(path);
+	}
+
+	hasOutlet(outlet: string): boolean {
+		return this._outletStack.has(outlet);
+	}
+
+	getOutlet(outlet: string): any {
+		return this._outletStack.get(outlet);
 	}
 
 	start(startOptions: StartOptions = { dispatchCurrent : true }): PausableHandle {

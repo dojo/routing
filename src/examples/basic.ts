@@ -2,7 +2,7 @@ import { WidgetBase } from '@dojo/widget-core/WidgetBase';
 import { v, w } from '@dojo/widget-core/d';
 import { WidgetProperties, DNode } from '@dojo/widget-core/interfaces';
 
-import { Outlet, RouteConfig } from './../Routing';
+import { Outlet } from './../Routing';
 
 export interface ChildProperties extends WidgetProperties {
 	name: string;
@@ -64,12 +64,18 @@ export class Topic extends WidgetBase<TopicProperties> {
 	}
 }
 
+class ErrorWidget extends WidgetBase {
+	render() {
+		return v('div', [ 'ERROR 2' ]);
+	}
+}
+
 export const AboutOutlet = Outlet(About, 'about');
 export const HomeOutlet = Outlet({ index: Home }, 'home');
 export const TopicsOutlet = Outlet(Topics, 'topics', (params: any, type: string, location: string) => {
 	return { showHeading: type === 'index', location };
 });
-export const TopicOutlet = Outlet(Topic, 'topic');
+export const TopicOutlet = Outlet({ index: Topic, error: ErrorWidget }, 'topic');
 
 export interface AppProperties extends WidgetProperties {
 	location: string;
@@ -98,7 +104,7 @@ export class App extends WidgetBase<AppProperties> {
 	}
 }
 
-export const BasicAppRouteConfig: RouteConfig = {
+export const BasicAppRouteConfig = {
 	path: 'basic',
 	outlet: 'basic',
 	children: [

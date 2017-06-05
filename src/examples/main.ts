@@ -2,7 +2,8 @@ import { WidgetBase } from '@dojo/widget-core/WidgetBase';
 import { v, w } from '@dojo/widget-core/d';
 import { ProjectorMixin } from '@dojo/widget-core/mixins/Projector';
 
-import { registerRouter, RouteConfig } from './../Routing';
+import { RouteConfig, errorOutlet } from './../Router';
+import { registerRouter, Outlet } from './../Routing';
 import { BasicAppOutlet, BasicAppRouteConfig } from './basic';
 import { UrlParametersAppOutlet, UrlParametersRouteConfig } from './url-parameters';
 import { AmbiguousMatchesOutlet, AmbiguousMatchesRouteConfig } from './ambigious-matches';
@@ -16,6 +17,14 @@ const applicationRoutes: RouteConfig[] = [
 const router = registerRouter(applicationRoutes);
 
 const linkStyles = { 'text-decoration': 'none', position: 'relative', display: 'block', 'line-height': '1.8', cursor: 'auto', color: 'inherit' };
+
+class ErrorWidget extends WidgetBase {
+	render() {
+		return v('div', [ 'ERROR' ]);
+	}
+}
+
+const ErrorOutlet = Outlet(ErrorWidget, errorOutlet);
 
 class App extends WidgetBase {
 	render() {
@@ -68,7 +77,8 @@ class App extends WidgetBase {
 			} }, [
 				w(BasicAppOutlet, {}),
 				w(UrlParametersAppOutlet, {}),
-				w(AmbiguousMatchesOutlet, {})
+				w(AmbiguousMatchesOutlet, {}),
+				w(ErrorOutlet, {})
 			])
 		]);
 	}

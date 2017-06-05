@@ -238,7 +238,7 @@ suite('Route', () => {
 	});
 
 	test('parameter extraction can be customized', () => {
-		interface Customized {
+		interface Customized extends Parameters {
 			upper: string;
 			barIsQux: boolean;
 		}
