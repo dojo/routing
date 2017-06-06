@@ -3,7 +3,8 @@ import { v, w } from '@dojo/widget-core/d';
 import { ProjectorMixin } from '@dojo/widget-core/mixins/Projector';
 
 import { RouteConfig, errorOutlet } from './../Router';
-import { registerRouter, Outlet } from './../Routing';
+import { Outlet } from './../Outlet';
+import { registerRouterInjector } from './../RouterInjector';
 import { BasicAppOutlet, BasicAppRouteConfig } from './basic';
 import { UrlParametersAppOutlet, UrlParametersRouteConfig } from './url-parameters';
 import { AmbiguousMatchesOutlet, AmbiguousMatchesRouteConfig } from './ambigious-matches';
@@ -14,7 +15,7 @@ const applicationRoutes: RouteConfig[] = [
 	AmbiguousMatchesRouteConfig
 ];
 
-const router = registerRouter(applicationRoutes);
+const router = registerRouterInjector(applicationRoutes);
 
 const linkStyles = { 'text-decoration': 'none', position: 'relative', display: 'block', 'line-height': '1.8', cursor: 'auto', color: 'inherit' };
 

@@ -104,17 +104,17 @@ export interface RouterEvents<C extends Context> extends BaseEventedEvents {
  */
 export interface RouteConfig {
 	/**
-	 *
+	 * The path of the route
 	 */
 	path: string;
 
 	/**
-	 *
+	 * The optional outlet associated to the path
 	 */
 	outlet?: string;
 
 	/**
-	 *
+	 * Optional child route configuration
 	 */
 	children?: RouteConfig[];
 }
@@ -142,7 +142,7 @@ export interface RouterOptions<C extends Context> extends EventedOptions {
 	history?: History;
 
 	/**
-	 *
+	 * Routing configuration to set up on router creation
 	 */
 	config?: RouteConfig[];
 }
@@ -229,7 +229,6 @@ export class Router<C extends Context> extends Evented {
 	private _history?: History;
 	private _routes: Route<Context, Parameters>[];
 	private _started?: boolean;
-	private _routeConfig: RouteConfig[];
 	private _outletStack: Map<string, any> = new Map<string, any>();
 	private _outletRouteMap: Map<string, Route<any, any>> = new Map<string, Route<any, any>>();
 
@@ -270,9 +269,6 @@ export class Router<C extends Context> extends Evented {
 		if (config) {
 			this.register(config);
 		}
-
-		// do we need this????
-		this._routeConfig = options.config || [];
 	}
 
 	register(config: RouteConfig[], from: string | Router<any> | Route<any, any> = this) {

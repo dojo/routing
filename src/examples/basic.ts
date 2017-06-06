@@ -2,7 +2,7 @@ import { WidgetBase } from '@dojo/widget-core/WidgetBase';
 import { v, w } from '@dojo/widget-core/d';
 import { WidgetProperties, DNode } from '@dojo/widget-core/interfaces';
 
-import { Outlet } from './../Routing';
+import { Outlet } from './../Outlet';
 
 export interface ChildProperties extends WidgetProperties {
 	name: string;
