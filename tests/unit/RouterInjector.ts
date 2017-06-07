@@ -6,6 +6,7 @@ import { WidgetRegistry } from '@dojo/widget-core/WidgetRegistry';
 import { Constructor } from '@dojo/widget-core/interfaces';
 import { registry } from '@dojo/widget-core/d';
 
+import { MatchType } from './../../src/Route';
 import { RouterInjector, registerRouterInjector, routerKey } from './../../src/RouterInjector';
 import MemoryHistory from './../../src/history/MemoryHistory';
 
@@ -69,7 +70,7 @@ registerSuite({
 	},
 	'returns null when no components are passed via properties'() {
 		const context: any = new MockRouter(true, {
-			type: 'outlet',
+			type: MatchType.PARTIAL,
 			params: {},
 			location:
 			'location'
@@ -131,7 +132,7 @@ registerSuite({
 		'`outlet` outlet type': {
 			'renders `null` when no main component configured'() {
 				const context: any = new MockRouter(true, {
-					type: 'outlet',
+					type: MatchType.PARTIAL,
 					params: {},
 					location:
 					'location'
@@ -151,7 +152,7 @@ registerSuite({
 			},
 			'renders the main component when configured'() {
 				const context: any = new MockRouter(true, {
-					type: 'outlet',
+					type: MatchType.PARTIAL,
 					params: {},
 					location:
 					'location'
@@ -175,7 +176,7 @@ registerSuite({
 		'index outlet type': {
 			'renders `null` when no main or index component'() {
 				const context: any = new MockRouter(true, {
-					type: 'index',
+					type: MatchType.INDEX,
 					params: {},
 					location:
 					'location'
@@ -195,7 +196,7 @@ registerSuite({
 			},
 			'renders main component when no index component provided'() {
 				const context: any = new MockRouter(true, {
-					type: 'index',
+					type: MatchType.INDEX,
 					params: {},
 					location:
 					'location'
@@ -217,7 +218,7 @@ registerSuite({
 			},
 			'renders index component when index component is provided'() {
 				const context: any = new MockRouter(true, {
-					type: 'index',
+					type: MatchType.INDEX,
 					params: {},
 					location:
 					'location'
@@ -242,7 +243,7 @@ registerSuite({
 		'error outlet type': {
 			'renders `null` when no error component'() {
 				const context: any = new MockRouter(true, {
-					type: 'error',
+					type: MatchType.ERROR,
 					params: {},
 					location:
 					'location'
@@ -262,7 +263,7 @@ registerSuite({
 			},
 			'renders error component when error component is provided'() {
 				const context: any = new MockRouter(true, {
-					type: 'error',
+					type: MatchType.ERROR,
 					params: {},
 					location:
 					'location'
@@ -285,7 +286,7 @@ registerSuite({
 			},
 			'renders index component when index component is provided'() {
 				const context: any = new MockRouter(true, {
-					type: 'error',
+					type: MatchType.ERROR,
 					location:
 					'location'
 				});
@@ -310,7 +311,7 @@ registerSuite({
 	},
 	'invalidates on nav start'() {
 		const context: any = new MockRouter(true, {
-			type: 'error',
+			type: MatchType.ERROR,
 			location:
 			'location'
 		});

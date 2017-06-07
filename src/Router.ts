@@ -15,7 +15,7 @@ import { History, HistoryChangeEvent } from './history/interfaces';
 import { Context, Parameters, Request } from './interfaces';
 import { isNamedSegment, parse as parsePath } from './lib/path';
 
-import { Route, SearchParams, Selection } from './Route';
+import { Route, SearchParams, Selection, MatchType } from './Route';
 
 /**
  * An object to resume or cancel router dispatch.
@@ -158,6 +158,26 @@ export interface StartOptions {
 	dispatchCurrent: boolean;
 }
 
+/**
+ * The outlet context
+ */
+export interface OutletContext {
+	/**
+	 * The type of match for the outlet
+	 */
+	type: MatchType;
+
+	/**
+	 * The location of the route (link)
+	 */
+	location: string;
+
+	/**
+	 * The params for the specific outlet
+	 */
+	params: any;
+}
+
 const parentMap = new WeakMap<Route<Context, Parameters>, Router<Context>>();
 
 /**
@@ -230,7 +250,7 @@ export class Router<C extends Context> extends Evented {
 	private _history?: History;
 	private _routes: Route<Context, Parameters>[];
 	private _started?: boolean;
-	private _outletStack: Map<string, any> = new Map<string, any>();
+	private _outletStack: Map<string, any> = new Map<string, OutletContext>();
 	private _outletRouteMap: Map<string, Route<any, any>> = new Map<string, Route<any, any>>();
 	private _currentParams: any = {};
 
@@ -385,7 +405,7 @@ export class Router<C extends Context> extends Evented {
 								}
 								const location = this.link(route, this._currentParams);
 								this._outletStack.set(outlet, { type, params, location });
-								if (type === 'error') {
+								if (type === MatchType.ERROR) {
 									this._outletStack.set(errorOutlet, { type: 'outlet', params, location });
 								}
 							}
@@ -552,7 +572,7 @@ export class Router<C extends Context> extends Evented {
 		return this._outletStack.has(outlet);
 	}
 
-	getOutlet(outlet: string): any {
+	getOutlet(outlet: string): OutletContext {
 		return this._outletStack.get(outlet);
 	}
 

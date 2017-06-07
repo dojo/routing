@@ -6,7 +6,7 @@ import { stub, spy } from 'sinon';
 import MemoryHistory from '../../src/history/MemoryHistory';
 import { DefaultParameters, Context, Request, Parameters } from '../../src/interfaces';
 
-import Route from '../../src/Route';
+import Route, { MatchType } from '../../src/Route';
 import Router, { DispatchResult, ErrorEvent, NavigationStartEvent } from '../../src/Router';
 
 suite('Router', () => {
@@ -406,7 +406,7 @@ suite('Router', () => {
 			assert.deepEqual(fooOutletContext, {
 				location: 'foo',
 				params: {},
-				type: 'error'
+				type: MatchType.ERROR
 			});
 		});
 	});
@@ -447,21 +447,21 @@ suite('Router', () => {
 				params: {
 					foo: 'foo'
 				},
-				type: 'outlet'
+				type: MatchType.PARTIAL
 			});
 			assert.deepEqual(barOutletContext, {
 				location: 'foo/foo/bar/bar',
 				params: {
 					bar: 'bar'
 				},
-				type: 'outlet'
+				type: MatchType.PARTIAL
 			});
 			assert.deepEqual(quxOutletContext, {
 				location: 'foo/foo/bar/bar/qux/qux',
 				params: {
 					qux: 'qux'
 				},
-				type: 'index'
+				type: MatchType.INDEX
 			});
 		});
 	});

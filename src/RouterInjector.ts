@@ -7,6 +7,7 @@ import { RegistryLabel } from '@dojo/widget-core/interfaces';
 import HashHistory from './history/HashHistory';
 import { History } from './history/interfaces';
 import { Router, RouteConfig } from './Router';
+import { MatchType } from './Route';
 
 /**
  * Key for the router injetor
@@ -57,13 +58,13 @@ export class RouterInjector extends BaseInjector<Router<any>> {
 				return mapParams(params, type, location);
 			};
 
-			if ((type === 'index' || type === 'error') && indexComponent) {
+			if ((type === MatchType.INDEX || type === MatchType.ERROR) && indexComponent) {
 				properties.render = () => w(indexComponent, properties.properties, children);
 			}
-			else if (type === 'error' && errorComponent) {
+			else if (type === MatchType.ERROR && errorComponent) {
 				properties.render = () => w(errorComponent, properties.properties, properties.children);
 			}
-			else if (type !== 'error' && mainComponent) {
+			else if (type !== MatchType.ERROR && mainComponent) {
 				properties.render = () => w(mainComponent, properties.properties, properties.children);
 			}
 		}

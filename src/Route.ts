@@ -13,6 +13,15 @@ import { findRouter, hasBeenAppended, LinkParams  } from './Router';
 export type SearchParams = Hash<string[]>;
 
 /**
+ * The type of match for a route
+ */
+export enum MatchType {
+	INDEX = 0,
+	PARTIAL,
+	ERROR
+}
+
+/**
  * Describes whether a route matched.
  */
 export interface MatchResult<P> {
@@ -91,7 +100,7 @@ export interface Selection {
 	/**
 	 * The selection type
 	 */
-	type: string;
+	type: MatchType;
 }
 
 /**
@@ -312,7 +321,7 @@ export class Route<C extends Context, P extends Parameters> {
 		}
 
 		let handler = this._exec;
-		let type = 'outlet';
+		let type: MatchType = MatchType.PARTIAL;
 		let redirect: string | undefined;
 		let remainingSelection: Selection[] | undefined;
 		let selected = false;
@@ -335,7 +344,7 @@ export class Route<C extends Context, P extends Parameters> {
 
 			// No remaining segments matched, only select this route if a fallback handler was specified.
 			if (!selected && (this._outlet || this._fallback)) {
-				type = 'error';
+				type = MatchType.ERROR;
 				selected = true;
 				handler = this._fallback || noop;
 			}
@@ -343,7 +352,7 @@ export class Route<C extends Context, P extends Parameters> {
 		// Select this route, configure the index handler if specified.
 		else {
 			selected = true;
-			type = 'index';
+			type = MatchType.INDEX;
 			if (this._index) {
 				handler = this._index;
 			}

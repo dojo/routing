@@ -5,7 +5,7 @@ import { stub } from 'sinon';
 import { DefaultParameters, Context, Parameters } from '../../src/interfaces';
 import { deconstruct as deconstructPath } from '../../src/lib/path';
 
-import Route from '../../src/Route';
+import Route, { MatchType } from '../../src/Route';
 import Router from '../../src/Router';
 
 suite('Route', () => {
@@ -656,7 +656,7 @@ suite('Route', () => {
 
 		assert.lengthOf(selections, 1);
 		assert.strictEqual(selections[0].route, route);
-		assert.strictEqual(selections[0].type, 'index');
+		assert.strictEqual(selections[0].type, MatchType.INDEX);
 	});
 	test('matched route returns "outlet" type', () => {
 		const route1 = new Route({ path: '/foo/bar', outlet: '1' });
@@ -669,7 +669,7 @@ suite('Route', () => {
 
 		assert.lengthOf(selections, 2);
 		assert.strictEqual(selections[0].route, route1);
-		assert.strictEqual(selections[0].type, 'outlet');
+		assert.strictEqual(selections[0].type, MatchType.PARTIAL);
 	});
 	test('unmatched route returns "error" type when an outlet id is specified', () => {
 		const route = new Route({ path: '/foo/bar', outlet: '1' });
@@ -680,6 +680,6 @@ suite('Route', () => {
 
 		assert.lengthOf(selections, 1);
 		assert.strictEqual(selections[0].route, route);
-		assert.strictEqual(selections[0].type, 'error');
+		assert.strictEqual(selections[0].type, MatchType.ERROR);
 	});
 });
