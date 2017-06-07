@@ -328,6 +328,7 @@ export class Router<C extends Context> extends Evented {
 
 		const deferrals: Promise<void>[] = [];
 
+		this._currentParams = {};
 		this._outletStack.clear();
 		this.emit<NavigationStartEvent>({
 			cancel,
