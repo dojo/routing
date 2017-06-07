@@ -63,7 +63,7 @@ export interface Selection {
 	path: DeconstructedPath;
 
 	/**
-	 *
+	 * The selected outlet
 	 */
 	outlet: string | undefined;
 
@@ -89,7 +89,7 @@ export interface Selection {
 	route: Route<Context, Parameters>;
 
 	/**
-	 *
+	 * The selection type
 	 */
 	type: string;
 }
@@ -105,7 +105,7 @@ export interface RouteOptions<C, P extends Parameters> {
 	path?: string;
 
 	/**
-	 *
+	 * The outlet associated with the path
 	 */
 	outlet?: string;
 
