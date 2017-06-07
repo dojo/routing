@@ -1,5 +1,6 @@
 import { beforeRender } from '@dojo/widget-core/WidgetBase';
-import { w, registry } from '@dojo/widget-core/d';
+import { w, registry as globalRegistry } from '@dojo/widget-core/d';
+import { WidgetRegistry } from '@dojo/widget-core/WidgetRegistry';
 import { Injector, BaseInjector } from '@dojo/widget-core/Injector';
 import { RegistryLabel } from '@dojo/widget-core/interfaces';
 
@@ -17,15 +18,21 @@ export const routerKey = Symbol();
  * the route configuration.
  *
  * @param config The route config to register for the router
- * @param key The key for the router injector, defaults to exported `routerKey` symbol
+ * @param registry An optional registry that defaults to the global registry
  * @param history The history manager the router needs to use, default `HashHistory`
+ * @param key The key for the router injector, defaults to exported `routerKey` symbol
  */
-export function registerRouterInjector(config: RouteConfig[], key: RegistryLabel = routerKey, history: History = new HashHistory()): Router<any> {
-	if (registry.has(routerKey)) {
+export function registerRouterInjector(
+	config: RouteConfig[],
+	registry: WidgetRegistry = globalRegistry,
+	history: History = new HashHistory(),
+	key: RegistryLabel = routerKey
+): Router<any> {
+	if (registry.has(key)) {
 		throw new Error('Router has already been defined');
 	}
 	const router = new Router({ history, config });
-	registry.define(routerKey, Injector(RouterInjector, router));
+	registry.define(key, Injector(RouterInjector, router));
 	return router;
 }
 

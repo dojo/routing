@@ -301,6 +301,171 @@ suite('Router', () => {
 		});
 	});
 
+	test('register routing configuration', () => {
+		const config = [
+			{
+				path: 'foo',
+				outlet: 'another-name',
+				children: [
+					{
+						path: 'bar',
+						children: [
+							{
+								path: 'qux'
+							}
+						]
+					}
+				]
+
+			}
+		];
+
+		const router = new Router({ config });
+		return router.dispatch({}, '/foo/bar/qux').then((dispatchResult) => {
+			assert.isTrue(dispatchResult.success);
+			assert.isTrue(router.hasOutlet('another-name'));
+			assert.isTrue(router.hasOutlet('bar'));
+			assert.isTrue(router.hasOutlet('qux'));
+		});
+	});
+
+	test('register routing configuration from a starting outlet', () => {
+		const config = [
+			{
+				path: 'foo',
+				outlet: 'another-name',
+				children: [
+					{
+						path: 'bar',
+						children: [
+							{
+								path: 'qux'
+							}
+						]
+					}
+				]
+
+			}
+		];
+
+		const router = new Router({ config });
+
+		router.register([{ path: 'baz' }], 'qux');
+		return router.dispatch({}, '/foo/bar/qux/baz').then((dispatchResult) => {
+			assert.isTrue(dispatchResult.success);
+			assert.isTrue(router.hasOutlet('another-name'));
+			assert.isTrue(router.hasOutlet('bar'));
+			assert.isTrue(router.hasOutlet('qux'));
+			assert.isTrue(router.hasOutlet('baz'));
+		});
+	});
+
+	test('register routing configuration from a starting an unknown outlet appends to the router', () => {
+		const config = [
+			{
+				path: 'foo',
+				outlet: 'another-name',
+				children: [
+					{
+						path: 'bar',
+						children: [
+							{
+								path: 'qux'
+							}
+						]
+					}
+				]
+
+			}
+		];
+
+		const router = new Router({ config });
+
+		router.register([{ path: 'baz' }], 'fake');
+		return router.dispatch({}, '/baz').then((dispatchResult) => {
+			assert.isTrue(dispatchResult.success);
+			assert.isTrue(router.hasOutlet('baz'));
+		});
+	});
+
+	test('router registers "errorOutlet" for unsuccessful dispatches', () => {
+		const config = [
+			{
+				path: 'foo'
+			}
+		];
+
+		const router = new Router({ config });
+
+		return router.dispatch({}, '/foo/bar').then((dispatchResult) => {
+			assert.isTrue(dispatchResult.success);
+			assert.isTrue(router.hasOutlet('errorOutlet'));
+			assert.isTrue(router.hasOutlet('foo'));
+
+			const fooOutletContext = router.getOutlet('foo');
+			assert.deepEqual(fooOutletContext, {
+				location: 'foo',
+				params: {},
+				type: 'error'
+			});
+		});
+	});
+
+	test('params are added to the outlet context', () => {
+		const config = [
+			{
+				path: 'foo/{foo}',
+				outlet: 'another-name',
+				children: [
+					{
+						path: 'bar/{bar}',
+						children: [
+							{
+								path: 'qux/{qux}'
+							}
+						]
+					}
+				]
+
+			}
+		];
+
+		const router = new Router({ config });
+
+		return router.dispatch({}, '/foo/foo/bar/bar/qux/qux').then((dispatchResult) => {
+			assert.isTrue(dispatchResult.success);
+			assert.isTrue(router.hasOutlet('another-name'));
+			assert.isTrue(router.hasOutlet('bar/{bar}'));
+			assert.isTrue(router.hasOutlet('qux/{qux}'));
+
+			const fooOutletContext = router.getOutlet('another-name');
+			const barOutletContext = router.getOutlet('bar/{bar}');
+			const quxOutletContext = router.getOutlet('qux/{qux}');
+
+			assert.deepEqual(fooOutletContext, {
+				location: 'foo/foo',
+				params: {
+					foo: 'foo'
+				},
+				type: 'outlet'
+			});
+			assert.deepEqual(barOutletContext, {
+				location: 'foo/foo/bar/bar',
+				params: {
+					bar: 'bar'
+				},
+				type: 'outlet'
+			});
+			assert.deepEqual(quxOutletContext, {
+				location: 'foo/foo/bar/bar/qux/qux',
+				params: {
+					qux: 'qux'
+				},
+				type: 'index'
+			});
+		});
+	});
+
 	test('router can be created with a fallback route', () => {
 		let received: Request<Context, Parameters>;
 

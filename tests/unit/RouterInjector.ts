@@ -2,8 +2,12 @@ import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 import { Evented } from '@dojo/core/Evented';
 import { WidgetBase } from '@dojo/widget-core/WidgetBase';
+import { WidgetRegistry } from '@dojo/widget-core/WidgetRegistry';
+import { Constructor } from '@dojo/widget-core/interfaces';
+import { registry } from '@dojo/widget-core/d';
 
-import { RouterInjector } from './../../src/RouterInjector';
+import { RouterInjector, registerRouterInjector, routerKey } from './../../src/RouterInjector';
+import MemoryHistory from './../../src/history/MemoryHistory';
 
 class TestRouterInjector extends RouterInjector {
 	public invalidateCount = 0;
@@ -302,6 +306,53 @@ registerSuite({
 				const result = injector.__render__();
 				assert.strictEqual(result, 'Index');
 			}
+		}
+	},
+	'invalidates on nav start'() {
+		const context: any = new MockRouter(true, {
+			type: 'error',
+			location:
+			'location'
+		});
+		const injector = new TestRouterInjector(context);
+		context.emit({ type: 'navstart' });
+
+		assert.strictEqual(injector.invalidateCount, 1);
+	},
+	'Register router injector with default key and history'(this: any) {
+		this.skip();
+		const registry = new WidgetRegistry();
+		const config = [
+			{ path: 'path' }
+		];
+		const router = registerRouterInjector(config, registry);
+		const Injector = <Constructor<RouterInjector>> registry.get(routerKey);
+		assert.isNotNull(Injector);
+		const injector = new Injector();
+		assert.strictEqual(router, injector.toInject());
+	},
+	'Register router injector with custom key and history'() {
+		const registry = new WidgetRegistry();
+		const config = [
+			{ path: 'path' }
+		];
+		const history = new MemoryHistory();
+		const router = registerRouterInjector(config, registry, history, 'router-key');
+		const Injector = <Constructor<RouterInjector>> registry.get('router-key');
+		assert.isNotNull(Injector);
+		const injector = new Injector();
+		assert.strictEqual(router, injector.toInject());
+	},
+	'Register router injector throws an error if the router key has already been registered'() {
+		const config = [
+			{ path: 'path' }
+		];
+		try {
+			registerRouterInjector(config, registry, new MemoryHistory());
+			assert.fail('Should throw an error for reusing the router key');
+		}
+		catch (e) {
+			// do nothing as expected
 		}
 	}
 });

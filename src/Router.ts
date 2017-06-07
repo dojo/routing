@@ -1,4 +1,5 @@
 import Map from '@dojo/shim/Map';
+import { assign } from '@dojo/core/lang';
 import Task from '@dojo/core/async/Task';
 import Evented, { BaseEventedEvents } from '@dojo/core/Evented';
 import { Hash } from '@dojo/core/interfaces';
@@ -231,6 +232,7 @@ export class Router<C extends Context> extends Evented {
 	private _started?: boolean;
 	private _outletStack: Map<string, any> = new Map<string, any>();
 	private _outletRouteMap: Map<string, Route<any, any>> = new Map<string, Route<any, any>>();
+	private _currentParams: any = {};
 
 	on: RouterEvents<C>;
 
@@ -285,9 +287,7 @@ export class Router<C extends Context> extends Evented {
 				path,
 				outlet
 			});
-			if (outlet) {
-				this._outletRouteMap.set(outlet, route);
-			}
+			this._outletRouteMap.set(outlet, route);
 			parent.append(route);
 			if (children) {
 				this.register(children, route);
@@ -379,7 +379,10 @@ export class Router<C extends Context> extends Evented {
 
 						for (const { handler, params, outlet, type, route } of result) {
 							if (outlet) {
-								const location = this.link(route, params);
+								if (params) {
+									assign(this._currentParams, params);
+								}
+								const location = this.link(route, this._currentParams);
 								this._outletStack.set(outlet, { type, params, location });
 								if (type === 'error') {
 									this._outletStack.set(errorOutlet, { type: 'outlet', params, location });

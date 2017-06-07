@@ -646,4 +646,40 @@ suite('Route', () => {
 			result[0].handler({ context, params: {} });
 		}
 	});
+
+	test('exact matched route returns "index" type', () => {
+		const route = new Route({ path: '/foo/bar', outlet: '1' });
+		const selections = route.select({} as Context, ['foo', 'bar'], false, new UrlSearchParams());
+		if (typeof selections === 'string') {
+			throw new TypeError('Unexpected result');
+		}
+
+		assert.lengthOf(selections, 1);
+		assert.strictEqual(selections[0].route, route);
+		assert.strictEqual(selections[0].type, 'index');
+	});
+	test('matched route returns "outlet" type', () => {
+		const route1 = new Route({ path: '/foo/bar', outlet: '1' });
+		const route2 = new Route({ path: '/qux', outlet: '2' });
+		route1.append(route2);
+		const selections = route1.select({} as Context, ['foo', 'bar', 'qux'], false, new UrlSearchParams());
+		if (typeof selections === 'string') {
+			throw new TypeError('Unexpected result');
+		}
+
+		assert.lengthOf(selections, 2);
+		assert.strictEqual(selections[0].route, route1);
+		assert.strictEqual(selections[0].type, 'outlet');
+	});
+	test('unmatched route returns "error" type when an outlet id is specified', () => {
+		const route = new Route({ path: '/foo/bar', outlet: '1' });
+		const selections = route.select({} as Context, ['foo', 'bar', 'qux'], false, new UrlSearchParams());
+		if (typeof selections === 'string') {
+			throw new TypeError('Unexpected result');
+		}
+
+		assert.lengthOf(selections, 1);
+		assert.strictEqual(selections[0].route, route);
+		assert.strictEqual(selections[0].type, 'error');
+	});
 });
