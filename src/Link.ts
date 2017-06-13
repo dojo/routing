@@ -7,10 +7,10 @@ import { Router } from './Router';
 
 export interface LinkProperties extends WidgetProperties, VirtualDomProperties {
 	key?: string;
-	to: string;
 	isOutlet?: boolean;
-	routerKey?: string;
 	params?: any;
+	routerKey?: string;
+	to: string;
 }
 
 export class Link extends WidgetBase<LinkProperties> {

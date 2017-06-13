@@ -28,7 +28,7 @@ class MockRouter extends Evented {
 	private _outletExists: boolean;
 	private _outlet: any;
 
-	constructor(exists: boolean, outlet: any = {}) {
+	constructor(exists: boolean, outlet?: any) {
 		super({});
 		this._outletExists = exists;
 		this._outlet = outlet;
@@ -89,7 +89,7 @@ registerSuite({
 		assert.isNull(result);
 	},
 	'returns null when outlet does not match'() {
-		const context: any = new MockRouter(false, {});
+		const context: any = new MockRouter(false);
 		const injector = new TestRouterInjector(context);
 		injector.__setProperties__({
 			render: () => { return null; },

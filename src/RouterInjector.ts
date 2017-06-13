@@ -63,8 +63,9 @@ export class RouterInjector extends BaseInjector<Router<any>> {
 			mapParams = (options: MapParamsOptions) => {}
 		} = properties.getProperties(this.toInject(), properties);
 
-		if (this.context.hasOutlet(outlet)) {
-			const { params = {}, type, location } = this.context.getOutlet(outlet);
+		const outletContext = this.context.getOutlet(outlet);
+		if (outletContext) {
+			const { params = {}, type, location } = outletContext;
 
 			properties.getProperties = (router: Router<any>, properties: any) => {
 				return mapParams({params, type, location, router});

@@ -1,4 +1,10 @@
-import { Constructor, RegistryLabel, DNode, WidgetBaseInterface, WidgetProperties } from '@dojo/widget-core/interfaces';
+import {
+	Constructor,
+	RegistryLabel,
+	DNode,
+	WidgetBaseInterface,
+	WidgetProperties
+} from '@dojo/widget-core/interfaces';
 import { WidgetBase } from '@dojo/widget-core/WidgetBase';
 import { w } from '@dojo/widget-core/d';
 
@@ -6,16 +12,10 @@ import { Router } from './Router';
 import { RouterInjector, routerKey } from './RouterInjector';
 import { Component, MapParams, OutletComponents } from './interfaces';
 
-/**
- * Determine if the property is a Component
- */
 export function isComponent<W extends WidgetBaseInterface>(value: any): value is Component<W> {
 	return Boolean(value && ((typeof value === 'string') || (typeof value === 'function') || (typeof value === 'symbol')));
 }
 
-/**
- * Outlet type
- */
 export type Outlet<
 	W extends WidgetBaseInterface,
 	F extends WidgetBaseInterface,

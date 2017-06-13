@@ -52,6 +52,9 @@ export interface OutletComponents<W extends WidgetBaseInterface, I extends Widge
 	error?: Component<E>;
 }
 
+/**
+ * Options for map params callback
+ */
 export interface MapParamsOptions {
 	params: any;
 	type: MatchType;
@@ -59,10 +62,16 @@ export interface MapParamsOptions {
 	router: Router<any>;
 }
 
+/**
+ * Interface for the map params callback
+ */
 export interface MapParams {
 	(options: MapParamsOptions): any;
 }
 
+/**
+ * Outlet properties
+ */
 export interface OutletProperties<W extends WidgetBaseInterface = WidgetBaseInterface, I extends WidgetBaseInterface = WidgetBaseInterface, E extends WidgetBaseInterface = WidgetBaseInterface> {
 	outlet: string;
 	mainComponent?: Component<W>;

@@ -261,7 +261,7 @@ export class Router<C extends Context> extends Evented {
 	private _history?: History;
 	private _routes: Route<Context, Parameters>[];
 	private _started?: boolean;
-	private _outletStack: Map<string, any> = new Map<string, OutletContext>();
+	private _outletContextMap: Map<string, OutletContext> = new Map<string, OutletContext>();
 	private _outletRouteMap: Map<string, Route<any, any>> = new Map<string, Route<any, any>>();
 	private _currentParams: any = {};
 	private _defaultParams: any = {};
@@ -372,7 +372,7 @@ export class Router<C extends Context> extends Evented {
 		const deferrals: Promise<void>[] = [];
 
 		this._currentParams = {};
-		this._outletStack.clear();
+		this._outletContextMap.clear();
 		this.emit<NavigationStartEvent>({
 			cancel,
 			defer () {
@@ -427,9 +427,9 @@ export class Router<C extends Context> extends Evented {
 									assign(this._currentParams, params);
 								}
 								const location = this.link(route, this._currentParams);
-								this._outletStack.set(outlet, { type, params, location });
+								this._outletContextMap.set(outlet, { type, params, location });
 								if (type === MatchType.ERROR) {
-									this._outletStack.set(errorOutlet, { type: 'outlet', params, location });
+									this._outletContextMap.set(errorOutlet, { type: MatchType.PARTIAL, params, location });
 								}
 							}
 							catchRejection(this, context, path, handler({ context, params }));
@@ -444,7 +444,11 @@ export class Router<C extends Context> extends Evented {
 					}
 
 					if (!dispatched) {
-						this._outletStack.set(errorOutlet, { type: 'outlet' });
+						this._outletContextMap.set(errorOutlet, {
+							type: MatchType.PARTIAL,
+							params: {},
+							location: this._history ? this._history.current : ''
+						});
 						if (this._fallback) {
 							catchRejection(this, context, path, this._fallback({ context, params: {} }));
 							return { success: false };
@@ -608,12 +612,12 @@ export class Router<C extends Context> extends Evented {
 		this._history.set(path);
 	}
 
-	hasOutlet(outlet: string): boolean {
-		return this._outletStack.has(outlet);
+	hasOutlet(outletId: string): boolean {
+		return this._outletContextMap.has(outletId);
 	}
 
-	getOutlet(outlet: string): OutletContext {
-		return this._outletStack.get(outlet);
+	getOutlet(outletId: string): OutletContext | undefined {
+		return this._outletContextMap.get(outletId);
 	}
 
 	getCurrentParams(): Parameters {
