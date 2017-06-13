@@ -2,7 +2,7 @@ import * as registerSuite from 'intern!object';
 import * as assert from 'intern/chai!assert';
 
 import { WidgetRegistry } from '@dojo/widget-core/WidgetRegistry';
-import { RegistryMixin } from '@dojo/widget-core/mixins/Registry'
+import { RegistryMixin } from '@dojo/widget-core/mixins/Registry';
 import { registerRouterInjector } from './../../src/RouterInjector';
 import { Link } from './../../src/Link';
 import MemoryHistory from './../../src/history/MemoryHistory';
@@ -16,14 +16,14 @@ registerSuite({
 	name: 'Link',
 	'Generate link component for basic outlet'() {
 		const link = new RegistryLink();
-		link.__setProperties__({ to: 'foo', isOutlet: true, registry });
+		link.__setProperties__({ to: 'foo', registry });
 		const vNode: any = link.__render__();
 		assert.strictEqual(vNode.vnodeSelector, 'a');
 		assert.strictEqual(vNode.properties.href, 'foo');
 	},
 	'Generate link component for outlet with specified params'() {
 		const link = new RegistryLink();
-		link.__setProperties__({ to: 'foo2', isOutlet: true, params: { foo: 'foo' }, registry });
+		link.__setProperties__({ to: 'foo2', params: { foo: 'foo' }, registry });
 		const vNode: any = link.__render__();
 		assert.strictEqual(vNode.vnodeSelector, 'a');
 		assert.strictEqual(vNode.properties.href, 'foo/foo');

@@ -17,7 +17,7 @@ export class Link extends WidgetBase<LinkProperties> {
 
 	@beforeRender()
 	protected withRouter(renderFunc: () => DNode, properties: any, children: any): () => DNode {
-		const { to, isOutlet, params = {}, routerKey = globalRouterKey, ...props } = properties;
+		const { to, isOutlet = true, params = {}, routerKey = globalRouterKey, ...props } = properties;
 		if (this.registries.get(routerKey)) {
 			return () => w<RouterInjector>(routerKey, {
 				scope: this,

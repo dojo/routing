@@ -58,9 +58,9 @@ class App extends WidgetBase {
 							display: 'block'
 						}
 					}, [
-						w(Link, { key: 'basic', to: 'basic', isOutlet: true, styles }, [ 'Basic ']),
-						w(Link, { key: 'url', to: 'url-parameters', isOutlet: true, styles }, [ 'Url Parameters' ]),
-						w(Link, { key: 'amb', to: 'ambiguous-matches', isOutlet: true, styles }, [ 'Ambiguous Matches' ])
+						w(Link, { key: 'basic', to: 'basic', styles }, [ 'Basic ']),
+						w(Link, { key: 'url', to: 'url-parameters', styles }, [ 'Url Parameters' ]),
+						w(Link, { key: 'amb', to: 'ambiguous-matches', styles }, [ 'Ambiguous Matches' ])
 					])
 				])
 			]),

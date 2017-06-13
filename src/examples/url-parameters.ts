@@ -27,16 +27,16 @@ export class App extends WidgetBase {
 			v('h2', [ 'Accounts' ]),
 			v('ul', [
 				v('li', [
-					w(Link, { key: '1', to: 'child', isOutlet: true, params: { id: 'netflix' } }, [ 'Netflix' ])
+					w(Link, { key: '1', to: 'child', params: { id: 'netflix' } }, [ 'Netflix' ])
 				]),
 				v('li', [
-					w(Link, { key: '2', to: 'child', isOutlet: true, params: { id: 'zillow-group' } }, [ 'Zillow Group' ])
+					w(Link, { key: '2', to: 'child', params: { id: 'zillow-group' } }, [ 'Zillow Group' ])
 				]),
 				v('li', [
-					w(Link, { key: '3', to: 'child', isOutlet: true, params: { id: 'yahoo' } }, [ 'Yahoo' ])
+					w(Link, { key: '3', to: 'child', params: { id: 'yahoo' } }, [ 'Yahoo' ])
 				]),
 				v('li', [
-					w(Link, { key: '4', to: 'child', isOutlet: true, params: { id: 'modus-create' } }, [ 'Modus Create' ])
+					w(Link, { key: '4', to: 'child', params: { id: 'modus-create' } }, [ 'Modus Create' ])
 				])
 			]),
 			w(ChildOutlet, {})

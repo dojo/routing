@@ -39,17 +39,17 @@ export class Topics extends WidgetBase<TopicsProperties> {
 			v('h2', [ 'Topics' ]),
 			v('ul', [
 				v('li', [
-					w(Link, { key: 'rendering', to: 'topic', isOutlet: true, params: { topic: 'rendering' } }, [
+					w(Link, { key: 'rendering', to: 'topic', params: { topic: 'rendering' } }, [
 						'Rendering with Dojo 2'
 					])
 				]),
 				v('li', [
-					w(Link, { key: 'widgets', to: 'topic', isOutlet: true, params: { topic: 'widgets' } }, [
+					w(Link, { key: 'widgets', to: 'topic', params: { topic: 'widgets' } }, [
 						'Widgets'
 					])
 				]),
 				v('li', [
-					w(Link, { key: 'props', to: 'topic', isOutlet: true, params: { topic: 'props-v-state' } }, [
+					w(Link, { key: 'props', to: 'topic', params: { topic: 'props-v-state' } }, [
 						'Props v State'
 					])
 				])
@@ -92,13 +92,13 @@ export class App extends WidgetBase {
 		return v('div', [
 			v('ul', [
 				v('li', [
-					w(Link, { key: 'home', to: 'home', isOutlet: true}, [ 'Home' ])
+					w(Link, { key: 'home', to: 'home' }, [ 'Home' ])
 				]),
 				v('li', [
-					w(Link, { key: 'about', to: 'about', isOutlet: true}, [ 'About' ])
+					w(Link, { key: 'about', to: 'about' }, [ 'About' ])
 				]),
 				v('li', [
-					w(Link, { key: 'topics', to: 'topics', isOutlet: true}, [ 'Topics' ])
+					w(Link, { key: 'topics', to: 'topics' }, [ 'Topics' ])
 				])
 			]),
 			w(AboutOutlet, {}),
