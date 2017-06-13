@@ -4,26 +4,13 @@ import { w } from '@dojo/widget-core/d';
 
 import { Router } from './Router';
 import { RouterInjector, routerKey } from './RouterInjector';
-
-/**
- * Component type
- */
-export type Component<W extends WidgetBaseInterface = WidgetBaseInterface> = Constructor<W> | RegistryLabel;
+import { Component, MapParams, OutletComponents } from './interfaces';
 
 /**
  * Determine if the property is a Component
  */
 export function isComponent<W extends WidgetBaseInterface>(value: any): value is Component<W> {
 	return Boolean(value && ((typeof value === 'string') || (typeof value === 'function') || (typeof value === 'symbol')));
-}
-
-/**
- * Outlet component options
- */
-export interface OutletComponents<W extends WidgetBaseInterface, E extends WidgetBaseInterface, F extends WidgetBaseInterface> {
-	component?: Component<W>;
-	index?: Component<F>;
-	error?: Component<E>;
 }
 
 /**
@@ -37,11 +24,11 @@ export type Outlet<
 export function Outlet<W extends WidgetBaseInterface, F extends WidgetBaseInterface, E extends WidgetBaseInterface>(
 	outletComponents: Component<W> | OutletComponents<W, F, E>,
 	outlet: string,
-	mapParams: Function = (params: any, type: string, location: string) => { return { ...params, type, location }; },
+	mapParams?: MapParams,
 	key: RegistryLabel = routerKey
 ): Outlet<W, F, E> {
 	const indexComponent = isComponent(outletComponents) ? undefined : outletComponents.index;
-	const mainComponent = isComponent(outletComponents) ? outletComponents : outletComponents.component;
+	const mainComponent = isComponent(outletComponents) ? outletComponents : outletComponents.main;
 	const errorComponent = isComponent(outletComponents) ? undefined : outletComponents.error;
 
 	return class extends WidgetBase<any, null> {

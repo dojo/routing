@@ -1,3 +1,7 @@
+import { Constructor, RegistryLabel, WidgetBaseInterface } from '@dojo/widget-core/interfaces';
+import { Router } from './Router';
+import { MatchType } from './Route';
+
 /**
  * Routes created without a `params()` function will receive a `params` object of this type.
  */
@@ -17,7 +21,6 @@ export interface Context {
  */
 export interface Parameters {
 	[param: string]: any;
-	// TODO: Does specifying an indexer make sense here?
 }
 
 /**
@@ -33,4 +36,37 @@ export interface Request<C extends Context, P extends Parameters> {
 	 * The extracted parameters.
 	 */
 	params: P;
+}
+
+/**
+ * Component type
+ */
+export type Component<W extends WidgetBaseInterface = WidgetBaseInterface> = Constructor<W> | RegistryLabel;
+
+/**
+ * Outlet component options
+ */
+export interface OutletComponents<W extends WidgetBaseInterface, I extends WidgetBaseInterface, E extends WidgetBaseInterface> {
+	main?: Component<W>;
+	index?: Component<I>;
+	error?: Component<E>;
+}
+
+export interface MapParamsOptions {
+	params: any;
+	type: MatchType;
+	location: string;
+	router: Router<any>;
+}
+
+export interface MapParams {
+	(options: MapParamsOptions): any;
+}
+
+export interface OutletProperties<W extends WidgetBaseInterface = WidgetBaseInterface, I extends WidgetBaseInterface = WidgetBaseInterface, E extends WidgetBaseInterface = WidgetBaseInterface> {
+	outlet: string;
+	mainComponent?: Component<W>;
+	indexComponent?: Component<I>;
+	errorComponent?: Component<E>;
+	mapParams?: MapParams;
 }

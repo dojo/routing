@@ -164,6 +164,11 @@ export interface RouteOptions<C, P extends Parameters> {
 	 * @return If `null` prevents the route from being selected, else the value for the `params` object.
 	 */
 	params?(fromPathname: string[], searchParams: UrlSearchParams): null | P;
+
+	/**
+	 * Default params to use when generating a link.
+	 */
+	defaultParams?: null | P;
 }
 
 // Store parent relationships in a separate map, since it's the parent that adds entries to this map. Parents shouldn't
@@ -198,6 +203,7 @@ export class Route<C extends Context, P extends Parameters> {
 	private _fallback?: Handler;
 	private _guard: ((request: Request<C, P | DefaultParameters>) => string | boolean) | undefined;
 	private _index?: Handler;
+	private _defaultParams: P;
 
 	get parent() {
 		return parentMap.get(this);
@@ -211,8 +217,12 @@ export class Route<C extends Context, P extends Parameters> {
 		return this._outlet;
 	}
 
+	get defaultParams(): P {
+		return this._defaultParams;
+	}
+
 	constructor(options: RouteOptions<C, P> = {}) {
-		const { exec, fallback, guard, index, params: computeParams, path, outlet, trailingSlashMustMatch = true } = options;
+		const { exec, fallback, guard, index, params: computeParams, path, outlet, trailingSlashMustMatch = true, defaultParams = {} } = options;
 
 		if (path && /#/.test(path)) {
 			throw new TypeError('Path must not contain \'#\'');
@@ -241,6 +251,7 @@ export class Route<C extends Context, P extends Parameters> {
 		this._path = deconstructedPath;
 		this._outlet = outlet;
 		this._routes = [];
+		this._defaultParams = <P> defaultParams;
 		this._trailingSlashMustMatch = trailingSlashMustMatch;
 	}
 

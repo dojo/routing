@@ -66,7 +66,7 @@ registerSuite({
 			assert.strictEqual(injectedProperties.mainComponent, ComponentWidget);
 			assert.isUndefined(injectedProperties.indexComponent);
 			assert.isUndefined(injectedProperties.errorComponent);
-			assert.deepEqual(injectedProperties.mapParams(), { location: undefined, type: undefined });
+			assert.deepEqual(injectedProperties.mapParams, undefined);
 		};
 		const TestOutlet = Outlet(ComponentWidget, 'test-outlet');
 		outlet = new TestOutlet();
@@ -82,7 +82,7 @@ registerSuite({
 			assert.strictEqual(injectedProperties.errorComponent, ComponentWidget);
 		};
 		const TestOutlet = Outlet({
-			component: ComponentWidget,
+			main: ComponentWidget,
 			index: ComponentWidget,
 			error: ComponentWidget
 		}, 'test-outlet');
@@ -104,7 +104,7 @@ registerSuite({
 	},
 	'Outlet interface is intersection of all components'() {
 		const TestOutlet = Outlet({
-			component: ComponentWidget,
+			main: ComponentWidget,
 			index: IndexWidget,
 			error: ErrorWidget
 		}, 'test-outlet');

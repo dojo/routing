@@ -3,6 +3,8 @@ import { v, w } from '@dojo/widget-core/d';
 import { WidgetProperties, DNode } from '@dojo/widget-core/interfaces';
 
 import { Outlet } from './../Outlet';
+import { MatchType } from './../Route';
+import { MapParamsOptions } from './../interfaces';
 
 export interface ChildProperties extends WidgetProperties {
 	name: string;
@@ -72,10 +74,10 @@ class ErrorWidget extends WidgetBase {
 
 export const AboutOutlet = Outlet(About, 'about');
 export const HomeOutlet = Outlet({ index: Home }, 'home');
-export const TopicsOutlet = Outlet(Topics, 'topics', (params: any, type: string, location: string) => {
-	return { showHeading: type === 'index', location };
+export const TopicsOutlet = Outlet(Topics, 'topics', ({ type, location }: MapParamsOptions) => {
+	return { showHeading: type === MatchType.INDEX, location };
 });
-export const TopicOutlet = Outlet({ component: Topic, error: ErrorWidget }, 'topic');
+export const TopicOutlet = Outlet({ main: Topic, error: ErrorWidget }, 'topic');
 
 export interface AppProperties extends WidgetProperties {
 	location: string;

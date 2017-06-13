@@ -1,13 +1,14 @@
 import { beforeRender } from '@dojo/widget-core/WidgetBase';
 import { w, registry as globalRegistry } from '@dojo/widget-core/d';
 import { WidgetRegistry } from '@dojo/widget-core/WidgetRegistry';
-import { Injector, BaseInjector } from '@dojo/widget-core/Injector';
-import { RegistryLabel } from '@dojo/widget-core/interfaces';
+import { Injector, BaseInjector, InjectorProperties } from '@dojo/widget-core/Injector';
+import { DNode, RegistryLabel } from '@dojo/widget-core/interfaces';
 
 import HashHistory from './history/HashHistory';
 import { History } from './history/interfaces';
 import { Router, RouteConfig } from './Router';
 import { MatchType } from './Route';
+import { MapParamsOptions, OutletProperties } from './interfaces';
 
 /**
  * Key for the router injetor
@@ -37,6 +38,10 @@ export function registerRouterInjector(
 	return router;
 }
 
+export interface RouterInjectorProperties extends InjectorProperties {
+	getProperties(injected: Router<any>, properties: any): OutletProperties;
+}
+
 /**
  * Injector for routing
  */
@@ -49,13 +54,20 @@ export class RouterInjector extends BaseInjector<Router<any>> {
 	}
 
 	@beforeRender()
-	protected beforeRender(renderFunc: any, properties: any, children: any[]) {
-		const { outlet, mainComponent, indexComponent, errorComponent, mapParams } = properties.getProperties(this.toInject(), properties);
+	protected beforeRender(renderFunc: () => DNode | DNode[], properties: RouterInjectorProperties, children: any[]): () => DNode | DNode[] {
+		const {
+			outlet,
+			mainComponent,
+			indexComponent,
+			errorComponent,
+			mapParams = (options: MapParamsOptions) => {}
+		} = properties.getProperties(this.toInject(), properties);
+
 		if (this.context.hasOutlet(outlet)) {
 			const { params = {}, type, location } = this.context.getOutlet(outlet);
 
-			properties.getProperties = (injected: Router<any>, properties: any) => {
-				return mapParams(params, type, location);
+			properties.getProperties = (router: Router<any>, properties: any) => {
+				return mapParams({params, type, location, router});
 			};
 
 			if ((type === MatchType.INDEX || type === MatchType.ERROR) && indexComponent) {

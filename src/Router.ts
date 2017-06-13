@@ -118,6 +118,17 @@ export interface RouteConfig {
 	 * Optional child route configuration
 	 */
 	children?: RouteConfig[];
+
+	/**
+	 * Default params used to generate a link
+	 */
+	defaultParams?: any;
+
+	/**
+	 * To be used as the default route on router start up
+	 * if the current route doesn't match
+	 */
+	defaultRoute?: boolean;
 }
 
 /**
@@ -253,6 +264,8 @@ export class Router<C extends Context> extends Evented {
 	private _outletStack: Map<string, any> = new Map<string, OutletContext>();
 	private _outletRouteMap: Map<string, Route<any, any>> = new Map<string, Route<any, any>>();
 	private _currentParams: any = {};
+	private _defaultParams: any = {};
+	private _defaultRoute: Route<any, any>;
 
 	on: RouterEvents<C>;
 
@@ -302,11 +315,21 @@ export class Router<C extends Context> extends Evented {
 			parent = from;
 		}
 
-		config.forEach(({ path, outlet = path, children }) => {
+		config.forEach(({ defaultRoute, path, outlet = path, defaultParams = {}, children }) => {
 			const route = new Route({
 				path,
-				outlet
+				outlet,
+				defaultParams
 			});
+			if (defaultRoute) {
+				if (!this._defaultRoute) {
+					this._defaultRoute = route;
+				}
+				else {
+					throw new Error(`Default outlet has already been configured. Unable to register outlet ${outlet} as the default.`);
+				}
+			}
+			assign(this._defaultParams, defaultParams);
 			this._outletRouteMap.set(outlet, route);
 			parent.append(route);
 			if (children) {
@@ -446,7 +469,20 @@ export class Router<C extends Context> extends Evented {
 		}, cancel);
 	}
 
-	link(route: Route<Context, Parameters>, params: LinkParams = {}): string {
+	link(routeOrOutlet: Route<Context, Parameters> | string, params: LinkParams = {}): string {
+		let route: Route<Context, Parameters>;
+		if (typeof routeOrOutlet === 'string') {
+			const item = this._outletRouteMap.get(routeOrOutlet);
+			if (item) {
+				route = item;
+			}
+			else {
+				throw new Error(`No outlet ${routeOrOutlet} has been registered`);
+			}
+		}
+		else {
+			route = routeOrOutlet;
+		}
 		const hierarchy = [ route ];
 		for (let parent = route.parent; parent !== undefined; parent = parent.parent) {
 			hierarchy.unshift(parent);
@@ -473,9 +509,9 @@ export class Router<C extends Context> extends Evented {
 					currentSearchParams = selection.rawSearchParams;
 				}
 
-				return { currentPathValues, currentSearchParams, path };
+				return { currentPathValues, currentSearchParams, path, route };
 			})
-			.forEach(({ currentPathValues, currentSearchParams, path }) => {
+			.forEach(({ currentPathValues, currentSearchParams, path, route }) => {
 				const { expectedSegments, searchParameters, trailingSlash } = path;
 				addTrailingSlash = trailingSlash;
 
@@ -497,6 +533,10 @@ export class Router<C extends Context> extends Evented {
 						else if (currentPathValues) {
 							segments.push(currentPathValues[ namedOffset ]);
 						}
+						else if (route.defaultParams[ segment.name ]) {
+							segments.push(route.defaultParams[ segment.name ]);
+
+						}
 						else {
 							throw new Error(`Cannot generate link, missing parameter '${segment.name}'`);
 						}
@@ -514,7 +554,7 @@ export class Router<C extends Context> extends Evented {
 						continue;
 					}
 
-					const value = params[ key ];
+					const value = params[ key ] || this._defaultParams[ key ] ;
 					if (typeof value === 'string') {
 						searchParams.append(key, value);
 					}
@@ -543,7 +583,7 @@ export class Router<C extends Context> extends Evented {
 		}
 
 		if (this._history) {
-			pathname = this._history!.prefix(pathname);
+			pathname = this._history.prefix(pathname);
 		}
 
 		const search = searchParams.toString();
@@ -574,6 +614,10 @@ export class Router<C extends Context> extends Evented {
 
 	getOutlet(outlet: string): OutletContext {
 		return this._outletStack.get(outlet);
+	}
+
+	getCurrentParams(): Parameters {
+		return this._currentParams;
 	}
 
 	start(startOptions: StartOptions = { dispatchCurrent : true }): PausableHandle {
@@ -633,6 +677,7 @@ export class Router<C extends Context> extends Evented {
 				}
 				return dispatchResult;
 			});
+			return lastDispatch;
 		};
 
 		const listener = pausable(this._history, 'change', (event: HistoryChangeEvent) => {
@@ -641,7 +686,11 @@ export class Router<C extends Context> extends Evented {
 		this.own(listener);
 
 		if (dispatchCurrent) {
-			dispatch(this._history.current);
+			dispatch(this._history.current).then((dispatchResult: DispatchResult) => {
+				if (!dispatchResult.success && this._defaultRoute) {
+					this.setPath(this.link(this._defaultRoute));
+				}
+			});
 		}
 
 		return listener;
