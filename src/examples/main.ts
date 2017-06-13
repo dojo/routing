@@ -2,9 +2,9 @@ import { WidgetBase } from '@dojo/widget-core/WidgetBase';
 import { v, w } from '@dojo/widget-core/d';
 import { ProjectorMixin } from '@dojo/widget-core/mixins/Projector';
 
-import { RouteConfig, errorOutlet } from './../Router';
-import { Outlet } from './../Outlet';
+import { RouteConfig } from './../Router';
 import { registerRouterInjector } from './../RouterInjector';
+import { Link } from './../Link';
 import { BasicAppOutlet, BasicAppRouteConfig } from './basic';
 import { UrlParametersAppOutlet, UrlParametersRouteConfig } from './url-parameters';
 import { AmbiguousMatchesOutlet, AmbiguousMatchesRouteConfig } from './ambigious-matches';
@@ -17,15 +17,7 @@ const applicationRoutes: RouteConfig[] = [
 
 const router = registerRouterInjector(applicationRoutes);
 
-const linkStyles = { 'text-decoration': 'none', position: 'relative', display: 'block', 'line-height': '1.8', cursor: 'auto', color: 'inherit' };
-
-class ErrorWidget extends WidgetBase {
-	render() {
-		return v('div', [ 'ERROR' ]);
-	}
-}
-
-const ErrorOutlet = Outlet(ErrorWidget, errorOutlet);
+const styles = { 'text-decoration': 'none', position: 'relative', display: 'block', 'line-height': '1.8', cursor: 'auto', color: 'inherit' };
 
 class App extends WidgetBase {
 	render() {
@@ -66,9 +58,9 @@ class App extends WidgetBase {
 							display: 'block'
 						}
 					}, [
-						v('a', { href: '#basic', styles: linkStyles }, [ 'Basic' ]),
-						v('a', { href: '#url-parameters', styles: linkStyles }, [ 'Url Parameters' ]),
-						v('a', { href: '#ambiguous-matches', styles: linkStyles }, [ 'Ambiguous Matches' ])
+						w(Link, { key: 'basic', to: 'basic', isOutlet: true, styles }, [ 'Basic ']),
+						w(Link, { key: 'url', to: 'url-parameters', isOutlet: true, styles }, [ 'Url Parameters' ]),
+						w(Link, { key: 'amb', to: 'ambiguous-matches', isOutlet: true, styles }, [ 'Ambiguous Matches' ])
 					])
 				])
 			]),
@@ -78,8 +70,7 @@ class App extends WidgetBase {
 			} }, [
 				w(BasicAppOutlet, {}),
 				w(UrlParametersAppOutlet, {}),
-				w(AmbiguousMatchesOutlet, {}),
-				w(ErrorOutlet, {})
+				w(AmbiguousMatchesOutlet, {})
 			])
 		]);
 	}

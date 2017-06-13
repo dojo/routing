@@ -1,7 +1,9 @@
 import { WidgetBase } from '@dojo/widget-core/WidgetBase';
 import { v, w } from '@dojo/widget-core/d';
 import { WidgetProperties, DNode } from '@dojo/widget-core/interfaces';
+import { MapParamsOptions } from './../interfaces';
 
+import { Link } from './../Link';
 import { Outlet } from './../Outlet';
 
 export interface ChildProperties extends WidgetProperties {
@@ -34,28 +36,23 @@ export class User extends WidgetBase<UserProperties> {
 
 export const AboutOutlet = Outlet(About, 'about');
 export const CompanyOutlet = Outlet(Company, 'company');
-export const UserOutlet = Outlet(User, 'user', (params: any) => { return { name: params.user }; });
+export const UserOutlet = Outlet(User, 'user', ({ params }: MapParamsOptions) => { return { name: params.user }; });
 
-export interface AppProperties extends WidgetProperties {
-	location: string;
-}
-
-export class App extends WidgetBase<AppProperties> {
+export class App extends WidgetBase {
 	render(): DNode {
-		const { location } = this.properties;
 		return v('div', [
 			v('ul', [
 				v('li', [
-					v('a', { href: `${location}/about` }, [ 'About Us (static)' ])
+					w(Link, { key: '1', to: 'about-us', isOutlet: true }, [ 'About Us (Static)' ])
 				]),
 				v('li', [
-					v('a', { href: `${location}/company` }, [ 'Company (static)' ])
+					w(Link, { key: '2', to: 'company', isOutlet: true }, [ 'Company (Static)' ])
 				]),
 				v('li', [
-					v('a', { href: `${location}/kim` }, [ 'Kim (dynamic)' ])
+					w(Link, { key: '3', to: 'user', isOutlet: true, params: { user: 'kim' } }, [ 'Kim (dynamic)' ])
 				]),
 				v('li', [
-					v('a', { href: `${location}/chris` }, [ 'Chris (dyamic)' ])
+					w(Link, { key: '4', to: 'user', isOutlet: true, params: { user: 'chris' } }, [ 'Chris (dynamic)' ])
 				])
 			]),
 			w(AboutOutlet, {}),
@@ -71,7 +68,7 @@ export const AmbiguousMatchesRouteConfig = {
 	children: [
 		{
 			path: 'about',
-			outlet: 'about'
+			outlet: 'about-us'
 		},
 		{
 			path: 'company',

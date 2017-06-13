@@ -1,7 +1,9 @@
 import { WidgetBase } from '@dojo/widget-core/WidgetBase';
 import { v, w } from '@dojo/widget-core/d';
 import { WidgetProperties, DNode } from '@dojo/widget-core/interfaces';
+import { MapParamsOptions } from './../interfaces';
 
+import { Link } from './../Link';
 import { Outlet } from './../Outlet';
 
 export interface ChildProperties extends WidgetProperties {
@@ -17,30 +19,24 @@ export class Child extends WidgetBase<ChildProperties> {
 	}
 }
 
-export const ChildOutlet = Outlet(Child, 'child', (params: any) => { return { name: params.id }; });
+export const ChildOutlet = Outlet(Child, 'child', ({ params }: MapParamsOptions) => { return { name: params.id }; });
 
-export interface AppProperties extends WidgetProperties {
-	location: string;
-}
-
-export class App extends WidgetBase<AppProperties> {
+export class App extends WidgetBase {
 	render(): DNode {
-		const { location } = this.properties;
-
 		return v('div', [
 			v('h2', [ 'Accounts' ]),
 			v('ul', [
 				v('li', [
-					v('a', { href: `${location}/netflix` }, [ 'Netflix' ])
+					w(Link, { key: '1', to: 'child', isOutlet: true, params: { id: 'netflix' } }, [ 'Netflix' ])
 				]),
 				v('li', [
-					v('a', { href: `${location}/zillow-group` }, [ 'Zillow Group' ])
+					w(Link, { key: '2', to: 'child', isOutlet: true, params: { id: 'zillow-group' } }, [ 'Zillow Group' ])
 				]),
 				v('li', [
-					v('a', { href: `${location}/yahoo` }, [ 'Yahoo' ])
+					w(Link, { key: '3', to: 'child', isOutlet: true, params: { id: 'yahoo' } }, [ 'Yahoo' ])
 				]),
 				v('li', [
-					v('a', { href: `${location}/modus-create` }, [ 'Modus Create' ])
+					w(Link, { key: '4', to: 'child', isOutlet: true, params: { id: 'modus-create' } }, [ 'Modus Create' ])
 				])
 			]),
 			w(ChildOutlet, {})

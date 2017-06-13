@@ -4,6 +4,7 @@ import { WidgetProperties, DNode } from '@dojo/widget-core/interfaces';
 
 import { Outlet } from './../Outlet';
 import { MatchType } from './../Route';
+import { Link } from './../Link';
 import { MapParamsOptions } from './../interfaces';
 
 export interface ChildProperties extends WidgetProperties {
@@ -27,25 +28,30 @@ export class Home extends WidgetBase {
 }
 
 export interface TopicsProperties extends WidgetProperties {
-	showHeading: string;
-	location: string;
+	showHeading: boolean;
 }
 
 export class Topics extends WidgetBase<TopicsProperties> {
 	render(): DNode {
-		const { showHeading, location } = this.properties;
+		const { showHeading } = this.properties;
 
 		return v('div', [
 			v('h2', [ 'Topics' ]),
 			v('ul', [
 				v('li', [
-					v('a', { href: `${location}/rendering` }, [ 'Rendering with Dojo 2' ])
+					w(Link, { key: 'rendering', to: 'topic', isOutlet: true, params: { topic: 'rendering' } }, [
+						'Rendering with Dojo 2'
+					])
 				]),
 				v('li', [
-					v('a', { href: `${location}/widgets` }, [ 'Widgets' ])
+					w(Link, { key: 'widgets', to: 'topic', isOutlet: true, params: { topic: 'widgets' } }, [
+						'Widgets'
+					])
 				]),
 				v('li', [
-					v('a', { href: `${location}/props-v-state` },  [ 'Props v State' ])
+					w(Link, { key: 'props', to: 'topic', isOutlet: true, params: { topic: 'props-v-state' } }, [
+						'Props v State'
+					])
 				])
 			]),
 			showHeading ? v('h3', [ 'Please select a topic.' ]) : null,
@@ -77,26 +83,22 @@ export const HomeOutlet = Outlet({ index: Home }, 'home');
 export const TopicsOutlet = Outlet(Topics, 'topics', ({ type, location }: MapParamsOptions) => {
 	return { showHeading: type === MatchType.INDEX, location };
 });
-export const TopicOutlet = Outlet({ main: Topic, error: ErrorWidget }, 'topic');
+export const TopicOutlet = Outlet({ main: Topic, error: ErrorWidget }, 'topic', ({ params }) => {
+	return { topic: params.topic };
+});
 
-export interface AppProperties extends WidgetProperties {
-	location: string;
-}
-
-export class App extends WidgetBase<AppProperties> {
+export class App extends WidgetBase {
 	render(): DNode {
-		const { location } = this.properties;
-
 		return v('div', [
 			v('ul', [
 				v('li', [
-					v('a', { href: `${location}/home` }, [ 'Home' ])
+					w(Link, { key: 'home', to: 'home', isOutlet: true}, [ 'Home' ])
 				]),
 				v('li', [
-					v('a', { href: `${location}/about` }, [ 'About' ])
+					w(Link, { key: 'about', to: 'about', isOutlet: true}, [ 'About' ])
 				]),
 				v('li', [
-					v('a', { href: `${location}/topics` }, [ 'Topics' ])
+					w(Link, { key: 'topics', to: 'topics', isOutlet: true}, [ 'Topics' ])
 				])
 			]),
 			w(AboutOutlet, {}),
