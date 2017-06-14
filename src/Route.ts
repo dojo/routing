@@ -4,7 +4,7 @@ import { Thenable } from '@dojo/shim/interfaces';
 import WeakMap from '@dojo/shim/WeakMap';
 import { DefaultParameters, Context, Parameters, Request } from './interfaces';
 import { deconstruct as deconstructPath, match as matchPath, DeconstructedPath } from './lib/path';
-import { findRouter, hasBeenAppended, LinkParams  } from './Router';
+import { findRouter, hasBeenAppended, LinkParams } from './Router';
 
 /**
  * Hash object where keys are parameter names and keys are arrays of one or more
