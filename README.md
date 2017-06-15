@@ -73,7 +73,7 @@ These components enable widgets to be registered against a route _without_ requi
 
 The primary concept for the routing integration is an `outlet`, this is a unique identifier associated with registered application route. Dojo 2 Widgets can then be configured with these outlet identifiers using the `Outlet` higher order component. `Outlet` returns a "new" Widget that can be used like any other widget within a `render` method e.g. `w(MyFooOutlet, { })`.
 
-Properties can be passed to the outlet in the same way as if the original widget was being used, however all properties are made optional in order to allow the properties to be injected using the [mapParams](#mapParams) function described below.
+Properties can be passed to an `Outlet` widget, in the same way as if the original widget was being used, however all properties are made optional in order to allow the properties to be injected using the [mapParams](#mapParams) function described below.
 
 The number of widgets that can be mapped to a single outlet identifier is not restricted. All the configured widgets for a single outlet will be rendered when the route associated to the outlet is matched by the `router` and they are part of the current widget hierarchy.
 
@@ -100,7 +100,7 @@ class App extends WidgetBase {
 
 #### Outlet Component Types
 
-When registering an outlet a different widget can be configure a widget possible  `MatchType` of a route:
+When registering an outlet a different widget can be configure for each `MatchType` of a route:
 
 | Type              | Description |
 | ----------------- | ---------------------------------------------------- |
