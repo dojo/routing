@@ -21,7 +21,7 @@ export const routerKey = Symbol();
  *
  * @param config The route config to register for the router
  * @param registry An optional registry that defaults to the global registry
- * @param history The history manager the router needs to use, default `HashHistory`
+ * @param history The history manager the router needs to use, default is `HashHistory`
  * @param key The key for the router injector, defaults to exported `routerKey` symbol
  */
 export function registerRouterInjector(
