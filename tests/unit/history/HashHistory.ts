@@ -85,7 +85,7 @@ suite('HashHistory', () => {
 		history.on('change', ({ value }) => {
 			emittedValues.push(value);
 		});
-		history.set('#foo');
+		history.set('#/foo');
 		assert.lengthOf(emittedValues, 0);
 	});
 
