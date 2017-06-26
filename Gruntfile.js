@@ -5,7 +5,7 @@ module.exports = function (grunt) {
 		copy: {
 			staticExampleFiles: {
 				expand: true,
-				cwd: 'src',
+				cwd: '.',
 				src: staticExampleFiles,
 				dest: '<%= devDirectory %>'
 			}
