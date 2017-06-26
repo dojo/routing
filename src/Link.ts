@@ -42,11 +42,8 @@ export class Link extends WidgetBase<LinkProperties> {
 						}
 					};
 
-					if (!isOutlet) {
-						return { ...properties, onClick: handleOnClick };
-					}
 					return {
-						to: router.link(to, { ...router.getCurrentParams(), ...params }),
+						to: isOutlet ? router.link(to, { ...router.getCurrentParams(), ...params }) : to,
 						onClick: handleOnClick,
 						...props
 					};
