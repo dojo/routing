@@ -1,6 +1,6 @@
 import Task from '@dojo/core/async/Task';
 import Evented from '@dojo/core/Evented';
-import { assign } from '@dojo/core/lang';
+import { assign } from '@dojo/shim/object';
 import { pausable, PausableHandle } from '@dojo/core/on';
 import UrlSearchParams from '@dojo/core/UrlSearchParams';
 import { includes } from '@dojo/shim/array';
