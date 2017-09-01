@@ -80,6 +80,6 @@ class App extends WidgetBase {
 
 const Projector = ProjectorMixin(App);
 const projector = new Projector();
-projector.__setProperties__({ registry });
+projector.setProperties({ registry });
 projector.append();
 router.start();
