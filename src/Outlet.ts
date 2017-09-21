@@ -45,7 +45,7 @@ export function Outlet<W extends WidgetBaseInterface, F extends WidgetBaseInterf
 	class OutletComponent extends WidgetBase<Partial<W['properties']> & { router: Router<any> }, null> {
 
 		public __setProperties__(properties: Partial<W['properties']> & { router: Router<any> }): void {
-			super.__setProperties__(properties as any);
+			super.__setProperties__(properties);
 			this.invalidate();
 		}
 

@@ -41,7 +41,7 @@ registerSuite({
 	},
 	'Generate link component for basic outlet'() {
 		const link = new Link();
-		link.__setCoreProperties__({ registry });
+		link.__setCoreProperties__({ bind: link, baseRegistry: registry });
 		link.__setProperties__({ to: 'foo', registry });
 		const vNode: any = link.__render__();
 		assert.strictEqual(vNode.vnodeSelector, 'a');
@@ -49,7 +49,7 @@ registerSuite({
 	},
 	'Generate link component for outlet with specified params'() {
 		const link = new Link();
-		link.__setCoreProperties__({ registry });
+		link.__setCoreProperties__({ bind: link, baseRegistry: registry });
 		link.__setProperties__({ to: 'foo2', params: { foo: 'foo' }, registry });
 		const vNode: any = link.__render__();
 		assert.strictEqual(vNode.vnodeSelector, 'a');
@@ -57,7 +57,7 @@ registerSuite({
 	},
 	'Generate link component for fixed href'() {
 		const link = new Link();
-		link.__setCoreProperties__({ registry });
+		link.__setCoreProperties__({ bind: link, baseRegistry: registry });
 		link.__setProperties__({ to: '#foo/static', isOutlet: false, registry });
 		const vNode: any = link.__render__();
 		assert.strictEqual(vNode.vnodeSelector, 'a');
@@ -65,7 +65,7 @@ registerSuite({
 	},
 	'Set router path on click'() {
 		const link = new Link();
-		link.__setCoreProperties__({ registry });
+		link.__setCoreProperties__({ bind: link, baseRegistry: registry });
 		link.__setProperties__({ to: '#foo/static', isOutlet: false, registry });
 		const vNode: any = link.__render__();
 		assert.strictEqual(vNode.vnodeSelector, 'a');
@@ -75,7 +75,7 @@ registerSuite({
 	},
 	'Custom onClick handler can prevent default'() {
 		const link = new Link();
-		link.__setCoreProperties__({ registry });
+		link.__setCoreProperties__({ bind: link, baseRegistry: registry });
 		link.__setProperties__({
 			to: 'foo',
 			registry,
@@ -91,7 +91,7 @@ registerSuite({
 	},
 	'Does not set router path when target attribute is set'() {
 		const link = new Link();
-		link.__setCoreProperties__({ registry });
+		link.__setCoreProperties__({ bind: link, baseRegistry: registry });
 		link.__setProperties__({
 			to: 'foo',
 			registry,
@@ -105,7 +105,7 @@ registerSuite({
 	},
 	'Does not set router path on right click'() {
 		const link = new Link();
-		link.__setCoreProperties__({ registry });
+		link.__setCoreProperties__({ bind: link, baseRegistry: registry });
 		link.__setProperties__({
 			to: 'foo',
 			registry
@@ -118,7 +118,7 @@ registerSuite({
 	},
 	'throw error if the injected router cannot be found with the router key'() {
 		const link = new Link();
-		link.__setCoreProperties__({ registry });
+		link.__setCoreProperties__({ bind: link, baseRegistry: registry });
 		link.__setProperties__({ to: '#foo/static', isOutlet: false, routerKey: 'fake-key' });
 		try {
 			link.__render__();

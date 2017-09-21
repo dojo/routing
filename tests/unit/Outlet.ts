@@ -62,8 +62,8 @@ registerSuite({
 
 		return router.dispatch({}, '/main/next').then(() => {
 			const outlet = new TestOutlet();
-			outlet.__setCoreProperties__({ registry });
-			outlet.__setProperties__({ registry });
+			outlet.__setCoreProperties__({ bind: outlet, baseRegistry: registry });
+			outlet.__setProperties__({});
 			const vNode = outlet.__render__();
 			assert.strictEqual(vNode, 'Main');
 		});
@@ -77,8 +77,8 @@ registerSuite({
 
 		return router.dispatch({}, '/main').then(() => {
 			const outlet = new TestOutlet();
-			outlet.__setCoreProperties__({ registry });
-			outlet.__setProperties__({ registry });
+			outlet.__setCoreProperties__({ bind: outlet, baseRegistry: registry });
+			outlet.__setProperties__({});
 			const vNode = outlet.__render__();
 			assert.strictEqual(vNode, 'Index');
 		});
@@ -91,8 +91,8 @@ registerSuite({
 
 		return router.dispatch({}, '/main').then(() => {
 			const outlet = new TestOutlet();
-			outlet.__setCoreProperties__({ registry });
-			outlet.__setProperties__({ registry });
+			outlet.__setCoreProperties__({ bind: outlet, baseRegistry: registry });
+			outlet.__setProperties__({});
 			const vNode = outlet.__render__();
 			assert.strictEqual(vNode, 'Main');
 		});
@@ -105,8 +105,8 @@ registerSuite({
 
 		return router.dispatch({}, '/main/next/other').then(() => {
 			const outlet = new TestOutlet();
-			outlet.__setCoreProperties__({ registry });
-			outlet.__setProperties__({ registry });
+			outlet.__setCoreProperties__({ bind: outlet, baseRegistry: registry });
+			outlet.__setProperties__({});
 			const vNode = outlet.__render__();
 			assert.strictEqual(vNode, 'Error');
 		});
@@ -119,8 +119,8 @@ registerSuite({
 
 		return router.dispatch({}, '/main/next').then(() => {
 			const outlet = new TestOutlet();
-			outlet.__setCoreProperties__({ registry });
-			outlet.__setProperties__({ registry });
+			outlet.__setCoreProperties__({ bind: outlet, baseRegistry: registry });
+			outlet.__setProperties__({});
 			const vNode = outlet.__render__();
 			assert.isNull(vNode);
 		});
@@ -133,8 +133,8 @@ registerSuite({
 
 		return router.dispatch({}, '/other').then(() => {
 			const outlet = new TestOutlet();
-			outlet.__setCoreProperties__({ registry });
-			outlet.__setProperties__({ registry });
+			outlet.__setCoreProperties__({ bind: outlet, baseRegistry: registry });
+			outlet.__setProperties__({});
 			const vNode = outlet.__render__();
 			assert.isNull(vNode);
 		});
@@ -144,8 +144,8 @@ registerSuite({
 
 		return router.dispatch({}, '/main/my-param').then(() => {
 			const outlet = new TestOutlet();
-			outlet.__setCoreProperties__({ registry });
-			outlet.__setProperties__({ registry });
+			outlet.__setCoreProperties__({ bind: outlet, baseRegistry: registry });
+			outlet.__setProperties__({});
 			const vNode: any = outlet.__render__();
 			assert.strictEqual(vNode.text, 'Params');
 			assert.strictEqual(vNode.properties.router, router);
