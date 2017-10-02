@@ -520,6 +520,7 @@ export class Router<C extends Context> extends Evented implements RouterInterfac
 			if (success && redirect) {
 				redirecting = true;
 				this._history!.replace(redirect);
+				redirecting = false;
 			}
 			else if (!success && this._defaultRoute) {
 				const normalizedPath = this._history.normalizePath(this.link(this._defaultRoute));
@@ -527,6 +528,7 @@ export class Router<C extends Context> extends Evented implements RouterInterfac
 				if (success && redirect) {
 					redirecting = true;
 					this._history!.replace(redirect);
+					redirecting = false;
 				}
 			}
 		}
