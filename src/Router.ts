@@ -214,9 +214,7 @@ export class Router<C extends Context> extends Evented implements RouterInterfac
 
 			for (const { handler, params, outlet, type, route } of result) {
 				if (outlet) {
-					if (params) {
-						assign(this._currentParams, params);
-					}
+					assign(this._currentParams, params);
 					const location = this.link(route, this._currentParams);
 					this._outletContextMap.set(outlet, { type, params, location });
 					if (type === MatchType.ERROR) {
