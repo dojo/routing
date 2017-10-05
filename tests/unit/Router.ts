@@ -213,16 +213,33 @@ suite('Router', () => {
 		assert.strictEqual(received.target, router);
 	});
 
-	test('navstart listeners can synchronously cancel routing', () => {
+	test('navstart listeners can synchronously cancel routing before dispatch', () => {
+		const router = new Router();
+		router.append(new Route({ path: '/foo' }));
+		router.on('navstart', event => {
+			event.cancel && event.cancel();
+		});
+
+		return router.dispatch({} as Context, '/foo').then((dispatchResult) => {
+			const { success } = dispatchResult || { success: false };
+			assert.isFalse(success);
+		});
+	});
+
+	test('navstart listeners can synchronously cancel routing after dispatch', () => {
+		let cancel: Function | undefined = undefined;
 		const router = new Router();
 		router.append(new Route({ path: '/foo' }));
 		router.on('navstart', event => {
 			if (event.cancel) {
-				event.cancel();
+				cancel = event.cancel;
 			}
 		});
 
-		return router.dispatch({} as Context, '/foo').then((dispatchResult) => {
+		const promise = router.dispatch({} as Context, '/foo');
+		cancel && cancel();
+
+		return promise.then((dispatchResult) => {
 			const { success } = dispatchResult || { success: false };
 			assert.isFalse(success);
 		});
