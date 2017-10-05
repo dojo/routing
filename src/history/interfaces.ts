@@ -40,7 +40,7 @@ export interface History extends Evented {
 	replace(path: string): void;
 
 	/**
-	 *
+	 * Function that will normalize the path for the history manager
 	 */
 	normalizePath(path: string): string;
 
