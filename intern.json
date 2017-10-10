@@ -39,7 +39,8 @@
 		]
 	},
 	"coverage": [
-		"./_build/src/**/*.js"
+		"./_build/src/**/*.js",
+		"!./_build/src/examples/**"
 	],
 	"configs": {
 		"local": {
