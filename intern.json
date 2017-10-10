@@ -38,12 +38,10 @@
 			"!./_build/tests/unit/history/StateHistory.js"
 		]
 	},
+	"coverage": [
+		"./_build/src/**/*.js"
+	],
 	"configs": {
-		"coverage": {
-			"coverage": [
-				"./_build/src/**/*.js"
-			]
-		},
 		"local": {
 			"tunnel": "selenium",
 			"tunnelOptions": { },
@@ -51,17 +49,17 @@
 				{ "browserName": "chrome" }
 			]
 		},
-		"saucelabs": {
-			"tunnel": "saucelabs",
+		"browserstack": {
+			"tunnel": "browserstack",
 			"tunnelOptions": {
 			},
 			"environments": [
-				{ "browserName": "internet explorer", "version": [ "10.0", "11.0" ], "platform": "Windows 7" },
-				{ "browserName": "microsoftedge", "platform": "Windows 10" },
-				{ "browserName": "firefox", "platform": "Windows 10" },
-				{ "browserName": "chrome", "platform": "Windows 10" },
-				{ "browserName": "safari", "version": "9", "platform": "OS X 10.11" },
-				{ "browserName": "iphone", "version": "9.3" }
+				{ "browserName": "internet explorer", "version": "11" },
+				{ "browserName": "edge" },
+				{ "browserName": "firefox", "platform": "WINDOWS" },
+				{ "browserName": "chrome", "platform": "WINDOWS" },
+				{ "browserName": "safari", "version": "9.1", "platform": "MAC" },
+				{ "browserName": "iPhone", "version": "9.1" }
 			]
 		}
 	}
