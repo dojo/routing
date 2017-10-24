@@ -1,9 +1,9 @@
 import Task from '@dojo/core/async/Task';
-import Promise from '@dojo/shim/Promise';
 const { beforeEach, suite, test } = intern.getInterface('tdd');
 const { assert } = intern.getPlugin('chai');
 import { spy, stub } from 'sinon';
 import MemoryHistory from '../../src/history/MemoryHistory';
+
 import {
 	Context,
 	DefaultParameters,
@@ -501,6 +501,38 @@ suite('Router', () => {
 				type: MatchType.INDEX
 			});
 		});
+	});
+
+	test('query for multiple outlets', async () => {
+		const config = [{
+			path: '/path-1',
+			outlet: 'outlet-id-1'
+		}, {
+			path: '/path-2',
+			outlet: 'outlet-id-2'
+		}, {
+			path: '/path-3',
+			outlet: 'outlet-id-3'
+		}];
+
+		const router = new Router({ config });
+
+		await router.dispatch({}, '/path-2');
+
+		const noMatchResult = router.getOutlet(['no', 'outlet-id-1', '', ' ']);
+
+		assert.equal(noMatchResult, undefined);
+
+		const matchingResult = router.getOutlet(['true', 'outlet-id-2']);
+
+		assert.deepEqual(matchingResult, {
+			location: '/path-2',
+			type: MatchType.INDEX,
+			params: {}
+		});
+
+		const emptyInput = router.getOutlet([]);
+		assert.equal(emptyInput, undefined);
 	});
 
 	test('register() throws error if more than one default route is attempted to be registered', () => {
