@@ -3,7 +3,7 @@ import Evented from '@dojo/core/Evented';
 import { assign } from '@dojo/shim/object';
 import { pausable, PausableHandle } from '@dojo/core/on';
 import UrlSearchParams from '@dojo/core/UrlSearchParams';
-import { includes, find } from '@dojo/shim/array';
+import { includes, find, from as arrayFrom } from '@dojo/shim/array';
 import { Thenable } from '@dojo/shim/interfaces';
 import Map from '@dojo/shim/Map';
 import Promise from '@dojo/shim/Promise';
@@ -441,8 +441,8 @@ export class Router<C extends Context> extends Evented implements RouterInterfac
 
 	getOutlet(outletId: string | Array<String>): OutletContext | undefined {
 		if (Array.isArray(outletId)) {
-			const outletContextArray = Array.from(this._outletContextMap);
-			const outlets = Array.from(outletId);
+			const outletContextArray = arrayFrom(this._outletContextMap);
+			const outlets = arrayFrom(outletId);
 
 			const matchingOutlet = find(outletContextArray, ([key]) => {
 				return includes(outlets, key);
