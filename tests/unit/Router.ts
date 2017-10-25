@@ -509,10 +509,18 @@ suite('Router', () => {
 			outlet: 'outlet-id-1'
 		}, {
 			path: '/path-2',
-			outlet: 'outlet-id-2'
+			outlet: 'outlet-id-2',
+			children: [{
+				path: '/nested-path',
+				outlet: 'outlet-id-3',
+				children: [{
+					path: '/nested-path',
+					outlet: 'outlet-id-4'
+				}]
+			}]
 		}, {
 			path: '/path-3',
-			outlet: 'outlet-id-3'
+			outlet: 'outlet-id-5'
 		}];
 
 		const router = new Router({ config });
@@ -533,6 +541,30 @@ suite('Router', () => {
 
 		const emptyInput = router.getOutlet([]);
 		assert.equal(emptyInput, undefined);
+
+		await router.dispatch({}, '/path-2/nested-path');
+
+		const multipleMatchingOutlets = router.getOutlet(['outlet-id-2', 'outlet-id-3']);
+
+		assert.deepEqual(multipleMatchingOutlets, {
+			location: '/path-2',
+			type: MatchType.PARTIAL,
+			params: {}
+		});
+
+		await router.dispatch({}, '/path-2/nested-path/nested-path');
+
+		assert.deepEqual(router.getOutlet(['outlet-id-4']), {
+			location: '/path-2/nested-path/nested-path',
+			type: MatchType.INDEX,
+			params: {}
+		});
+
+		assert.deepEqual(router.getOutlet(['outlet-id-4', 'outlet-id-2']), {
+			location: '/path-2',
+			type: MatchType.PARTIAL,
+			params: {}
+		});
 	});
 
 	test('register() throws error if more than one default route is attempted to be registered', () => {
