@@ -515,7 +515,11 @@ suite('Router', () => {
 				outlet: 'outlet-id-3',
 				children: [{
 					path: '/nested-path',
-					outlet: 'outlet-id-4'
+					outlet: 'outlet-id-4',
+					children: [{
+						path: '/nested-path',
+						outlet: 'outlet-id-5'
+					}]
 				}]
 			}]
 		}, {
@@ -547,8 +551,8 @@ suite('Router', () => {
 		const multipleMatchingOutlets = router.getOutlet(['outlet-id-2', 'outlet-id-3']);
 
 		assert.deepEqual(multipleMatchingOutlets, {
-			location: '/path-2',
-			type: MatchType.PARTIAL,
+			location: '/path-2/nested-path',
+			type: MatchType.INDEX,
 			params: {}
 		});
 
@@ -561,9 +565,42 @@ suite('Router', () => {
 		});
 
 		assert.deepEqual(router.getOutlet(['outlet-id-4', 'outlet-id-2']), {
-			location: '/path-2',
-			type: MatchType.PARTIAL,
+			location: '/path-2/nested-path/nested-path',
+			type: MatchType.INDEX,
 			params: {}
+		});
+	});
+
+	test('parameters are combined with multiple matching outlets', async () => {
+		const config = [{
+			path: '/path',
+			outlet: 'outlet-id-1',
+			children: [{
+				path: '/nested-path/{outlet-2-param}',
+				outlet: 'outlet-id-2',
+				children: [{
+					path: '/nested-path/{outlet-3-param}',
+					outlet: 'outlet-id-3',
+					children: [{
+						path: '/nested-path/{outlet-4-param}',
+						outlet: 'outlet-id-4'
+					}]
+				}]
+			}]
+		}];
+
+		const router = new Router({ config });
+
+		await router.dispatch({}, '/path/nested-path/param-2/nested-path/param-3/nested-path/param-4');
+
+		assert.deepEqual(router.getOutlet(['outlet-id-3', 'outlet-id-2', 'outlet-id-4']), {
+			location: '/path/nested-path/param-2/nested-path/param-3/nested-path/param-4',
+			type: MatchType.INDEX,
+			params: {
+				'outlet-2-param': 'param-2',
+				'outlet-3-param': 'param-3',
+				'outlet-4-param': 'param-4'
+			}
 		});
 	});
 
