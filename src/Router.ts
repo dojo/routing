@@ -3,7 +3,7 @@ import Evented from '@dojo/core/Evented';
 import { assign } from '@dojo/shim/object';
 import { pausable, PausableHandle } from '@dojo/core/on';
 import UrlSearchParams from '@dojo/core/UrlSearchParams';
-import { includes, find, from as arrayFrom } from '@dojo/shim/array';
+import { includes } from '@dojo/shim/array';
 import { Thenable } from '@dojo/shim/interfaces';
 import Map from '@dojo/shim/Map';
 import Promise from '@dojo/shim/Promise';
@@ -439,36 +439,30 @@ export class Router<C extends Context> extends Evented implements RouterInterfac
 		return this._outletContextMap.has(outletId);
 	}
 
-	getOutlet(outletIds: string | string[]): OutletContext | undefined {
-		if (Array.isArray(outletIds)) {
-			const combinedParams = outletIds.reduce((params, cur, index) => {
-				const context = this._outletContextMap.get(cur);
+	getOutlet(outletId: string | string[]): OutletContext | undefined {
+		const outletIds = Array.isArray(outletId) ? outletId : [outletId];
+		let matchingOutlet: OutletContext | undefined = undefined;
+		let matchingParams: Parameters = {};
+		let matchingLocation = '';
 
-				if (context) {
-					return {
-						...params,
-						...context.params
+		for (let i = 0; i < outletIds.length; i++) {
+			const outletContext = this._outletContextMap.get(outletIds[i]);
+
+			if (outletContext) {
+				const { params, location } = outletContext;
+				matchingParams = { ...matchingParams, ...params };
+
+				if (!matchingOutlet || matchingLocation.indexOf(location) === -1) {
+					matchingLocation = location;
+					matchingOutlet = {
+						...outletContext,
+						params: matchingParams
 					};
 				}
-
-				return params;
-			}, {});
-
-			const outletContextArray = arrayFrom(this._outletContextMap) || [];
-
-			const [, matchingOutlet = undefined] = find(outletContextArray.reverse(), ([key]) => {
-				return includes(outletIds, key);
-			}) || [];
-
-			if (matchingOutlet) {
-				return {
-					...matchingOutlet,
-					params: combinedParams
-				};
 			}
-		} else {
-			return this._outletContextMap.get(outletIds);
 		}
+
+		return matchingOutlet;
 	}
 
 	getCurrentParams(): Parameters {
