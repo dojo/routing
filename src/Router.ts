@@ -440,7 +440,7 @@ export class Router<C extends Context> extends Evented implements RouterInterfac
 	}
 
 	getOutlet(outletId: string | string[]): OutletContext | undefined {
-		const outletIds = Array.isArray(outletId) ? outletId : [outletId];
+		const outletIds = Array.isArray(outletId) ? outletId : [ outletId ];
 		let matchingOutlet: OutletContext | undefined = undefined;
 		let matchingParams: Parameters = {};
 		let matchingLocation = '';
