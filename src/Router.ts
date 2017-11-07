@@ -20,9 +20,9 @@ import {
 	Request,
 	RouteConfig,
 	RouteInterface,
-	RouterEvents,
 	RouterInterface,
 	RouterOptions,
+	RouterEventMap,
 	SearchParams,
 	Selection,
 	StartOptions
@@ -50,7 +50,7 @@ function createDeferral() {
 }
 
 function reportError(router: Router<Context>, context: Context, path: string, error: any) {
-	router.emit<ErrorEvent<Context>>({
+	router.emit({
 		context,
 		error,
 		path,
@@ -67,7 +67,7 @@ function catchRejection(router: Router<Context>, context: Context, path: string,
 	}
 }
 
-export class Router<C extends Context> extends Evented implements RouterInterface<C> {
+export class Router<C extends Context, M extends RouterEventMap<C> = RouterEventMap<C>> extends Evented<M> implements RouterInterface<C> {
 	private _contextFactory: () => Context;
 	private _currentSelection: Selection[];
 	private _dispatchFromStart: boolean;
@@ -81,10 +81,8 @@ export class Router<C extends Context> extends Evented implements RouterInterfac
 	private _defaultParams: any = {};
 	private _defaultRoute: RouteInterface<any, any>;
 
-	on: RouterEvents<C>;
-
 	constructor(options: RouterOptions<C> = { }) {
-		super({});
+		super();
 		const { context, fallback, history, config } = options;
 
 		let contextFactory: () => C;
@@ -181,7 +179,7 @@ export class Router<C extends Context> extends Evented implements RouterInterfac
 		this._outletContextMap.clear();
 
 		if (emit) {
-			this.emit<NavigationStartEvent>({
+			this.emit({
 				context,
 				path,
 				target: this,
@@ -262,7 +260,7 @@ export class Router<C extends Context> extends Evented implements RouterInterfac
 
 		this._currentParams = {};
 		this._outletContextMap.clear();
-		this.emit<NavigationStartEvent>({
+		this.emit({
 			context,
 			cancel,
 			defer () {

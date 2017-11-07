@@ -26,14 +26,13 @@
     "test": "grunt test"
   },
   "peerDependencies": {
-    "@dojo/core": "~0.2.1",
-    "@dojo/has": "~0.1.0",
-    "@dojo/shim": "~0.2.2",
-    "@dojo/widget-core": "~0.3.0"
+    "@dojo/core": "file:../core/dist/dojo-core-0.1.1-alpha.1.tgz",
+    "@dojo/has": "file:../has/dist/dojo-has-0.1.1-alpha.1.tgz",
+    "@dojo/shim": "file:../shim/dist/dojo-shim-0.1.1-alpha.1.tgz",
+    "@dojo/widget-core": "file:../widget-core/dist/dojo-widget-core-0.1.3-alpha.1.tgz"
   },
   "devDependencies": {
-    "@dojo/interfaces": "~0.1.0",
-    "@dojo/loader": "~0.1.0",
+    "@dojo/loader": "file:../loader/dist/dojo-loader-0.1.1-alpha.1.tgz",
     "@types/chai": "~3.4.0",
     "@types/glob": "~5.0.0",
     "@types/grunt": "~0.4.0",
@@ -42,6 +41,6 @@
     "grunt-dojo2": "latest",
     "intern": "~4.1.0",
     "sinon": "^1.17.4",
-    "typescript": "~2.5.3"
+    "typescript": "~2.6.1"
   }
 }

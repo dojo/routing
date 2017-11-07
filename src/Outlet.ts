@@ -16,7 +16,8 @@ import {
 	Component,
 	MapParams,
 	OutletComponents,
-	MapParamsOptions
+	MapParamsOptions,
+	RouterInterface
 } from './interfaces';
 
 export function isComponent<W extends WidgetBaseInterface>(value: any): value is Component<W> {
@@ -54,7 +55,7 @@ export function Outlet<W extends WidgetBaseInterface, F extends WidgetBaseInterf
 			const outletContext = router.getOutlet(outlet);
 			if (outletContext) {
 				const { params, type, location } = outletContext;
-				const properties = { ...this.properties, ...mapParams({ params, type, location, router }) };
+				const properties = { ...this.properties, ...mapParams({ params, type, location, router: (<RouterInterface<any>><any> router) }) };
 
 				if ((type === MatchType.INDEX || type === MatchType.ERROR) && indexComponent) {
 					return w(indexComponent, properties, this.children);
