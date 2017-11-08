@@ -119,8 +119,8 @@ export class Route<C extends Context, P extends Parameters> implements RouteInte
 	private _index?: Handler;
 	private _defaultParams: P;
 
-	get parent() {
-		return parentMap.get(this);
+	get parent(this: Route<Context, Parameters>): Route<C, P> {
+		return parentMap.get(this) as any;
 	}
 
 	get path(this: Route<C, P>) {

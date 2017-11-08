@@ -71,7 +71,7 @@ export class Router<C extends Context, M extends RouterEventMap<C> = RouterEvent
 	private _contextFactory: () => Context;
 	private _currentSelection: Selection[];
 	private _dispatchFromStart: boolean;
-	private _fallback?: (request: Request<Context, Parameters>) => void | Thenable<any>;
+	private _fallback?: (request: Request<any, any>) => void | PromiseLike<any>;
 	private _history?: History;
 	private _routes: RouteInterface<Context, Parameters>[];
 	private _started?: boolean;
