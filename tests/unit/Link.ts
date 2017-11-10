@@ -127,4 +127,12 @@ suite('Link', () => {
 			// nothing to see here
 		}
 	});
+	test('Gracefully handles not being able to generate a link', () => {
+		const link = new Link();
+		link.__setCoreProperties__({ bind: link,  baseRegistry: registry });
+		link.__setProperties__({ to: 'bar', isOutlet: true });
+		const vNode: any = link.__render__();
+		assert.strictEqual(vNode.vnodeSelector, 'a');
+		assert.isUndefined(vNode.properties.href);
+	});
 });

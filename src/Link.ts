@@ -14,16 +14,21 @@ export interface LinkProperties extends VirtualDomProperties {
 	to: string;
 }
 
-const getProperties = (router: Router<any>, properties: any): LinkProperties => {
+const getProperties = (router: Router<any>, properties: any): Partial<LinkProperties> => {
 	const { to, isOutlet = true, params = {}, onClick, ...props } = properties;
-	const href = isOutlet ? router.link(to, { ...router.getCurrentParams(), ...params }) : to;
+	let href: string | undefined;
+	try {
+		href = isOutlet ? router.link(to, { ...router.getCurrentParams(), ...params }) : to;
+	} catch (err) {
+
+	}
 	const handleOnClick = (event: MouseEvent) => {
 
 		if (onClick) {
 			onClick(event);
 		}
 
-		if (!event.defaultPrevented && event.button === 0 && !properties.target) {
+		if (!event.defaultPrevented && event.button === 0 && !properties.target && typeof href === 'string') {
 			event.preventDefault();
 			router.setPath(href);
 		}
