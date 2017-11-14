@@ -1,5 +1,5 @@
 {
-	"capabilities": {
+	"capabilities+": {
 		"browserstack.debug": false,
 		"project": "Dojo 2",
 		"name": "@dojo/routing"
