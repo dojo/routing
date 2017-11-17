@@ -1,6 +1,5 @@
 import { Evented } from '@dojo/core/Evented';
-import { EventObject, EventType } from '@dojo/core/interfaces';
-import { Handle } from '@dojo/core/interfaces';
+import { EventObject } from '@dojo/core/interfaces';
 
 export { BrowserHistory } from './_alias-ambient-history';
 

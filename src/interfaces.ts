@@ -1,8 +1,8 @@
 import Task from '@dojo/core/async/Task';
-import Evented, { EventedCallback } from '@dojo/core/Evented';
+import Evented from '@dojo/core/Evented';
 import { PausableHandle } from '@dojo/core/on';
 import UrlSearchParams from '@dojo/core/UrlSearchParams';
-import { EventObject, EventErrorObject, Handle, Hash } from '@dojo/core/interfaces';
+import { EventObject, EventErrorObject, Hash } from '@dojo/core/interfaces';
 import { Constructor, RegistryLabel, WidgetBaseInterface } from '@dojo/widget-core/interfaces';
 import { History } from './history/interfaces';
 import { DeconstructedPath } from './lib/path';
@@ -326,7 +326,7 @@ export enum MatchType {
 /**
  * A request handler.
  */
-export type Handler = (request: Request<Context, Parameters>) => void | PromiseLike<any>;
+export type Handler<C extends Context, P extends Parameters> = (request: Request<C, P>) => void | PromiseLike<any>;
 
 /**
  * Describes the selection of a particular route.
@@ -335,7 +335,7 @@ export interface Selection {
 	/**
 	 * Which handler should be called when the route is executed.
 	 */
-	handler: Handler;
+	handler: Handler<any, any>;
 
 	/**
 	 * The selected path.

@@ -4,17 +4,14 @@ import { assign } from '@dojo/shim/object';
 import { pausable, PausableHandle } from '@dojo/core/on';
 import UrlSearchParams from '@dojo/core/UrlSearchParams';
 import { includes } from '@dojo/shim/array';
-import { Thenable } from '@dojo/shim/interfaces';
 import Map from '@dojo/shim/Map';
 import Promise from '@dojo/shim/Promise';
-import { History, HistoryChangeEvent } from './history/interfaces';
+import { History } from './history/interfaces';
 import {
 	Context,
 	DispatchResult,
-	ErrorEvent,
 	LinkParams,
 	MatchType,
-	NavigationStartEvent,
 	OutletContext,
 	Parameters,
 	Request,
@@ -49,7 +46,7 @@ function createDeferral() {
 	return { cancel, promise, resume };
 }
 
-function reportError(router: Router<Context>, context: Context, path: string, error: any) {
+function reportError<C extends Context>(router: Router<C>, context: C, path: string, error: any) {
 	router.emit({
 		context,
 		error,
@@ -59,7 +56,7 @@ function reportError(router: Router<Context>, context: Context, path: string, er
 	});
 }
 
-function catchRejection(router: Router<Context>, context: Context, path: string, thenable: void | Thenable<any>) {
+function catchRejection<C extends Context>(router: Router<C>, context: C, path: string, thenable: void | PromiseLike<any>) {
 	if (thenable) {
 		Promise.resolve(thenable).catch((error) => {
 			reportError(router, context, path, error);
@@ -68,7 +65,7 @@ function catchRejection(router: Router<Context>, context: Context, path: string,
 }
 
 export class Router<C extends Context, M extends RouterEventMap<C> = RouterEventMap<C>> extends Evented<M> implements RouterInterface<C> {
-	private _contextFactory: () => Context;
+	private _contextFactory: () => C;
 	private _currentSelection: Selection[];
 	private _dispatchFromStart: boolean;
 	private _fallback?: (request: Request<any, any>) => void | PromiseLike<any>;
@@ -157,7 +154,7 @@ export class Router<C extends Context, M extends RouterEventMap<C> = RouterEvent
 			}
 
 			this._routes.push(route);
-			parentMap.set(route, this);
+			parentMap.set(route, this as any);
 		};
 
 		if (Array.isArray(add)) {
@@ -170,7 +167,7 @@ export class Router<C extends Context, M extends RouterEventMap<C> = RouterEvent
 		}
 	}
 
-	private _dispatch(context: Context, path: string, canceled: boolean = false, emit: boolean = true) {
+	private _dispatch(context: C, path: string, canceled: boolean = false, emit: boolean = true) {
 		if (canceled) {
 			return { success: false };
 		}
@@ -219,7 +216,7 @@ export class Router<C extends Context, M extends RouterEventMap<C> = RouterEvent
 						this._outletContextMap.set(errorOutlet, { type: MatchType.PARTIAL, params, location });
 					}
 				}
-				catchRejection(this, context, path, handler({ context, params }));
+				catchRejection<C>(this, context, path, handler({ context, params }));
 			}
 
 			return true;
@@ -250,7 +247,7 @@ export class Router<C extends Context, M extends RouterEventMap<C> = RouterEvent
 
 	}
 
-	dispatch(context: Context, path: string): Task<DispatchResult> {
+	dispatch(context: C, path: string): Task<DispatchResult> {
 		let canceled = false;
 		const cancel = () => {
 			canceled = true;
@@ -527,7 +524,7 @@ export class Router<C extends Context, M extends RouterEventMap<C> = RouterEvent
 			return lastDispatch;
 		};
 
-		const listener = pausable(this._history, 'change', (event: HistoryChangeEvent) => {
+		const listener = pausable(this._history, 'change', (event) => {
 			dispatch(event.value);
 		});
 		this.own(listener);
