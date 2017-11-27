@@ -1100,22 +1100,19 @@ suite('Router', () => {
 		assert.deepEqual(contexts[1], { second: true });
 	});
 
-	test('link() throws if route has not been appended', () => {
+	test('link() returns undefined if route has not been appended', () => {
 		const router = new Router();
-		assert.throws(() => {
-			router.link(new Route({ path: '/' }));
-		}, Error, 'Cannot generate link for route that is not in the hierarchy');
-		assert.throws(() => {
-			const foo = new Route({ path: '/foo' });
-			const bar = new Route({ path: '/bar' });
-			foo.append(bar);
-			router.link(bar);
-		}, Error, 'Cannot generate link for route that is not in the hierarchy');
-		assert.throws(() => {
-			const foo = new Route({ path: '/foo' });
-			new Router().append(foo);
-			router.link(foo);
-		}, Error, 'Cannot generate link for route that is not in the hierarchy');
+		const bar = new Route({ path: '/bar' });
+		let foo = new Route({ path: '/foo' });
+
+		assert.isUndefined(router.link(new Route({ path: '/' })), 'Cannot generate link for route that is not in the hierarchy');
+
+		foo.append(bar);
+		assert.isUndefined(router.link(bar), 'Cannot generate link for route that is not in the hierarchy');
+
+		foo = new Route({ path: '/foo' });
+		new Router().append(foo);
+		assert.isUndefined(router.link(foo), 'Cannot generate link for route that is not in the hierarchy');
 	});
 
 	test('link() combines paths of route hierarchy (no parameters)', () => {
@@ -1140,28 +1137,22 @@ suite('Router', () => {
 		assert.equal(router.link(route), '/prefixed/foo');
 	});
 
-	test('link() throws if parameters are missing', () => {
+	test('link() returns undefined if parameters are missing', () => {
 		const router = new Router();
 		const route = new Route({ path: '/{foo}?{bar}' });
 		router.append(route);
 
-		assert.throws(() => {
-			router.link(route);
-		}, Error, 'Cannot generate link, missing parameter \'foo\'');
-		assert.throws(() => {
-			router.link(route, { foo: 'foo' });
-		}, Error, 'Cannot generate link, missing search parameter \'bar\'');
+		assert.isUndefined(router.link(route), 'Cannot generate link, missing parameter \'foo\'');
+		assert.isUndefined(router.link(route, { foo: 'foo' }), 'Cannot generate link, missing search parameter \'bar\'');
 	});
 
-	test('link() throws if more than one value is provided for a path parameter', () => {
+	test('link() returns undefined if more than one value is provided for a path parameter', () => {
 		const router = new Router();
 		const route = new Route({ path: '/{foo}' });
 		router.append(route);
 
 		assert.equal(router.link(route, { foo: [ 'foo' ] }), '/foo');
-		assert.throws(() => {
-			router.link(route, { foo: [ 'foo', 'bar' ] });
-		}, Error, 'Cannot generate link, multiple values for parameter \'foo\'');
+		assert.isUndefined(router.link(route, { foo: [ 'foo', 'bar' ] }), 'Cannot generate link, multiple values for parameter \'foo\'');
 	});
 
 	test('link() fills in parameters', () => {
@@ -1235,7 +1226,7 @@ suite('Router', () => {
 		router.append(initial);
 
 		const ready = new Promise((resolve) => {
-			const links: string[] = [];
+			const links: (string | undefined)[] = [];
 			const route = new Route({
 				path: '/{foo}',
 				guard() {

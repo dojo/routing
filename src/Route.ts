@@ -189,7 +189,7 @@ export class Route<C extends Context, P extends Parameters> implements RouteInte
 		}
 	}
 
-	link(params?: LinkParams): string {
+	link(params?: LinkParams): string | undefined {
 		return findRouter(this).link(this, params);
 	}
 

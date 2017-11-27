@@ -296,7 +296,7 @@ export class Router<C extends Context> extends Evented implements RouterInterfac
 		}, cancel);
 	}
 
-	link(routeOrOutlet: RouteInterface<Context, Parameters> | string, params: LinkParams = {}): string {
+	link(routeOrOutlet: RouteInterface<Context, Parameters> | string, params: LinkParams = {}): string | undefined {
 		let route: RouteInterface<Context, Parameters>;
 		if (typeof routeOrOutlet === 'string') {
 			const item = this._outletRouteMap.get(routeOrOutlet);
@@ -304,7 +304,7 @@ export class Router<C extends Context> extends Evented implements RouterInterfac
 				route = item;
 			}
 			else {
-				throw new Error(`No outlet ${routeOrOutlet} has been registered`);
+				return undefined;
 			}
 		}
 		else {
@@ -315,8 +315,8 @@ export class Router<C extends Context> extends Evented implements RouterInterfac
 			hierarchy.unshift(parent);
 		}
 
-		if (!includes(this._routes, hierarchy[ 0 ])) {
-			throw new Error('Cannot generate link for route that is not in the hierarchy');
+		if (!includes(this._routes, hierarchy[0])) {
+			return undefined;
 		}
 
 		const { leadingSlash: addLeadingSlash } = hierarchy[ 0 ].path;
@@ -449,7 +449,7 @@ export class Router<C extends Context> extends Evented implements RouterInterfac
 			const outletContext = this._outletContextMap.get(outletIds[i]);
 
 			if (outletContext) {
-				const { params, location } = outletContext;
+				const { params, location = '' } = outletContext;
 				matchingParams = { ...matchingParams, ...params };
 
 				if (!matchingOutlet || matchingLocation.indexOf(location) === -1) {
@@ -543,7 +543,7 @@ export class Router<C extends Context> extends Evented implements RouterInterfac
 				redirecting = false;
 			}
 			else if (!success && this._defaultRoute) {
-				const normalizedPath = this._history.normalizePath(this.link(this._defaultRoute));
+				const normalizedPath = this._history.normalizePath(this.link(this._defaultRoute) || '');
 				this._dispatch(context, normalizedPath);
 			}
 		}

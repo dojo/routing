@@ -65,7 +65,7 @@ export interface OutletComponents<W extends WidgetBaseInterface, I extends Widge
 export interface MapParamsOptions {
 	params: any;
 	type: MatchType;
-	location: string;
+	location: string | undefined;
 	router: RouterInterface<any>;
 }
 
@@ -256,7 +256,7 @@ export interface OutletContext {
 	/**
 	 * The location of the route (link)
 	 */
-	location: string;
+	location: string | undefined;
 
 	/**
 	 * The params for the specific outlet
@@ -273,7 +273,7 @@ export interface RouterInterface<C extends Context> extends Evented {
 
 	dispatch(context: Context, path: string): Task<DispatchResult>;
 
-	link(routeOrOutlet: RouteInterface<Context, Parameters> | string, params?: LinkParams): string;
+	link(routeOrOutlet: RouteInterface<Context, Parameters> | string, params?: LinkParams): string | undefined;
 
 	replacePath(path: string): void;
 
@@ -392,7 +392,7 @@ export interface RouteInterface<C extends Context, P extends Parameters> {
 	readonly defaultParams: P;
 
 	append(add: RouteInterface<Context, Parameters> | RouteInterface<Context, Parameters>[]): void;
-	link(params?: LinkParams): string;
+	link(params?: LinkParams): string | undefined;
 	match(segments: string[], hasTrailingSlash: boolean, searchParams: UrlSearchParams): null | MatchResult<DefaultParameters | P>;
 	select(context: C, segments: string[], hasTrailingSlash: boolean, searchParams: UrlSearchParams): string | Selection[];
 }
