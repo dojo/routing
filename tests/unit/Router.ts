@@ -1356,13 +1356,9 @@ suite('Router', () => {
 		router.start({ dispatchCurrent: false });
 		history.set('/initial/foo');
 
-		return ready
-			.then(() => {
-				throw new Error('Should have thrown');
-			})
-			.catch((err) => {
-				assert.equal(err.message, 'Cannot generate link, missing parameter \'foo\'');
-			});
+		return ready.then(link => {
+			assert.isUndefined(link);
+		});
 	});
 
 	test('link() generated for a registered outlet', () => {
