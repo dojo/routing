@@ -23,9 +23,11 @@ const getProperties = (router: Router<any>, properties: any): Partial<LinkProper
 			onClick(event);
 		}
 
-		if (!event.defaultPrevented && event.button === 0 && !properties.target && typeof href === 'string') {
+		if (!event.defaultPrevented && event.button === 0 && !properties.target) {
 			event.preventDefault();
-			router.setPath(href);
+			if (typeof href === 'string') {
+				router.setPath(href);
+			}
 		}
 	};
 

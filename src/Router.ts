@@ -327,7 +327,7 @@ export class Router<C extends Context> extends Evented implements RouterInterfac
 				let currentPathValues: string[] | undefined;
 				let currentSearchParams: SearchParams | undefined;
 
-				const selection = this._currentSelection[ index ];
+				const selection = this._currentSelection[index];
 				if (selection && selection.route === route) {
 					currentPathValues = selection.rawPathValues;
 					currentSearchParams = selection.rawSearchParams;
@@ -350,7 +350,7 @@ export class Router<C extends Context> extends Evented implements RouterInterfac
 							}
 							else if (Array.isArray(value)) {
 								if (value.length === 1) {
-									segments.push(value[ 0 ]);
+									segments.push(value[0]);
 								}
 								else {
 									return undefined;
@@ -380,7 +380,7 @@ export class Router<C extends Context> extends Evented implements RouterInterfac
 							continue;
 						}
 
-						const value = params[ key ] || this._defaultParams[ key ] ;
+						const value = params[key] || this._defaultParams[key] ;
 						if (typeof value === 'string') {
 							searchParams.append(key, value);
 						}
@@ -390,7 +390,7 @@ export class Router<C extends Context> extends Evented implements RouterInterfac
 							}
 						}
 						else if (currentSearchParams) {
-							for (const item of currentSearchParams[ key ]) {
+							for (const item of currentSearchParams[key]) {
 								searchParams.append(key, item);
 							}
 						}
