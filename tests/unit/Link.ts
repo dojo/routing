@@ -115,6 +115,23 @@ suite('Link', () => {
 		dNode.properties.onclick.call(link, createMockEvent(true));
 		assert.isTrue(routerSetPathSpy.notCalled);
 	});
+	test('Prevents default but does no set router path when href is undefined', () => {
+		const link = new Link();
+		link.__setCoreProperties__({ bind: link, baseRegistry: registry });
+		link.__setProperties__({
+			to: undefined as any,
+			isOutlet: false,
+			registry
+		});
+		const dNode: any = link.__render__();
+		const event = createMockEvent();
+		assert.strictEqual(dNode.tag, 'a');
+		assert.isUndefined(dNode.properties.href);
+		assert.isFalse(event.defaultPrevented);
+		dNode.properties.onclick.call(link, event);
+		assert.isTrue(routerSetPathSpy.notCalled);
+		assert.isTrue(event.defaultPrevented);
+	});
 	test('throw error if the injected router cannot be found with the router key', () => {
 		const link = new Link();
 		link.__setCoreProperties__({ bind: link, baseRegistry: registry });
