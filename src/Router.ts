@@ -30,7 +30,6 @@ import {
 import { isNamedSegment, parse as parsePath } from './lib/path';
 import { hasBeenAppended, parentMap } from './lib/router';
 import { Route } from './Route';
-import { Url } from "intern/lib/browser/util";
 
 export const errorOutlet = 'errorOutlet';
 
