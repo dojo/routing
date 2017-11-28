@@ -451,16 +451,16 @@ export class Router<C extends Context> extends Evented implements RouterInterfac
 		const outletIds = Array.isArray(outletId) ? outletId : [ outletId ];
 		let matchingOutlet: OutletContext | undefined = undefined;
 		let matchingParams: Parameters = {};
-		let matchingLocation = '';
+		let matchingLocation: string | undefined = '';
 
 		for (let i = 0; i < outletIds.length; i++) {
 			const outletContext = this._outletContextMap.get(outletIds[i]);
 
 			if (outletContext) {
-				const { params, location = '' } = outletContext;
+				const { params, location } = outletContext;
 				matchingParams = { ...matchingParams, ...params };
 
-				if (!matchingOutlet || matchingLocation.indexOf(location) === -1) {
+				if (!matchingOutlet || typeof location === 'undefined' || matchingLocation.indexOf(location) === -1) {
 					matchingLocation = location;
 					matchingOutlet = {
 						...outletContext,
