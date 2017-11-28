@@ -30,6 +30,7 @@ import {
 import { isNamedSegment, parse as parsePath } from './lib/path';
 import { hasBeenAppended, parentMap } from './lib/router';
 import { Route } from './Route';
+import { Url } from "intern/lib/browser/util";
 
 export const errorOutlet = 'errorOutlet';
 
@@ -321,10 +322,7 @@ export class Router<C extends Context> extends Evented implements RouterInterfac
 
 		const { leadingSlash: addLeadingSlash } = hierarchy[ 0 ].path;
 		let addTrailingSlash = false;
-		const segments: string[] = [];
-		const searchParams = new UrlSearchParams();
-
-		hierarchy
+		const segmentsAndSearchparams = hierarchy
 			.map((route, index) => {
 				const { path } = route;
 				let currentPathValues: string[] | undefined;
@@ -338,68 +336,79 @@ export class Router<C extends Context> extends Evented implements RouterInterfac
 
 				return { currentPathValues, currentSearchParams, path, route };
 			})
-			.forEach(({ currentPathValues, currentSearchParams, path, route }) => {
-				const { expectedSegments, searchParameters, trailingSlash } = path;
-				addTrailingSlash = trailingSlash;
+			.reduce((segmentsAndSearchParams, { currentPathValues, currentSearchParams, path, route }) => {
+				if (segmentsAndSearchParams) {
+					const { segments, searchParams } = segmentsAndSearchParams;
+					const { expectedSegments, searchParameters, trailingSlash } = path;
+					addTrailingSlash = trailingSlash;
 
-				let namedOffset = 0;
-				for (const segment of expectedSegments) {
-					if (isNamedSegment(segment)) {
-						const value = params[ segment.name ];
-						if (typeof value === 'string') {
-							segments.push(value);
-						}
-						else if (Array.isArray(value)) {
-							if (value.length === 1) {
-								segments.push(value[ 0 ]);
+					let namedOffset = 0;
+					for (const segment of expectedSegments) {
+						if (isNamedSegment(segment)) {
+							const value = params[ segment.name ];
+							if (typeof value === 'string') {
+								segments.push(value);
+							}
+							else if (Array.isArray(value)) {
+								if (value.length === 1) {
+									segments.push(value[ 0 ]);
+								}
+								else {
+									return undefined;
+								}
+							}
+							else if (currentPathValues) {
+								segments.push(currentPathValues[ namedOffset ]);
+							}
+							else if (route.defaultParams[ segment.name ]) {
+								segments.push(route.defaultParams[ segment.name ]);
+
 							}
 							else {
-								throw new TypeError(`Cannot generate link, multiple values for parameter '${segment.name}'`);
+								return undefined;
 							}
-						}
-						else if (currentPathValues) {
-							segments.push(currentPathValues[ namedOffset ]);
-						}
-						else if (route.defaultParams[ segment.name ]) {
-							segments.push(route.defaultParams[ segment.name ]);
-
+							namedOffset++;
 						}
 						else {
-							throw new Error(`Cannot generate link, missing parameter '${segment.name}'`);
+							segments.push(segment.literal);
 						}
-						namedOffset++;
 					}
-					else {
-						segments.push(segment.literal);
+
+					for (const key of searchParameters) {
+						// Don't repeat the search parameter if a previous route in the hierarchy has already appended
+						// it.
+						if (searchParams.has(key)) {
+							continue;
+						}
+
+						const value = params[ key ] || this._defaultParams[ key ] ;
+						if (typeof value === 'string') {
+							searchParams.append(key, value);
+						}
+						else if (Array.isArray(value)) {
+							for (const item of value) {
+								searchParams.append(key, item);
+							}
+						}
+						else if (currentSearchParams) {
+							for (const item of currentSearchParams[ key ]) {
+								searchParams.append(key, item);
+							}
+						}
+						else {
+							return undefined;
+						}
 					}
 				}
 
-				for (const key of searchParameters) {
-					// Don't repeat the search parameter if a previous route in the hierarchy has already appended
-					// it.
-					if (searchParams.has(key)) {
-						continue;
-					}
+				return segmentsAndSearchParams;
+			}, { segments: [] as string[], searchParams: new UrlSearchParams() });
 
-					const value = params[ key ] || this._defaultParams[ key ] ;
-					if (typeof value === 'string') {
-						searchParams.append(key, value);
-					}
-					else if (Array.isArray(value)) {
-						for (const item of value) {
-							searchParams.append(key, item);
-						}
-					}
-					else if (currentSearchParams) {
-						for (const item of currentSearchParams[ key ]) {
-							searchParams.append(key, item);
-						}
-					}
-					else {
-						throw new Error(`Cannot generate link, missing search parameter '${key}'`);
-					}
-				}
-			});
+		if (!segmentsAndSearchparams) {
+			return undefined;
+		}
+
+		const { segments, searchParams } = segmentsAndSearchparams;
 
 		let pathname = segments.join('/');
 		if (addLeadingSlash) {
