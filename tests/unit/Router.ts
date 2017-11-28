@@ -1287,7 +1287,7 @@ suite('Router', () => {
 		history.set('/initial/foo');
 
 		return ready.then(link => {
-			assert.isUndefined(link);
+				assert.isUndefined(link);
 		});
 	});
 
@@ -1321,13 +1321,9 @@ suite('Router', () => {
 		router.start({ dispatchCurrent: false });
 		history.set('/initial/foo');
 
-		return ready
-			.then(() => {
-				throw new Error('Should have thrown');
-			})
-			.catch((err) => {
-				assert.equal(err.message, 'Cannot generate link, missing parameter \'foo\'');
-			});
+		return ready.then(link => {
+			assert.isUndefined(link);
+		});
 	});
 
 	test('there is no currently selected route for link() after an unmanaged dispatch', () => {
