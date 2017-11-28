@@ -1149,10 +1149,20 @@ suite('Router', () => {
 	test('link() returns undefined if more than one value is provided for a path parameter', () => {
 		const router = new Router();
 		const route = new Route({ path: '/{foo}' });
-		router.append(route);
 
+		router.append(route);
 		assert.equal(router.link(route, { foo: [ 'foo' ] }), '/foo');
-		assert.isUndefined(router.link(route, { foo: [ 'foo', 'bar' ] }), 'Cannot generate link, multiple values for parameter \'foo\'');
+		assert.isUndefined(router.link(route, { foo: [ 'foo', 'bar' ] }));
+	});
+
+	test('link() should return undefined if the parent route returns undefined', () => {
+		const router = new Router();
+		const route = new Route({ path: '/{foo}' });
+		const childRoute = new Route({ path: 'bar'});
+
+		router.append(route);
+		route.append(childRoute);
+		assert.isUndefined(router.link(childRoute, { foo: [ 'foo', 'bar' ]}));
 	});
 
 	test('link() fills in parameters', () => {
