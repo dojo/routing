@@ -928,6 +928,25 @@ suite('Router', () => {
 		assert.deepEqual(dispatchedPaths, [ '/foo', 'bar' ]);
 	});
 
+	test('start() handles an invalid default route config', () => {
+		const history = new MemoryHistory({ path: '/foo' });
+		const config = [
+			{
+				path: undefined as any,
+				defaultRoute: true
+			}
+		];
+		const router = new Router({ history, config });
+		const dispatchedPaths: string[] = [];
+
+		router.on('navstart', (event) => {
+			dispatchedPaths.push(event.path);
+		});
+
+		router.start({ dispatchCurrent: true });
+		assert.deepEqual(dispatchedPaths, [ '/foo', '/' ]);
+	});
+
 	test('start() can be configured not to immediately dispatch for the current history value', () => {
 		const history = new MemoryHistory({ path: '/foo' });
 		const router = new Router({ history });
