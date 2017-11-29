@@ -460,7 +460,7 @@ export class Router<C extends Context> extends Evented implements RouterInterfac
 				const { params, location } = outletContext;
 				matchingParams = { ...matchingParams, ...params };
 
-				if (!matchingOutlet || typeof location === 'undefined' || matchingLocation.indexOf(location) === -1) {
+				if (!matchingOutlet || typeof location === 'undefined' || typeof matchingLocation === 'undefined' || matchingLocation.indexOf(location) === -1) {
 					matchingLocation = location;
 					matchingOutlet = {
 						...outletContext,
