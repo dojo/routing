@@ -517,8 +517,8 @@ export class Router<C extends Context> extends Evented implements RouterInterfac
 			this._dispatchFromStart = true;
 
 			const context = this._contextFactory();
-			lastDispatch = this.dispatch(context, path).then((dispatchResult) => {
-				const { success, redirect = undefined } = dispatchResult || { success: false };
+			lastDispatch = this.dispatch(context, path).then(dispatchResult => {
+				const { success, redirect } = dispatchResult;
 				if (success && redirect !== undefined) {
 					redirectCount++;
 					if (redirectCount > 20) {
