@@ -929,10 +929,10 @@ suite('Router', () => {
 	});
 
 	test('start() handles an invalid default route config', () => {
-		const history = new MemoryHistory({ path: '/foo' });
+		const history = new MemoryHistory();
 		const config = [
 			{
-				path: undefined as any,
+				path: '{bar}',
 				defaultRoute: true
 			}
 		];
@@ -944,7 +944,7 @@ suite('Router', () => {
 		});
 
 		router.start({ dispatchCurrent: true });
-		assert.deepEqual(dispatchedPaths, [ '/foo', '/' ]);
+		assert.deepEqual(dispatchedPaths, [ '', '' ]);
 	});
 
 	test('start() can be configured not to immediately dispatch for the current history value', () => {
