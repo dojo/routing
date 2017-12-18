@@ -35,14 +35,12 @@ export function parse(path: string): ParsedPath {
 			// Either `/foo?bar#baz` or `/foo#bar?baz`
 			pathnameTokens = tokens.slice(0, Math.min(searchStart, hashStart));
 			searchParams = new UrlSearchParams(tokens.slice(searchStart + 1, hashStart).join(''));
-		}
-		else {
+		} else {
 			// `/foo?bar`
 			pathnameTokens = tokens.slice(0, searchStart);
 			searchParams = new UrlSearchParams(tokens.slice(searchStart + 1).join(''));
 		}
-	}
-	else {
+	} else {
 		searchParams = new UrlSearchParams();
 		if (hashStart >= 0) {
 			// `/foo#bar`
@@ -50,7 +48,7 @@ export function parse(path: string): ParsedPath {
 		}
 	}
 
-	const segments = pathnameTokens.filter(t => t !== '/');
+	const segments = pathnameTokens.filter((t) => t !== '/');
 	const trailingSlash = pathnameTokens[pathnameTokens.length - 1] === '/' && segments.length > 0;
 
 	return {
@@ -103,8 +101,7 @@ export function match({ expectedSegments }: DeconstructedPath, segments: string[
 		const expected = expectedSegments[i];
 		if (isNamedSegment(expected)) {
 			values.push(value);
-		}
-		else if (expected.literal !== value) {
+		} else if (expected.literal !== value) {
 			isMatch = false;
 		}
 	}
@@ -137,7 +134,7 @@ export type Segment = LiteralSegment | NamedSegment;
  * @return true if the segment is a NamedSegment, false otherwise
  */
 export function isNamedSegment(segment: Segment): segment is NamedSegment {
-	return (<NamedSegment> segment).name !== undefined;
+	return (<NamedSegment>segment).name !== undefined;
 }
 
 /**
@@ -200,7 +197,7 @@ export function deconstruct(path: string): DeconstructedPath {
 				}
 				// Reserve : for future use, e.g. including type data in the parameter declaration.
 				if (name === '{' || name === '&' || /:/.test(name)) {
-					throw new TypeError('Parameter name must not contain \'{\', \'&\' or \':\'');
+					throw new TypeError("Parameter name must not contain '{', '&' or ':'");
 				}
 				if (parameters.indexOf(name) !== -1 || searchParameters.indexOf(name) !== -1) {
 					throw new TypeError(`Parameter must have a unique name, got '${name}'`);
@@ -217,8 +214,7 @@ export function deconstruct(path: string): DeconstructedPath {
 						if (separator !== '&') {
 							throw new TypeError(`Search parameter must be followed by '&', got '${separator}'`);
 						}
-					}
-					else if (separator !== '/' && separator !== '?') {
+					} else if (separator !== '/' && separator !== '?') {
 						throw new TypeError(`Parameter must be followed by '/' or '?', got '${separator}'`);
 					}
 				}
@@ -260,12 +256,12 @@ export function deconstruct(path: string): DeconstructedPath {
 
 			case '&':
 				if (!inSearchComponent) {
-					throw new TypeError('Path segment must not contain \'&\'');
+					throw new TypeError("Path segment must not contain '&'");
 				}
 
 				const next = peek();
 				if (next === '&') {
-					throw new TypeError('Expected parameter in search component, got \'&\'');
+					throw new TypeError("Expected parameter in search component, got '&'");
 				}
 
 				break;
@@ -280,10 +276,10 @@ export function deconstruct(path: string): DeconstructedPath {
 	}
 
 	return Object.freeze({
-		expectedSegments: <Segment[]> Object.freeze(expectedSegments),
+		expectedSegments: <Segment[]>Object.freeze(expectedSegments),
 		leadingSlash,
-		parameters: <string[]> Object.freeze(parameters),
-		searchParameters: <string[]> Object.freeze(searchParameters),
+		parameters: <string[]>Object.freeze(parameters),
+		searchParameters: <string[]>Object.freeze(searchParameters),
 		trailingSlash
 	});
 }

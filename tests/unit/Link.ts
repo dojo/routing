@@ -9,16 +9,20 @@ import MemoryHistory from '../../src/history/MemoryHistory';
 
 const registry = new Registry();
 
-const router = registerRouterInjector([
-	{
-		path: 'foo',
-		outlet: 'foo'
-	},
-	{
-		path: 'foo/{foo}',
-		outlet: 'foo2'
-	}
-], registry, { history: new MemoryHistory() });
+const router = registerRouterInjector(
+	[
+		{
+			path: 'foo',
+			outlet: 'foo'
+		},
+		{
+			path: 'foo/{foo}',
+			outlet: 'foo2'
+		}
+	],
+	registry,
+	{ history: new MemoryHistory() }
+);
 let routerSetPathSpy: SinonSpy;
 
 function createMockEvent(isRightClick: boolean = false) {
@@ -32,10 +36,10 @@ function createMockEvent(isRightClick: boolean = false) {
 }
 
 suite('Link', () => {
-	beforeEach(function () {
+	beforeEach(function() {
 		routerSetPathSpy = spy(router, 'setPath');
 	});
-	afterEach(function () {
+	afterEach(function() {
 		routerSetPathSpy.restore();
 	});
 	test('Generate link component for basic outlet', () => {
@@ -122,8 +126,7 @@ suite('Link', () => {
 		try {
 			link.__render__();
 			assert.fail('Should throw an error when the injected router cannot be found with the routerKey');
-		}
-		catch (err) {
+		} catch (err) {
 			// nothing to see here
 		}
 	});

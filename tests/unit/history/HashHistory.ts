@@ -10,16 +10,16 @@ suite('HashHistory', () => {
 	// Mask the globals so tests are forced to explicitly reference the
 	// correct window.
 	/* tslint:disable */
-	const location: void = <any> null;
+	const location: void = <any>null;
 	/* tslint:enable */
 
 	let sandbox: HTMLIFrameElement;
-	beforeEach(function () {
+	beforeEach(function() {
 		sandbox = document.createElement('iframe');
 		sandbox.src = '/tests/support/sandbox.html';
 		document.body.appendChild(sandbox);
-		return new Promise<void>(resolve => {
-			sandbox.addEventListener('load', function () {
+		return new Promise<void>((resolve) => {
+			sandbox.addEventListener('load', function() {
 				resolve();
 			});
 		});
@@ -27,7 +27,7 @@ suite('HashHistory', () => {
 
 	afterEach(() => {
 		document.body.removeChild(sandbox);
-		sandbox = <any> null;
+		sandbox = <any>null;
 	});
 
 	test('initializes current path to current location', () => {
@@ -62,11 +62,10 @@ suite('HashHistory', () => {
 		});
 		history.set('/foo');
 
-		return new Promise((resolve) => setTimeout(resolve, 500))
-			.then(() => {
-				assert.lengthOf(emittedValues, 1);
-				assert.equal(emittedValues[0], '/foo');
-			});
+		return new Promise((resolve) => setTimeout(resolve, 500)).then(() => {
+			assert.lengthOf(emittedValues, 1);
+			assert.equal(emittedValues[0], '/foo');
+		});
 	});
 
 	test('does not emit change if path is set to the current value', () => {
@@ -106,11 +105,10 @@ suite('HashHistory', () => {
 		});
 		history.replace('/foo');
 
-		return new Promise((resolve) => setTimeout(resolve, 500))
-			.then(() => {
-				assert.lengthOf(emittedValues, 1);
-				assert.equal(emittedValues[0], '/foo');
-			});
+		return new Promise((resolve) => setTimeout(resolve, 500)).then(() => {
+			assert.lengthOf(emittedValues, 1);
+			assert.equal(emittedValues[0], '/foo');
+		});
 	});
 
 	test('does not emit change if path is replaced with the current value', () => {
@@ -141,7 +139,7 @@ suite('HashHistory', () => {
 			const createFauxWindow = class extends Evented<{}> {
 				location = contentWindowLocation;
 			};
-			window = <any> new createFauxWindow();
+			window = <any>new createFauxWindow();
 		});
 
 		test('handles hashchange', () => {
@@ -163,7 +161,7 @@ suite('HashHistory', () => {
 			const history = new HashHistory({ window });
 			assert.equal(history.current, '');
 
-			return history.destroy().then(function () {
+			return history.destroy().then(function() {
 				sandbox.contentWindow.location.hash = '#/foo';
 				emit(window, { type: 'hashchange' });
 

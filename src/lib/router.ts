@@ -23,8 +23,7 @@ export function findRouter(route: RouteInterface<Context, Parameters>): RouterIn
 	const router = parentMap.get(route);
 	if (!router) {
 		throw new Error('Cannot generate link for route that is not in the hierarchy');
-	}
-	else {
+	} else {
 		return router;
 	}
 }

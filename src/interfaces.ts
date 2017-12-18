@@ -51,7 +51,11 @@ export type Component<W extends WidgetBaseInterface = WidgetBaseInterface> = Con
 /**
  * Outlet component options
  */
-export interface OutletComponents<W extends WidgetBaseInterface, I extends WidgetBaseInterface, E extends WidgetBaseInterface> {
+export interface OutletComponents<
+	W extends WidgetBaseInterface,
+	I extends WidgetBaseInterface,
+	E extends WidgetBaseInterface
+> {
 	main?: Component<W>;
 	index?: Component<I>;
 	error?: Component<E>;
@@ -77,7 +81,11 @@ export interface MapParams {
 /**
  * Outlet properties
  */
-export interface OutletProperties<W extends WidgetBaseInterface = WidgetBaseInterface, I extends WidgetBaseInterface = WidgetBaseInterface, E extends WidgetBaseInterface = WidgetBaseInterface> {
+export interface OutletProperties<
+	W extends WidgetBaseInterface = WidgetBaseInterface,
+	I extends WidgetBaseInterface = WidgetBaseInterface,
+	E extends WidgetBaseInterface = WidgetBaseInterface
+> {
 	outlet: string;
 	mainComponent?: Component<W>;
 	indexComponent?: Component<I>;
@@ -382,6 +390,15 @@ export interface RouteInterface<C extends Context, P extends Parameters> {
 
 	append(add: RouteInterface<Context, Parameters> | RouteInterface<Context, Parameters>[]): void;
 	link(params?: LinkParams): string;
-	match(segments: string[], hasTrailingSlash: boolean, searchParams: UrlSearchParams): null | MatchResult<DefaultParameters | P>;
-	select(context: C, segments: string[], hasTrailingSlash: boolean, searchParams: UrlSearchParams): string | Selection[];
+	match(
+		segments: string[],
+		hasTrailingSlash: boolean,
+		searchParams: UrlSearchParams
+	): null | MatchResult<DefaultParameters | P>;
+	select(
+		context: C,
+		segments: string[],
+		hasTrailingSlash: boolean,
+		searchParams: UrlSearchParams
+	): string | Selection[];
 }

@@ -10,17 +10,17 @@ suite('StateHistory', () => {
 	// Mask the globals so tests are forced to explicitly reference the
 	// correct window.
 	/* tslint:disable */
-	const history: void = <any> null;
-	const location: void = <any> null;
+	const history: void = <any>null;
+	const location: void = <any>null;
 	/* tslint:enable */
 
 	let sandbox: HTMLIFrameElement;
-	beforeEach(function () {
+	beforeEach(function() {
 		sandbox = document.createElement('iframe');
 		sandbox.src = '/tests/support/sandbox.html';
 		document.body.appendChild(sandbox);
-		return new Promise<void>(resolve => {
-			sandbox.addEventListener('load', function () {
+		return new Promise<void>((resolve) => {
+			sandbox.addEventListener('load', function() {
 				resolve();
 			});
 		});
@@ -28,7 +28,7 @@ suite('StateHistory', () => {
 
 	afterEach(() => {
 		document.body.removeChild(sandbox);
-		sandbox = <any> null;
+		sandbox = <any>null;
 	});
 
 	test('initializes current path to current location', () => {
@@ -127,15 +127,23 @@ suite('StateHistory', () => {
 
 	suite('with base', () => {
 		test('throws if base contains #', () => {
-			assert.throws(() => {
-				new StateHistory({ base: '/foo#bar', window });
-			}, TypeError, 'base must not contain \'#\'');
+			assert.throws(
+				() => {
+					new StateHistory({ base: '/foo#bar', window });
+				},
+				TypeError,
+				"base must not contain '#'"
+			);
 		});
 
 		test('throws if base contains ?', () => {
-			assert.throws(() => {
-				new StateHistory({ base: '/foo?bar', window });
-			}, TypeError, 'base must not contain \'?\'');
+			assert.throws(
+				() => {
+					new StateHistory({ base: '/foo?bar', window });
+				},
+				TypeError,
+				"base must not contain '?'"
+			);
 		});
 
 		test('initializes current path, taking out the base, with trailing slash', () => {
@@ -148,7 +156,7 @@ suite('StateHistory', () => {
 			assert.equal(new StateHistory({ base: '/foo', window: sandbox.contentWindow }).current, '/bar?baz');
 		});
 
-		test('initializes current path to / if it\'s not a base suffix', () => {
+		test("initializes current path to / if it's not a base suffix", () => {
 			sandbox.contentWindow.history.pushState({}, '', '/foo/bar?baz');
 			assert.equal(new StateHistory({ base: '/thud/', window: sandbox.contentWindow }).current, '/');
 		});
@@ -219,7 +227,7 @@ suite('StateHistory', () => {
 				location = contentWindowLocation;
 				history = contentWindowHistory;
 			};
-			window = <any> new createFauxWindow();
+			window = <any>new createFauxWindow();
 		});
 
 		test('handles popstate', () => {

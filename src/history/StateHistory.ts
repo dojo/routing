@@ -43,11 +43,9 @@ export class StateHistory extends HistoryBase implements History {
 		const pathStartsWithSlash = /^\//.test(path);
 		if (baseEndsWithSlash && pathStartsWithSlash) {
 			return this._base + path.slice(1);
-		}
-		else if (!baseEndsWithSlash && !pathStartsWithSlash) {
+		} else if (!baseEndsWithSlash && !pathStartsWithSlash) {
 			return `${this._base}/${path}`;
-		}
-		else {
+		} else {
 			return this._base + path;
 		}
 	}
@@ -79,10 +77,10 @@ export class StateHistory extends HistoryBase implements History {
 
 		if (base !== '/') {
 			if (/#/.test(base)) {
-				throw new TypeError('base must not contain \'#\'');
+				throw new TypeError("base must not contain '#'");
 			}
 			if (/\?/.test(base)) {
-				throw new TypeError('base must not contain \'?\'');
+				throw new TypeError("base must not contain '?'");
 			}
 		}
 
@@ -92,21 +90,23 @@ export class StateHistory extends HistoryBase implements History {
 		this._current = stripBase(base, location.pathname + location.search);
 		this._browserHistory = browserHistory;
 
-		this.own(on(window, 'popstate', () => {
-			const path = stripBase(base, location.pathname + location.search);
+		this.own(
+			on(window, 'popstate', () => {
+				const path = stripBase(base, location.pathname + location.search);
 
-			// Ignore popstate for the current path. Guards against browsers firing
-			// popstate on page load, see
-			// <https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onpopstate>.
-			if (path !== this._current) {
-				this._current = path;
-				this.emit({
-					type: 'change',
-					target: this,
-					value: path
-				});
-			}
-		}));
+				// Ignore popstate for the current path. Guards against browsers firing
+				// popstate on page load, see
+				// <https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onpopstate>.
+				if (path !== this._current) {
+					this._current = path;
+					this.emit({
+						type: 'change',
+						target: this,
+						value: path
+					});
+				}
+			})
+		);
 	}
 }
 
@@ -117,8 +117,7 @@ function stripBase(base: string, path: string): string {
 
 	if (path.indexOf(base) === 0) {
 		return ensureLeadingSlash(path.slice(base.length));
-	}
-	else {
+	} else {
 		return '/';
 	}
 }
