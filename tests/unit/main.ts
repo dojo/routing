@@ -9,7 +9,6 @@ import MemoryHistory from '../../src/history/MemoryHistory';
 import StateHistory from '../../src/history/StateHistory';
 
 suite('main', () => {
-
 	test('#createRoute is the same as @dojo/routing/createRoute', () => {
 		assert.strictEqual(main.Route, Route);
 	});

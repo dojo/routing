@@ -17,7 +17,7 @@ suite('Route', () => {
 
 	test('a route is not matched if guard() returns false', () => {
 		const route = new Route({
-			guard () {
+			guard() {
 				return false;
 			}
 		});
@@ -28,9 +28,9 @@ suite('Route', () => {
 
 	test('guard() receives the context', () => {
 		const context: Context = {};
-		let received: Context = <any> undefined;
+		let received: Context = <any>undefined;
 		const route = new Route({
-			guard ({ context }) {
+			guard({ context }) {
 				received = context;
 				return true;
 			}
@@ -41,31 +41,51 @@ suite('Route', () => {
 	});
 
 	test('path must not contain #', () => {
-		assert.throws(() => {
-			new Route({ path: '/foo#' });
-		}, TypeError, 'Path must not contain \'#\'');
+		assert.throws(
+			() => {
+				new Route({ path: '/foo#' });
+			},
+			TypeError,
+			"Path must not contain '#'"
+		);
 	});
 
 	test('path segments cannot contain &', () => {
-		assert.throws(() => {
-			new Route({ path: '/&/bar' });
-		}, TypeError, 'Path segment must not contain \'&\'');
+		assert.throws(
+			() => {
+				new Route({ path: '/&/bar' });
+			},
+			TypeError,
+			"Path segment must not contain '&'"
+		);
 	});
 
 	test('path segments cannot be empty', () => {
-		assert.throws(() => {
-			new Route({ path: '/foo//bar' });
-		}, TypeError, 'Path segment must not be empty');
+		assert.throws(
+			() => {
+				new Route({ path: '/foo//bar' });
+			},
+			TypeError,
+			'Path segment must not be empty'
+		);
 	});
 
 	test('path must contain at least one segment', () => {
-		assert.throws(() => {
-			new Route({ path: '?{query}' });
-		}, TypeError, 'Path must contain at least one segment');
+		assert.throws(
+			() => {
+				new Route({ path: '?{query}' });
+			},
+			TypeError,
+			'Path must contain at least one segment'
+		);
 
-		assert.throws(() => {
-			new Route({ path: '/?{query}' });
-		}, TypeError, 'Path must contain at least one segment');
+		assert.throws(
+			() => {
+				new Route({ path: '/?{query}' });
+			},
+			TypeError,
+			'Path must contain at least one segment'
+		);
 	});
 
 	test('path parameters are extracted', () => {
@@ -73,12 +93,17 @@ suite('Route', () => {
 			path: '/{foo}/{bar}?{baz}&{qux}'
 		});
 
-		const result = route.select({} as Context, ['quux', 'corge'], false, new UrlSearchParams('baz=grault&qux=garply'));
+		const result = route.select(
+			{} as Context,
+			['quux', 'corge'],
+			false,
+			new UrlSearchParams('baz=grault&qux=garply')
+		);
 		if (typeof result === 'string') {
 			throw new TypeError('Unexpected result');
 		}
 
-		const [ { params } ] = result;
+		const [{ params }] = result;
 		assert.deepEqual(params, {
 			foo: 'quux',
 			bar: 'corge',
@@ -97,7 +122,7 @@ suite('Route', () => {
 			throw new TypeError('Unexpected result');
 		}
 
-		const [ { params } ] = result;
+		const [{ params }] = result;
 		assert.deepEqual(params, {
 			foo: 'quux',
 			bar: 'corge',
@@ -110,12 +135,17 @@ suite('Route', () => {
 			path: '/{foo}/{bar}?{baz}&{qux}'
 		});
 
-		const result = route.select({} as Context, ['quux', 'corge'], false, new UrlSearchParams('baz=grault&baz=garply'));
+		const result = route.select(
+			{} as Context,
+			['quux', 'corge'],
+			false,
+			new UrlSearchParams('baz=grault&baz=garply')
+		);
 		if (typeof result === 'string') {
 			throw new TypeError('Unexpected result');
 		}
 
-		const [ { params } ] = result;
+		const [{ params }] = result;
 		assert.deepEqual(params, {
 			foo: 'quux',
 			bar: 'corge',
@@ -124,76 +154,136 @@ suite('Route', () => {
 	});
 
 	test('path parameters cannot contain {, & or :', () => {
-		assert.throws(() => {
-			new Route({ path: '/{{}' });
-		}, TypeError, 'Parameter name must not contain \'{\', \'&\' or \':\'');
+		assert.throws(
+			() => {
+				new Route({ path: '/{{}' });
+			},
+			TypeError,
+			"Parameter name must not contain '{', '&' or ':'"
+		);
 
-		assert.throws(() => {
-			new Route({ path: '/{&}' });
-		}, TypeError, 'Parameter name must not contain \'{\', \'&\' or \':\'');
+		assert.throws(
+			() => {
+				new Route({ path: '/{&}' });
+			},
+			TypeError,
+			"Parameter name must not contain '{', '&' or ':'"
+		);
 
-		assert.throws(() => {
-			new Route({ path: '/{:}' });
-		}, TypeError, 'Parameter name must not contain \'{\', \'&\' or \':\'');
+		assert.throws(
+			() => {
+				new Route({ path: '/{:}' });
+			},
+			TypeError,
+			"Parameter name must not contain '{', '&' or ':'"
+		);
 	});
 
 	test('path parameters must be named', () => {
-		assert.throws(() => {
-			new Route({ path: '/{}/' });
-		}, TypeError, 'Parameter must have a name');
+		assert.throws(
+			() => {
+				new Route({ path: '/{}/' });
+			},
+			TypeError,
+			'Parameter must have a name'
+		);
 	});
 
 	test('path parameters must be closed', () => {
-		assert.throws(() => {
-			new Route({ path: '/{foo/' });
-		}, TypeError, 'Parameter name must be followed by \'}\', got \'/\'');
+		assert.throws(
+			() => {
+				new Route({ path: '/{foo/' });
+			},
+			TypeError,
+			"Parameter name must be followed by '}', got '/'"
+		);
 	});
 
 	test('path parameters must be separated by /', () => {
-		assert.throws(() => {
-			new Route({ path: '/{foo}{bar}' });
-		}, TypeError, 'Parameter must be followed by \'/\' or \'?\', got \'{\'');
+		assert.throws(
+			() => {
+				new Route({ path: '/{foo}{bar}' });
+			},
+			TypeError,
+			"Parameter must be followed by '/' or '?', got '{'"
+		);
 	});
 
 	test('search parameters must be separated by &', () => {
-		assert.throws(() => {
-			new Route({ path: '/segment?{foo}{bar}' });
-		}, TypeError, 'Search parameter must be followed by \'&\', got \'{\'');
+		assert.throws(
+			() => {
+				new Route({ path: '/segment?{foo}{bar}' });
+			},
+			TypeError,
+			"Search parameter must be followed by '&', got '{'"
+		);
 	});
 
 	test('search component must only contain parameters', () => {
-		assert.throws(() => {
-			new Route({ path: '/segment?foo=bar' });
-		}, TypeError, 'Expected parameter in search component, got \'foo=bar\'');
+		assert.throws(
+			() => {
+				new Route({ path: '/segment?foo=bar' });
+			},
+			TypeError,
+			"Expected parameter in search component, got 'foo=bar'"
+		);
 
-		assert.throws(() => {
-			new Route({ path: '/segment?{foo}&/bar' });
-		}, TypeError, 'Expected parameter in search component, got \'/\'');
+		assert.throws(
+			() => {
+				new Route({ path: '/segment?{foo}&/bar' });
+			},
+			TypeError,
+			"Expected parameter in search component, got '/'"
+		);
 
-		assert.throws(() => {
-			new Route({ path: '/segment?{foo}&?bar' });
-		}, TypeError, 'Expected parameter in search component, got \'?\'');
+		assert.throws(
+			() => {
+				new Route({ path: '/segment?{foo}&?bar' });
+			},
+			TypeError,
+			"Expected parameter in search component, got '?'"
+		);
 
-		assert.throws(() => {
-			new Route({ path: '/segment?{foo}&&bar' });
-		}, TypeError, 'Expected parameter in search component, got \'&\'');
+		assert.throws(
+			() => {
+				new Route({ path: '/segment?{foo}&&bar' });
+			},
+			TypeError,
+			"Expected parameter in search component, got '&'"
+		);
 	});
 
 	test('path parameters must have unique names', () => {
-		assert.throws(() => {
-			new Route({ path: '/{foo}/{foo}' });
-		}, TypeError, 'Parameter must have a unique name, got \'foo\'');
+		assert.throws(
+			() => {
+				new Route({ path: '/{foo}/{foo}' });
+			},
+			TypeError,
+			"Parameter must have a unique name, got 'foo'"
+		);
 
-		assert.throws(() => {
-			new Route({ path: '/{foo}?{foo}' });
-		}, TypeError, 'Parameter must have a unique name, got \'foo\'');
-		assert.throws(() => {
-			new Route({ path: '/segment?{foo}&{foo}' });
-		}, TypeError, 'Parameter must have a unique name, got \'foo\'');
+		assert.throws(
+			() => {
+				new Route({ path: '/{foo}?{foo}' });
+			},
+			TypeError,
+			"Parameter must have a unique name, got 'foo'"
+		);
+		assert.throws(
+			() => {
+				new Route({ path: '/segment?{foo}&{foo}' });
+			},
+			TypeError,
+			"Parameter must have a unique name, got 'foo'"
+		);
 
-		assert.throws(() => {
-			new Route({ path: '/segment?{foo}&{foo}' });
-		}, TypeError, 'Parameter must have a unique name, got \'foo\'');
+		assert.throws(
+			() => {
+				new Route({ path: '/segment?{foo}&{foo}' });
+			},
+			TypeError,
+			"Parameter must have a unique name, got 'foo'"
+		);
 	});
 
 	test('deconstructed path can be accessed and is deeply frozen', () => {
@@ -208,22 +298,19 @@ suite('Route', () => {
 		assert.lengthOf(expectedSegments, 2);
 		assert.isTrue(Object.isFrozen(expectedSegments[0]));
 		assert.isTrue(Object.isFrozen(expectedSegments[1]));
-		assert.deepEqual(expectedSegments, [
-			{ literal: 'foo' },
-			{ name: 'bar' }
-		]);
+		assert.deepEqual(expectedSegments, [{ literal: 'foo' }, { name: 'bar' }]);
 
 		assert.isTrue(leadingSlash);
-		assert.deepEqual(parameters, [ 'bar' ]);
-		assert.deepEqual(searchParameters, [ 'baz' ]);
+		assert.deepEqual(parameters, ['bar']);
+		assert.deepEqual(searchParameters, ['baz']);
 		assert.isFalse(trailingSlash);
 	});
 
 	test('guard() receives the extracted parameters', () => {
-		let received: Parameters = <any> undefined;
+		let received: Parameters = <any>undefined;
 		const route = new Route({
 			path: '/{foo}/{bar}?{baz}&{qux}',
-			guard ({ params }) {
+			guard({ params }) {
 				received = params;
 				return true;
 			}
@@ -244,7 +331,7 @@ suite('Route', () => {
 		}
 		const route = new Route<Context, Customized>({
 			path: '/{foo}/{bar}',
-			params (fromPath) {
+			params(fromPath) {
 				const [foo, bar] = fromPath;
 				return {
 					upper: foo.toUpperCase(),
@@ -258,7 +345,7 @@ suite('Route', () => {
 			throw new TypeError('Unexpected result');
 		}
 
-		const [ { params } ] = result;
+		const [{ params }] = result;
 		assert.deepEqual(params, {
 			upper: 'BAZ',
 			barIsQux: true
@@ -272,7 +359,7 @@ suite('Route', () => {
 		}
 		const route = new Route<Context, Customized>({
 			path: '/segment?{foo}&{bar}',
-			params (fromPath, searchParams) {
+			params(fromPath, searchParams) {
 				return {
 					fooArr: searchParams.getAll('foo') || [],
 					barIsQux: searchParams.get('bar') === 'qux'
@@ -285,29 +372,33 @@ suite('Route', () => {
 			throw new TypeError('Unexpected result');
 		}
 
-		const [ { params } ] = result;
+		const [{ params }] = result;
 		assert.deepEqual(params, {
 			fooArr: ['baz', 'BAZ'],
 			barIsQux: true
 		});
 	});
 
-	test('parameter extraction cannot be customized if the path doesn\'t contain parameters', () => {
-		assert.throws(() => {
-			new Route({
-				path: '/foo/bar',
-				params () {
-					return {};
-				}
-			});
-		}, TypeError, 'Can\'t specify params() if path doesn\'t contain any');
+	test("parameter extraction cannot be customized if the path doesn't contain parameters", () => {
+		assert.throws(
+			() => {
+				new Route({
+					path: '/foo/bar',
+					params() {
+						return {};
+					}
+				});
+			},
+			TypeError,
+			"Can't specify params() if path doesn't contain any"
+		);
 	});
 
 	test('parameter extraction can cause a route not to match', () => {
 		const route = new Route({
 			path: '/{foo}',
-			params () {
-				return <any> null;
+			params() {
+				return <any>null;
 			}
 		});
 
@@ -416,7 +507,7 @@ suite('Route', () => {
 	});
 
 	test('if present in route, there must be a trailing slash when selecting', () => {
-		[true, false].forEach(withSlash => {
+		[true, false].forEach((withSlash) => {
 			const root = new Route({ path: '/foo/' });
 			const deep = new Route({ path: '/bar/' });
 			const deeper = new Route({ path: '/baz/' });
@@ -424,12 +515,16 @@ suite('Route', () => {
 			deep.append(deeper);
 
 			const selections = root.select({} as Context, ['foo', 'bar', 'baz'], withSlash, new UrlSearchParams());
-			assert.lengthOf(selections, withSlash ? 3 : 0, `there is ${withSlash ? 'a' : 'no'} trailing slash when selecting`);
+			assert.lengthOf(
+				selections,
+				withSlash ? 3 : 0,
+				`there is ${withSlash ? 'a' : 'no'} trailing slash when selecting`
+			);
 		});
 	});
 
 	test('if not present in route, there must not be a trailing slash when selecting', () => {
-		[true, false].forEach(withSlash => {
+		[true, false].forEach((withSlash) => {
 			const root = new Route({ path: '/foo/' });
 			const deep = new Route({ path: '/bar/' });
 			const deeper = new Route({ path: '/baz' });
@@ -437,12 +532,16 @@ suite('Route', () => {
 			deep.append(deeper);
 
 			const selections = root.select({} as Context, ['foo', 'bar', 'baz'], withSlash, new UrlSearchParams());
-			assert.lengthOf(selections, withSlash ? 0 : 3, `there is ${withSlash ? 'a' : 'no'} trailing slash when selecting`);
+			assert.lengthOf(
+				selections,
+				withSlash ? 0 : 3,
+				`there is ${withSlash ? 'a' : 'no'} trailing slash when selecting`
+			);
 		});
 	});
 
 	test('routes can be configured to ignore trailing slash discrepancies', () => {
-		[true, false].forEach(withSlash => {
+		[true, false].forEach((withSlash) => {
 			const root = new Route({ path: '/foo/' });
 			const deep = new Route({ path: '/bar/' });
 			const deeper = new Route({
@@ -473,10 +572,15 @@ suite('Route', () => {
 		root.append(deep);
 		deep.append(deeper);
 
-		const selections = root.select({} as Context, ['foo', 'root', 'bar', 'deep', 'baz', 'deeper'], false, new UrlSearchParams({
-			'foo': [ 'foo'] ,
-			'baz': [ 'one', 'two' ]
-		}));
+		const selections = root.select(
+			{} as Context,
+			['foo', 'root', 'bar', 'deep', 'baz', 'deeper'],
+			false,
+			new UrlSearchParams({
+				foo: ['foo'],
+				baz: ['one', 'two']
+			})
+		);
 		if (typeof selections === 'string') {
 			throw new TypeError('Unexpected result');
 		}
@@ -484,20 +588,20 @@ suite('Route', () => {
 		assert.lengthOf(selections, 3);
 		const [first, second, third] = selections;
 		assert.deepEqual(first.params, { param: 'root', foo: 'foo' });
-		assert.deepEqual(first.rawPathValues, [ 'root' ]);
-		assert.deepEqual(first.rawSearchParams, { foo: [ 'foo' ] });
+		assert.deepEqual(first.rawPathValues, ['root']);
+		assert.deepEqual(first.rawSearchParams, { foo: ['foo'] });
 		assert.deepEqual(first.path, deconstructPath('/foo/{param}?{foo}'));
 		assert.strictEqual(first.route, root);
 
 		assert.deepEqual(second.params, { param: 'deep' });
-		assert.deepEqual(second.rawPathValues, [ 'deep' ]);
+		assert.deepEqual(second.rawPathValues, ['deep']);
 		assert.deepEqual(second.rawSearchParams, {});
 		assert.deepEqual(second.path, deconstructPath('/bar/{param}?{bar}'));
 		assert.strictEqual(second.route, deep);
 
 		assert.deepEqual(third.params, { param: 'deeper', foo: 'foo', baz: 'one' });
-		assert.deepEqual(third.rawPathValues, [ 'deeper' ]);
-		assert.deepEqual(third.rawSearchParams, { foo: [ 'foo' ], baz: [ 'one', 'two' ] });
+		assert.deepEqual(third.rawPathValues, ['deeper']);
+		assert.deepEqual(third.rawSearchParams, { foo: ['foo'], baz: ['one', 'two'] });
 		assert.deepEqual(third.path, deconstructPath('/baz/{param}?{foo}&{baz}'));
 		assert.strictEqual(third.route, deeper);
 	});
@@ -532,14 +636,14 @@ suite('Route', () => {
 		let called: string[];
 		const root = new Route({
 			path: '/root',
-			guard () {
+			guard() {
 				called.push('root');
 				return true;
 			}
 		});
 		const deep = new Route({
 			path: '/deep',
-			guard () {
+			guard() {
 				called.push('deep');
 				return true;
 			}
@@ -556,7 +660,11 @@ suite('Route', () => {
 
 		called = [];
 		root.select({} as Context, ['root', 'deep', 'deeper'], false, new UrlSearchParams());
-		assert.deepEqual(called, ['root'], '/root/deep/deeper (deep isn’t selected because it doesn’t have a fallback)');
+		assert.deepEqual(
+			called,
+			['root'],
+			'/root/deep/deeper (deep isn’t selected because it doesn’t have a fallback)'
+		);
 	});
 
 	test('can append several routes at once', () => {
@@ -575,15 +683,27 @@ suite('Route', () => {
 		const baz = new Route({ path: '/baz' });
 
 		foo.append(bar);
-		assert.throws(() => {
-			foo.append(bar);
-		}, Error, 'Cannot append route that has already been appended');
-		assert.throws(() => {
-			foo.append([ bar, baz ]);
-		}, Error, 'Cannot append route that has already been appended');
-		assert.throws(() => {
-			baz.append(bar);
-		}, Error, 'Cannot append route that has already been appended');
+		assert.throws(
+			() => {
+				foo.append(bar);
+			},
+			Error,
+			'Cannot append route that has already been appended'
+		);
+		assert.throws(
+			() => {
+				foo.append([bar, baz]);
+			},
+			Error,
+			'Cannot append route that has already been appended'
+		);
+		assert.throws(
+			() => {
+				baz.append(bar);
+			},
+			Error,
+			'Cannot append route that has already been appended'
+		);
 	});
 
 	test('link() throws if the route has not been appended to a router', () => {
@@ -591,12 +711,20 @@ suite('Route', () => {
 		const bar = new Route();
 		foo.append(bar);
 
-		assert.throws(() => {
-			foo.link();
-		}, Error, 'Cannot generate link for route that is not in the hierarchy');
-		assert.throws(() => {
-			bar.link();
-		}, Error, 'Cannot generate link for route that is not in the hierarchy');
+		assert.throws(
+			() => {
+				foo.link();
+			},
+			Error,
+			'Cannot generate link for route that is not in the hierarchy'
+		);
+		assert.throws(
+			() => {
+				bar.link();
+			},
+			Error,
+			'Cannot generate link for route that is not in the hierarchy'
+		);
 	});
 
 	test('link() forwards to link() on router', () => {

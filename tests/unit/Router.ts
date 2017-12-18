@@ -19,7 +19,7 @@ import Router from '../../src/Router';
 
 suite('Router', () => {
 	test('dispatch() resolves to unsuccessful result if no route was executed', () => {
-		return new Router().dispatch({} as Context, '/').then(result => {
+		return new Router().dispatch({} as Context, '/').then((result) => {
 			assert.deepEqual(result, { success: false });
 		});
 	});
@@ -27,7 +27,7 @@ suite('Router', () => {
 	test('dispatch() resolves to successful result if a route was executed', () => {
 		const router = new Router();
 		router.append(new Route());
-		return router.dispatch({} as Context, '/').then(result => {
+		return router.dispatch({} as Context, '/').then((result) => {
 			assert.deepEqual(result, { success: true });
 		});
 	});
@@ -35,24 +35,33 @@ suite('Router', () => {
 	test('dispatch() rejects when errors occur', () => {
 		const err = {};
 		const router = new Router();
-		router.append(new Route({
-			exec () {
-				throw err;
+		router.append(
+			new Route({
+				exec() {
+					throw err;
+				}
+			})
+		);
+		return router.dispatch({} as Context, '/').then(
+			() => {
+				assert.fail('Should not be called');
+			},
+			(actual) => {
+				assert.strictEqual(actual, err);
 			}
-		}));
-		return router.dispatch({} as Context, '/').then(() => {
-			assert.fail('Should not be called');
-		}, actual => {
-			assert.strictEqual(actual, err);
-		});
+		);
 	});
 
 	test('dispatch() returns redirect', () => {
 		const router = new Router();
-		router.append(new Route({
-			path: '/foo',
-			guard() { return '/bar'; }
-		}));
+		router.append(
+			new Route({
+				path: '/foo',
+				guard() {
+					return '/bar';
+				}
+			})
+		);
 
 		return router.dispatch({} as Context, '/foo').then((result) => {
 			assert.deepEqual(result, { redirect: '/bar', success: true });
@@ -61,10 +70,14 @@ suite('Router', () => {
 
 	test('dispatch() may return empty redirect', () => {
 		const router = new Router();
-		router.append(new Route({
-			path: '/foo',
-			guard() { return ''; }
-		}));
+		router.append(
+			new Route({
+				path: '/foo',
+				guard() {
+					return '';
+				}
+			})
+		);
 
 		return router.dispatch({} as Context, '/foo').then((result) => {
 			assert.deepEqual(result, { redirect: '', success: true });
@@ -73,16 +86,24 @@ suite('Router', () => {
 
 	test('dispatch() stops selecting routes once it has a redirect', () => {
 		const router = new Router();
-		router.append(new Route({
-			path: '/foo',
-			guard() { return '/bar'; }
-		}));
+		router.append(
+			new Route({
+				path: '/foo',
+				guard() {
+					return '/bar';
+				}
+			})
+		);
 
 		let executed = false;
-		router.append(new Route({
-			path: '/foo',
-			exec() { executed = true; }
-		}));
+		router.append(
+			new Route({
+				path: '/foo',
+				exec() {
+					executed = true;
+				}
+			})
+		);
 
 		return router.dispatch({} as Context, '/foo').then((result) => {
 			assert.deepEqual(result, { redirect: '/bar', success: true });
@@ -91,19 +112,19 @@ suite('Router', () => {
 	});
 
 	test('dispatch() executes selected routes, providing context and extracted parameters', () => {
-		const execs: { context: Context, params: Parameters }[] = [];
+		const execs: { context: Context; params: Parameters }[] = [];
 
 		const context = {} as Context;
 		const router = new Router();
 		const root = new Route({
 			path: '/{foo}',
-			exec ({ context, params }) {
+			exec({ context, params }) {
 				execs.push({ context, params });
 			}
 		});
 		const deep = new Route({
 			path: '/{bar}',
-			exec ({ context, params }) {
+			exec({ context, params }) {
 				execs.push({ context, params });
 			}
 		});
@@ -120,22 +141,22 @@ suite('Router', () => {
 	});
 
 	test('dispatch() calls index() on the final selected route, providing context and extracted parameters', () => {
-		const calls: { method: string, context: Context, params: Parameters }[] = [];
+		const calls: { method: string; context: Context; params: Parameters }[] = [];
 
 		const context = {} as Context;
 		const router = new Router();
 		const root = new Route({
 			path: '/{foo}',
-			exec ({ context, params }) {
+			exec({ context, params }) {
 				calls.push({ method: 'exec', context, params });
 			}
 		});
 		const deep = new Route({
 			path: '/{bar}',
-			exec ({ context, params }) {
+			exec({ context, params }) {
 				calls.push({ method: 'exec', context, params });
 			},
-			index ({ context, params }) {
+			index({ context, params }) {
 				calls.push({ method: 'index', context, params });
 			}
 		});
@@ -154,16 +175,16 @@ suite('Router', () => {
 	});
 
 	test('dispatch() calls fallback() on the deepest matching route, providing context and extracted parameters', () => {
-		const calls: { method: string, context: Context, params: Parameters }[] = [];
+		const calls: { method: string; context: Context; params: Parameters }[] = [];
 
 		const context = {} as Context;
 		const router = new Router();
 		const root = new Route({
 			path: '/{foo}',
-			exec ({ context, params }) {
+			exec({ context, params }) {
 				calls.push({ method: 'exec', context, params });
 			},
-			fallback ({ context, params }) {
+			fallback({ context, params }) {
 				calls.push({ method: 'fallback', context, params });
 			}
 		});
@@ -181,19 +202,23 @@ suite('Router', () => {
 		const order: string[] = [];
 
 		const router = new Router();
-		router.append(new Route({
-			path: '/foo',
-			guard () {
-				order.push('first');
-				return false;
-			}
-		}));
-		router.append(new Route({
-			path: '/foo',
-			exec () {
-				order.push('second');
-			}
-		}));
+		router.append(
+			new Route({
+				path: '/foo',
+				guard() {
+					order.push('first');
+					return false;
+				}
+			})
+		);
+		router.append(
+			new Route({
+				path: '/foo',
+				exec() {
+					order.push('second');
+				}
+			})
+		);
 
 		return router.dispatch({} as Context, '/foo').then(() => {
 			assert.deepEqual(order, ['first', 'second']);
@@ -204,7 +229,7 @@ suite('Router', () => {
 		const router = new Router<any>();
 
 		let received: NavigationStartEvent = null!;
-		router.on('navstart', event => {
+		router.on('navstart', (event) => {
 			received = event;
 		});
 
@@ -216,7 +241,7 @@ suite('Router', () => {
 	test('navstart listeners can synchronously cancel routing before dispatch', () => {
 		const router = new Router();
 		router.append(new Route({ path: '/foo' }));
-		router.on('navstart', event => {
+		router.on('navstart', (event) => {
 			event.cancel && event.cancel();
 		});
 
@@ -230,7 +255,7 @@ suite('Router', () => {
 		let cancel: Function | undefined = undefined;
 		const router = new Router();
 		router.append(new Route({ path: '/foo' }));
-		router.on('navstart', event => {
+		router.on('navstart', (event) => {
 			if (event.cancel) {
 				cancel = event.cancel;
 			}
@@ -248,7 +273,7 @@ suite('Router', () => {
 	test('navstart listeners can asynchronously cancel routing', () => {
 		const router = new Router();
 		router.append(new Route({ path: '/foo' }));
-		router.on('navstart', event => {
+		router.on('navstart', (event) => {
 			if (event.defer) {
 				const { cancel } = event.defer();
 				Promise.resolve().then(cancel);
@@ -264,7 +289,7 @@ suite('Router', () => {
 	test('navstart listeners can asynchronously resume routing', () => {
 		const router = new Router();
 		router.append(new Route({ path: '/foo' }));
-		router.on('navstart', event => {
+		router.on('navstart', (event) => {
 			if (event.defer) {
 				const { resume } = event.defer();
 				Promise.resolve().then(resume);
@@ -281,14 +306,14 @@ suite('Router', () => {
 		const router = new Router();
 		router.append(new Route({ path: '/foo' }));
 
-		const resumers: {(): void}[] = [];
-		router.on('navstart', event => {
+		const resumers: { (): void }[] = [];
+		router.on('navstart', (event) => {
 			if (event.defer) {
 				const { resume } = event.defer();
 				resumers.push(resume);
 			}
 		});
-		router.on('navstart', event => {
+		router.on('navstart', (event) => {
 			if (event.defer) {
 				const { resume } = event.defer();
 				resumers.push(resume);
@@ -301,31 +326,38 @@ suite('Router', () => {
 			dispatched = success;
 		});
 
-		const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+		const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-		return Promise.resolve().then(() => {
-			assert.isFalse(dispatched);
-			(<any> resumers.shift())();
-			return delay(10);
-		}).then(() => {
-			assert.isFalse(dispatched);
-			(<any> resumers.shift())();
-			return delay(10);
-		}).then(() => {
-			assert.isTrue(dispatched);
-		});
+		return Promise.resolve()
+			.then(() => {
+				assert.isFalse(dispatched);
+				(<any>resumers.shift())();
+				return delay(10);
+			})
+			.then(() => {
+				assert.isFalse(dispatched);
+				(<any>resumers.shift())();
+				return delay(10);
+			})
+			.then(() => {
+				assert.isTrue(dispatched);
+			});
 	});
 
 	test('dispatch() can be canceled', () => {
 		const router = new Router();
 
 		let executed = false;
-		router.append(new Route({
-			path: '/foo',
-			exec () { executed = true; }
-		}));
+		router.append(
+			new Route({
+				path: '/foo',
+				exec() {
+					executed = true;
+				}
+			})
+		);
 
-		router.on('navstart', event => {
+		router.on('navstart', (event) => {
 			const task = new Router().dispatch({} as Context, '/foo');
 			task.cancel();
 			if (event.defer) {
@@ -333,7 +365,7 @@ suite('Router', () => {
 			}
 		});
 
-		return new Promise(resolve => setTimeout(resolve, 10)).then(() => {
+		return new Promise((resolve) => setTimeout(resolve, 10)).then(() => {
 			assert.isFalse(executed);
 		});
 	});
@@ -353,7 +385,6 @@ suite('Router', () => {
 						]
 					}
 				]
-
 			}
 		];
 
@@ -381,7 +412,6 @@ suite('Router', () => {
 						]
 					}
 				]
-
 			}
 		];
 
@@ -412,7 +442,6 @@ suite('Router', () => {
 						]
 					}
 				]
-
 			}
 		];
 
@@ -463,7 +492,6 @@ suite('Router', () => {
 						]
 					}
 				]
-
 			}
 		];
 
@@ -504,28 +532,38 @@ suite('Router', () => {
 	});
 
 	test('query for multiple outlets', async () => {
-		const config = [{
-			path: '/path-1',
-			outlet: 'outlet-id-1'
-		}, {
-			path: '/path-2',
-			outlet: 'outlet-id-2',
-			children: [{
-				path: '/nested-path',
-				outlet: 'outlet-id-3',
-				children: [{
-					path: '/nested-path',
-					outlet: 'outlet-id-4',
-					children: [{
+		const config = [
+			{
+				path: '/path-1',
+				outlet: 'outlet-id-1'
+			},
+			{
+				path: '/path-2',
+				outlet: 'outlet-id-2',
+				children: [
+					{
 						path: '/nested-path',
-						outlet: 'outlet-id-5'
-					}]
-				}]
-			}]
-		}, {
-			path: '/path-3',
-			outlet: 'outlet-id-5'
-		}];
+						outlet: 'outlet-id-3',
+						children: [
+							{
+								path: '/nested-path',
+								outlet: 'outlet-id-4',
+								children: [
+									{
+										path: '/nested-path',
+										outlet: 'outlet-id-5'
+									}
+								]
+							}
+						]
+					}
+				]
+			},
+			{
+				path: '/path-3',
+				outlet: 'outlet-id-5'
+			}
+		];
 
 		const router = new Router({ config });
 
@@ -572,22 +610,30 @@ suite('Router', () => {
 	});
 
 	test('parameters are combined with multiple matching outlets', async () => {
-		const config = [{
-			path: '/path',
-			outlet: 'outlet-id-1',
-			children: [{
-				path: '/nested-path/{outlet-2-param}',
-				outlet: 'outlet-id-2',
-				children: [{
-					path: '/nested-path/{outlet-3-param}',
-					outlet: 'outlet-id-3',
-					children: [{
-						path: '/nested-path/{outlet-4-param}',
-						outlet: 'outlet-id-4'
-					}]
-				}]
-			}]
-		}];
+		const config = [
+			{
+				path: '/path',
+				outlet: 'outlet-id-1',
+				children: [
+					{
+						path: '/nested-path/{outlet-2-param}',
+						outlet: 'outlet-id-2',
+						children: [
+							{
+								path: '/nested-path/{outlet-3-param}',
+								outlet: 'outlet-id-3',
+								children: [
+									{
+										path: '/nested-path/{outlet-4-param}',
+										outlet: 'outlet-id-4'
+									}
+								]
+							}
+						]
+					}
+				]
+			}
+		];
 
 		const router = new Router({ config });
 
@@ -618,8 +664,7 @@ suite('Router', () => {
 		try {
 			new Router({ config });
 			assert.fail('Should throw an error if multiple default routes are configured.');
-		}
-		catch (err) {
+		} catch (err) {
 			// do nothing expected error
 		}
 	});
@@ -628,7 +673,7 @@ suite('Router', () => {
 		let received: Request<Context, Parameters>;
 
 		const router = new Router({
-			fallback (request) {
+			fallback(request) {
 				received = request;
 			}
 		});
@@ -650,14 +695,14 @@ suite('Router', () => {
 		router.append([
 			new Route({
 				path: '/foo',
-				guard () {
+				guard() {
 					order.push('first');
 					return false;
 				}
 			}),
 			new Route({
 				path: '/foo',
-				exec () {
+				exec() {
 					order.push('second');
 				}
 			})
@@ -675,22 +720,38 @@ suite('Router', () => {
 		const baz = new Route({ path: '/baz' });
 
 		router.append(foo);
-		assert.throws(() => {
-			router.append(foo);
-		}, Error, 'Cannot append route that has already been appended');
-		assert.throws(() => {
-			router.append([ foo, bar ]);
-		}, Error, 'Cannot append route that has already been appended');
+		assert.throws(
+			() => {
+				router.append(foo);
+			},
+			Error,
+			'Cannot append route that has already been appended'
+		);
+		assert.throws(
+			() => {
+				router.append([foo, bar]);
+			},
+			Error,
+			'Cannot append route that has already been appended'
+		);
 
 		foo.append(bar);
-		assert.throws(() => {
-			router.append(bar);
-		}, Error, 'Cannot append route that has already been appended');
+		assert.throws(
+			() => {
+				router.append(bar);
+			},
+			Error,
+			'Cannot append route that has already been appended'
+		);
 
 		router.append(baz);
-		assert.throws(() => {
-			router.append(baz);
-		}, Error, 'Cannot append route that has already been appended');
+		assert.throws(
+			() => {
+				router.append(baz);
+			},
+			Error,
+			'Cannot append route that has already been appended'
+		);
 	});
 
 	test('leading slashes are irrelevant', () => {
@@ -709,57 +770,63 @@ suite('Router', () => {
 	});
 
 	test('if present in route, there must be a trailing slash when selecting', () => {
-		return Promise.all([true, false].map(withSlash => {
-			const router = new Router();
-			const root = new Route({ path: '/foo/' });
-			const deep = new Route({ path: '/bar/' });
-			const deeper = new Route({ path: '/baz/' });
-			root.append(deep);
-			deep.append(deeper);
-			router.append(root);
+		return Promise.all(
+			[true, false].map((withSlash) => {
+				const router = new Router();
+				const root = new Route({ path: '/foo/' });
+				const deep = new Route({ path: '/bar/' });
+				const deeper = new Route({ path: '/baz/' });
+				root.append(deep);
+				deep.append(deeper);
+				router.append(root);
 
-			return router.dispatch({} as Context, `foo/bar/baz${withSlash ? '/' : ''}`).then((dispatchResult) => {
-				const { success } = dispatchResult || { success: false };
-				assert.isTrue(success === withSlash, `there is ${withSlash ? 'a' : 'no'} trailing slash`);
-			});
-		}));
+				return router.dispatch({} as Context, `foo/bar/baz${withSlash ? '/' : ''}`).then((dispatchResult) => {
+					const { success } = dispatchResult || { success: false };
+					assert.isTrue(success === withSlash, `there is ${withSlash ? 'a' : 'no'} trailing slash`);
+				});
+			})
+		);
 	});
 
 	test('if not present in route, there must not be a trailing slash when selecting', () => {
-		return Promise.all([true, false].map(withSlash => {
-			const router = new Router();
-			const root = new Route({ path: '/foo/' });
-			const deep = new Route({ path: '/bar/' });
-			const deeper = new Route({ path: '/baz' });
-			root.append(deep);
-			deep.append(deeper);
-			router.append(root);
+		return Promise.all(
+			[true, false].map((withSlash) => {
+				const router = new Router();
+				const root = new Route({ path: '/foo/' });
+				const deep = new Route({ path: '/bar/' });
+				const deeper = new Route({ path: '/baz' });
+				root.append(deep);
+				deep.append(deeper);
+				router.append(root);
 
-			return router.dispatch({} as Context, `foo/bar/baz${withSlash ? '/' : ''}`).then((dispatchResult) => {
-				const { success } = dispatchResult || { success: false };
-				assert.isTrue(success !== withSlash, `there is ${withSlash ? 'a' : 'no'} trailing slash`);
-			});
-		}));
+				return router.dispatch({} as Context, `foo/bar/baz${withSlash ? '/' : ''}`).then((dispatchResult) => {
+					const { success } = dispatchResult || { success: false };
+					assert.isTrue(success !== withSlash, `there is ${withSlash ? 'a' : 'no'} trailing slash`);
+				});
+			})
+		);
 	});
 
 	test('routes can be configured to ignore trailing slash discrepancies', () => {
-		return Promise.all([true, false].map(withSlash => {
-			const router = new Router();
-			const root = new Route({ path: '/foo/' });
-			const deep = new Route({ path: '/bar/' });
-			const deeper = new Route({
-				path: `/baz${withSlash ? '' : '/'}`,
-				trailingSlashMustMatch: false
-			});
-			root.append(deep);
-			deep.append(deeper);
-			router.append(root);
+		return Promise.all(
+			[true, false].map((withSlash) => {
+				const router = new Router();
+				const root = new Route({ path: '/foo/' });
+				const deep = new Route({ path: '/bar/' });
+				const deeper = new Route({
+					path: `/baz${withSlash ? '' : '/'}`,
+					trailingSlashMustMatch: false
+				});
+				root.append(deep);
+				deep.append(deeper);
+				router.append(root);
 
-			return router.dispatch({} as Context, `foo/bar/baz${withSlash ? '/' : ''}`).then((dispatchResult) => {
-				const { success } = dispatchResult || { success: false };
-				assert.isTrue(success, `there is ${withSlash ? 'a' : 'no'} trailing slash`);
-			});
-		}));
+				return router.dispatch({} as Context, `foo/bar/baz${withSlash ? '/' : ''}`).then((dispatchResult) => {
+					const { success } = dispatchResult || { success: false };
+					assert.isTrue(success, `there is ${withSlash ? 'a' : 'no'} trailing slash`);
+				});
+			})
+		);
 	});
 
 	test('search components are ignored', () => {
@@ -786,15 +853,18 @@ suite('Router', () => {
 		const router = new Router();
 		router.append(new Route({ path: '/foo' }));
 
-		return router.dispatch({} as Context, '/foo?bar#baz').then((dispatchResult) => {
-			const { success } = dispatchResult || { success: false };
-			assert.isTrue(success, '/foo?bar#baz');
+		return router
+			.dispatch({} as Context, '/foo?bar#baz')
+			.then((dispatchResult) => {
+				const { success } = dispatchResult || { success: false };
+				assert.isTrue(success, '/foo?bar#baz');
 
-			return router.dispatch({} as Context, '/foo#bar?baz');
-		}).then((dispatchResult) => {
-			const { success } = dispatchResult || { success: false };
-			assert.isTrue(success);
-		});
+				return router.dispatch({} as Context, '/foo#bar?baz');
+			})
+			.then((dispatchResult) => {
+				const { success } = dispatchResult || { success: false };
+				assert.isTrue(success);
+			});
 	});
 
 	test('repeated slashes have no effect', () => {
@@ -811,33 +881,43 @@ suite('Router', () => {
 		const router = new Router();
 
 		let extracted: DefaultParameters = {};
-		router.append(new Route({
-			path: '/foo?{bar}&{baz}',
-			exec ({ params }) {
-				extracted = <DefaultParameters> params;
-			}
-		}));
+		router.append(
+			new Route({
+				path: '/foo?{bar}&{baz}',
+				exec({ params }) {
+					extracted = <DefaultParameters>params;
+				}
+			})
+		);
 
-		return router.dispatch({} as Context, '/foo?bar=1&baz=2').then(() => {
-			assert.deepEqual(extracted, {bar: '1', baz: '2'});
+		return router
+			.dispatch({} as Context, '/foo?bar=1&baz=2')
+			.then(() => {
+				assert.deepEqual(extracted, { bar: '1', baz: '2' });
 
-			extracted = {};
-			return router.dispatch({} as Context, '/foo?bar=3#baz=4');
-		}).then(() => {
-			assert.deepEqual(extracted, {bar: '3'});
+				extracted = {};
+				return router.dispatch({} as Context, '/foo?bar=3#baz=4');
+			})
+			.then(() => {
+				assert.deepEqual(extracted, { bar: '3' });
 
-			extracted = {};
-			return router.dispatch({} as Context, '/foo#bar=5?baz=6');
-		}).then(() => {
-			assert.deepEqual(extracted, {});
-		});
+				extracted = {};
+				return router.dispatch({} as Context, '/foo#bar=5?baz=6');
+			})
+			.then(() => {
+				assert.deepEqual(extracted, {});
+			});
 	});
 
 	test('replacePath() throws if the router was created without a history manager', () => {
 		const router = new Router();
-		assert.throws(() => {
-			router.replacePath('/foo');
-		}, Error, 'Cannot replace path, router was created without a history manager');
+		assert.throws(
+			() => {
+				router.replacePath('/foo');
+			},
+			Error,
+			'Cannot replace path, router was created without a history manager'
+		);
 	});
 
 	test('replacePath() sets the path on the history manager', () => {
@@ -846,14 +926,18 @@ suite('Router', () => {
 		const router = new Router({ history });
 		router.replacePath('/foo');
 		assert.isTrue(replace.calledOnce);
-		assert.deepEqual(replace.firstCall.args, [ '/foo' ]);
+		assert.deepEqual(replace.firstCall.args, ['/foo']);
 	});
 
 	test('setPath() throws if the router was created without a history manager', () => {
 		const router = new Router();
-		assert.throws(() => {
-			router.setPath('/foo');
-		}, Error, 'Cannot set path, router was created without a history manager');
+		assert.throws(
+			() => {
+				router.setPath('/foo');
+			},
+			Error,
+			'Cannot set path, router was created without a history manager'
+		);
 	});
 
 	test('setPath() sets the path on the history manager', () => {
@@ -862,7 +946,7 @@ suite('Router', () => {
 		const router = new Router({ history });
 		router.setPath('/foo');
 		assert.isTrue(set.calledOnce);
-		assert.deepEqual(set.firstCall.args, [ '/foo' ]);
+		assert.deepEqual(set.firstCall.args, ['/foo']);
 	});
 
 	test('start() is a noop if the router was created without a history manager', () => {
@@ -925,7 +1009,7 @@ suite('Router', () => {
 		});
 
 		router.start({ dispatchCurrent: true });
-		assert.deepEqual(dispatchedPaths, [ '/foo', 'bar' ]);
+		assert.deepEqual(dispatchedPaths, ['/foo', 'bar']);
 	});
 
 	test('start() can be configured not to immediately dispatch for the current history value', () => {
@@ -969,39 +1053,49 @@ suite('Router', () => {
 		router.append([
 			new Route({
 				path: '/foo',
-				guard() { return '/bar'; }
+				guard() {
+					return '/bar';
+				}
 			}),
 			new Route({
 				path: '/bar',
-				exec() { execs.push('/bar'); }
+				exec() {
+					execs.push('/bar');
+				}
 			}),
 			new Route({
 				path: '/baz',
-				guard() { return ''; }
+				guard() {
+					return '';
+				}
 			}),
 			new Route({
 				path: '/',
-				exec() { execs.push('/'); }
+				exec() {
+					execs.push('/');
+				}
 			})
 		]);
 
 		const paths: string[] = [];
-		router.on('navstart', ({ path }) => { paths.push(path); });
+		router.on('navstart', ({ path }) => {
+			paths.push(path);
+		});
 
 		router.start();
 		return new Promise((resolve) => setTimeout(resolve, 50))
 			.then(() => {
 				assert.strictEqual(history.current, '/bar');
-				assert.deepEqual(paths, [ '/foo', '/bar' ]);
-				assert.deepEqual(execs, [ '/bar' ]);
+				assert.deepEqual(paths, ['/foo', '/bar']);
+				assert.deepEqual(execs, ['/bar']);
 
 				history.set('/baz');
 				return new Promise((resolve) => setTimeout(resolve, 50));
 			})
 			.then(() => {
 				assert.strictEqual(history.current, '');
-				assert.deepEqual(paths, [ '/foo', '/bar', '/baz', '' ]);
-				assert.deepEqual(execs, [ '/bar', '/' ]);
+				assert.deepEqual(paths, ['/foo', '/bar', '/baz', '']);
+				assert.deepEqual(execs, ['/bar', '/']);
 			});
 	});
 
@@ -1038,16 +1132,18 @@ suite('Router', () => {
 		return new Promise((resolve) => {
 			ok = resolve;
 			history.set('/to');
-		}).then(() => {
-			assert.equal(count, 20);
-			count = 0;
-			return new Promise((resolve) => {
-				ok = resolve;
-				history.set(history.current === '/to' ? '/and/fro' : '/to');
+		})
+			.then(() => {
+				assert.equal(count, 20);
+				count = 0;
+				return new Promise((resolve) => {
+					ok = resolve;
+					history.set(history.current === '/to' ? '/and/fro' : '/to');
+				});
+			})
+			.then(() => {
+				assert.equal(count, 20);
 			});
-		}).then(() => {
-			assert.equal(count, 20);
-		});
 	});
 
 	test('without a provided context, start() dispatches with an empty object as the context', () => {
@@ -1083,8 +1179,8 @@ suite('Router', () => {
 		assert.strictEqual(contexts[1], context);
 	});
 
-	test('with a provided context factory, start() dispatches with factory\'s value as the context', () => {
-		const expectedContexts = [ { first: true }, { second: true } ];
+	test("with a provided context factory, start() dispatches with factory's value as the context", () => {
+		const expectedContexts = [{ first: true }, { second: true }];
 		const context = () => expectedContexts.shift();
 		const history = new MemoryHistory({ path: '/foo' });
 		const router = new Router({ context, history });
@@ -1102,29 +1198,41 @@ suite('Router', () => {
 
 	test('link() throws if route has not been appended', () => {
 		const router = new Router();
-		assert.throws(() => {
-			router.link(new Route({ path: '/' }));
-		}, Error, 'Cannot generate link for route that is not in the hierarchy');
-		assert.throws(() => {
-			const foo = new Route({ path: '/foo' });
-			const bar = new Route({ path: '/bar' });
-			foo.append(bar);
-			router.link(bar);
-		}, Error, 'Cannot generate link for route that is not in the hierarchy');
-		assert.throws(() => {
-			const foo = new Route({ path: '/foo' });
-			new Router().append(foo);
-			router.link(foo);
-		}, Error, 'Cannot generate link for route that is not in the hierarchy');
+		assert.throws(
+			() => {
+				router.link(new Route({ path: '/' }));
+			},
+			Error,
+			'Cannot generate link for route that is not in the hierarchy'
+		);
+		assert.throws(
+			() => {
+				const foo = new Route({ path: '/foo' });
+				const bar = new Route({ path: '/bar' });
+				foo.append(bar);
+				router.link(bar);
+			},
+			Error,
+			'Cannot generate link for route that is not in the hierarchy'
+		);
+		assert.throws(
+			() => {
+				const foo = new Route({ path: '/foo' });
+				new Router().append(foo);
+				router.link(foo);
+			},
+			Error,
+			'Cannot generate link for route that is not in the hierarchy'
+		);
 	});
 
 	test('link() combines paths of route hierarchy (no parameters)', () => {
 		const router = new Router();
-		const routes = [ 'foo/', '/bar', 'baz/' ].map(path => new Route({ path }));
+		const routes = ['foo/', '/bar', 'baz/'].map((path) => new Route({ path }));
 		routes.reduce<{ append(route: Route<Context, Parameters>): void }>((parent, route) => {
-				parent.append(route);
-				return route;
-			}, router);
+			parent.append(route);
+			return route;
+		}, router);
 
 		assert.equal(router.link(routes[2]), 'foo/bar/baz/');
 		assert.equal(router.link(routes[1]), 'foo/bar');
@@ -1145,12 +1253,20 @@ suite('Router', () => {
 		const route = new Route({ path: '/{foo}?{bar}' });
 		router.append(route);
 
-		assert.throws(() => {
-			router.link(route);
-		}, Error, 'Cannot generate link, missing parameter \'foo\'');
-		assert.throws(() => {
-			router.link(route, { foo: 'foo' });
-		}, Error, 'Cannot generate link, missing search parameter \'bar\'');
+		assert.throws(
+			() => {
+				router.link(route);
+			},
+			Error,
+			"Cannot generate link, missing parameter 'foo'"
+		);
+		assert.throws(
+			() => {
+				router.link(route, { foo: 'foo' });
+			},
+			Error,
+			"Cannot generate link, missing search parameter 'bar'"
+		);
 	});
 
 	test('link() throws if more than one value is provided for a path parameter', () => {
@@ -1158,38 +1274,45 @@ suite('Router', () => {
 		const route = new Route({ path: '/{foo}' });
 		router.append(route);
 
-		assert.equal(router.link(route, { foo: [ 'foo' ] }), '/foo');
-		assert.throws(() => {
-			router.link(route, { foo: [ 'foo', 'bar' ] });
-		}, Error, 'Cannot generate link, multiple values for parameter \'foo\'');
+		assert.equal(router.link(route, { foo: ['foo'] }), '/foo');
+		assert.throws(
+			() => {
+				router.link(route, { foo: ['foo', 'bar'] });
+			},
+			Error,
+			"Cannot generate link, multiple values for parameter 'foo'"
+		);
 	});
 
 	test('link() fills in parameters', () => {
 		const router = new Router();
-		const routes = [ '{foo}', '{foo}?{bar}', 'end?{bar}&{baz}&{foo}' ].map(path => new Route({ path }));
+		const routes = ['{foo}', '{foo}?{bar}', 'end?{bar}&{baz}&{foo}'].map((path) => new Route({ path }));
 		routes.reduce<{ append(route: Route<Context, Parameters>): void }>((parent, route) => {
-				parent.append(route);
-				return route;
-			}, router);
+			parent.append(route);
+			return route;
+		}, router);
 
-		assert.equal(router.link(routes[2], {
-			foo: 'foo',
-			bar: 'bar',
-			baz: [ 'baz1', 'baz2' ]
-		}), 'foo/foo/end?bar=bar&baz=baz1&baz=baz2&foo=foo');
+		assert.equal(
+			router.link(routes[2], {
+				foo: 'foo',
+				bar: 'bar',
+				baz: ['baz1', 'baz2']
+			}),
+			'foo/foo/end?bar=bar&baz=baz1&baz=baz2&foo=foo'
+		);
 	});
 
 	test('link() fills in parameters from currently selected, matching routes', () => {
 		const history = new MemoryHistory();
 		const router = new Router({ history });
-		const routes = [ '/root/{foo}/deeper/{bar}', '{foo}?{bar}' ].map(path => new Route({ path }));
+		const routes = ['/root/{foo}/deeper/{bar}', '{foo}?{bar}'].map((path) => new Route({ path }));
 		const ready = new Promise((resolve) => {
 			routes.push(new Route({ path: 'end?{bar}&{baz}&{foo}', exec: resolve }));
 		});
 		routes.reduce<{ append(route: Route<Context, Parameters>): void }>((parent, route) => {
-				parent.append(route);
-				return route;
-			}, router);
+			parent.append(route);
+			return route;
+		}, router);
 
 		router.start({ dispatchCurrent: false });
 		history.set('/root/FOO/deeper/BAR/foo/end?bar=bar&baz=baz1&baz=baz2&foo=f00');
@@ -1206,20 +1329,23 @@ suite('Router', () => {
 	test('link() lets you override parameters from currently selected, matching routes', () => {
 		const history = new MemoryHistory();
 		const router = new Router({ history });
-		const routes = [ '/root/{foo}/deeper/{bar}', '{foo}?{bar}' ].map(path => new Route({ path }));
+		const routes = ['/root/{foo}/deeper/{bar}', '{foo}?{bar}'].map((path) => new Route({ path }));
 		const ready = new Promise((resolve) => {
 			routes.push(new Route({ path: 'end?{bar}&{baz}&{foo}', exec: resolve }));
 		});
 		routes.reduce<{ append(route: Route<Context, Parameters>): void }>((parent, route) => {
-				parent.append(route);
-				return route;
-			}, router);
+			parent.append(route);
+			return route;
+		}, router);
 
 		router.start({ dispatchCurrent: false });
 		history.set('/root/FOO/deeper/BAR/foo/end?bar=bar&baz=baz1&baz=baz2&foo=f00');
 
 		return ready.then(() => {
-			assert.equal(router.link(routes[2], { foo: 'f00' }), '/root/f00/deeper/BAR/f00/end?bar=bar&baz=baz1&baz=baz2&foo=f00');
+			assert.equal(
+				router.link(routes[2], { foo: 'f00' }),
+				'/root/f00/deeper/BAR/f00/end?bar=bar&baz=baz1&baz=baz2&foo=f00'
+			);
 		});
 	});
 
@@ -1258,7 +1384,7 @@ suite('Router', () => {
 		history.set('/initial/foo');
 
 		return ready.then((links) => {
-			assert.deepEqual(links, [ '/initial/foo', '/initial/foo', '/foo' ]);
+			assert.deepEqual(links, ['/initial/foo', '/initial/foo', '/foo']);
 		});
 	});
 
@@ -1277,15 +1403,17 @@ suite('Router', () => {
 				return '/foo';
 			}
 		});
-		router.append([ initial, redirect ]);
+		router.append([initial, redirect]);
 
 		const ready = new Promise((resolve) => {
 			const route = new Route({
 				path: '/foo',
 				guard() {
-					resolve(new Promise((resolve) => {
-						resolve(router.link(initial));
-					}));
+					resolve(
+						new Promise((resolve) => {
+							resolve(router.link(initial));
+						})
+					);
 					return true;
 				}
 			});
@@ -1300,7 +1428,7 @@ suite('Router', () => {
 				throw new Error('Should have thrown');
 			})
 			.catch((err) => {
-				assert.equal(err.message, 'Cannot generate link, missing parameter \'foo\'');
+				assert.equal(err.message, "Cannot generate link, missing parameter 'foo'");
 			});
 	});
 
@@ -1322,9 +1450,11 @@ suite('Router', () => {
 			const route = new Route({
 				path: '/foo',
 				guard() {
-					resolve(new Promise((resolve) => {
-						resolve(router.link(initial));
-					}));
+					resolve(
+						new Promise((resolve) => {
+							resolve(router.link(initial));
+						})
+					);
 					return true;
 				}
 			});
@@ -1339,7 +1469,7 @@ suite('Router', () => {
 				throw new Error('Should have thrown');
 			})
 			.catch((err) => {
-				assert.equal(err.message, 'Cannot generate link, missing parameter \'foo\'');
+				assert.equal(err.message, "Cannot generate link, missing parameter 'foo'");
 			});
 	});
 
@@ -1355,15 +1485,17 @@ suite('Router', () => {
 			}
 		});
 		const unmanaged = new Route({ path: '/unmanaged' });
-		router.append([ initial, unmanaged ]);
+		router.append([initial, unmanaged]);
 
 		const ready = new Promise((resolve) => {
 			const route = new Route({
 				path: '/foo',
 				guard() {
-					resolve(new Promise((resolve) => {
-						resolve(router.link(initial));
-					}));
+					resolve(
+						new Promise((resolve) => {
+							resolve(router.link(initial));
+						})
+					);
 					return true;
 				}
 			});
@@ -1378,7 +1510,7 @@ suite('Router', () => {
 				throw new Error('Should have thrown');
 			})
 			.catch((err) => {
-				assert.equal(err.message, 'Cannot generate link, missing parameter \'foo\'');
+				assert.equal(err.message, "Cannot generate link, missing parameter 'foo'");
 			});
 	});
 
@@ -1471,9 +1603,7 @@ suite('Router', () => {
 		try {
 			router.link('bar');
 			assert.fail('Link should throw an error if outlet has not been registered');
-		}
-		catch (e) {
-		}
+		} catch (e) {}
 	});
 
 	suite('dispatch errors are emitted', () => {
@@ -1510,7 +1640,9 @@ suite('Router', () => {
 				},
 				history
 			});
-			router.on('error', (event: any) => { events.push(event); });
+			router.on('error', (event: any) => {
+				events.push(event);
+			});
 			dispatch = () => {
 				return new Promise((resolve) => {
 					router.dispatch(context, path).finally(resolve);
@@ -1520,90 +1652,108 @@ suite('Router', () => {
 
 		test('route selection throws', () => {
 			const error = new Error();
-			router.append(new Route({
-				path,
-				guard(): boolean {
-					throw error;
-				}
-			}));
+			router.append(
+				new Route({
+					path,
+					guard(): boolean {
+						throw error;
+					}
+				})
+			);
 			return verify(dispatch(), error);
 		});
 
 		test('route exec throws', () => {
 			const error = new Error();
-			router.append(new Route({
-				path,
-				exec() {
-					throw error;
-				}
-			}));
+			router.append(
+				new Route({
+					path,
+					exec() {
+						throw error;
+					}
+				})
+			);
 			return verify(dispatch(), error);
 		});
 
 		test('route fallback throws', () => {
 			const error = new Error();
-			router.append(new Route({
-				path: '/foo',
-				fallback() {
-					throw error;
-				}
-			}));
+			router.append(
+				new Route({
+					path: '/foo',
+					fallback() {
+						throw error;
+					}
+				})
+			);
 			return verify(dispatch(), error);
 		});
 
 		test('route index throws', () => {
 			const error = new Error();
-			router.append(new Route({
-				path,
-				index() {
-					throw error;
-				}
-			}));
+			router.append(
+				new Route({
+					path,
+					index() {
+						throw error;
+					}
+				})
+			);
 			return verify(dispatch(), error);
 		});
 
 		test('router fallback throws', () => {
 			const error = new Error();
-			fallback = () => { throw error; };
+			fallback = () => {
+				throw error;
+			};
 			return verify(dispatch(), error);
 		});
 
 		test('route exec returns a rejected thenable', () => {
 			const error = new Error();
-			router.append(new Route({
-				path,
-				exec() {
-					return Promise.reject(error);
-				}
-			}));
+			router.append(
+				new Route({
+					path,
+					exec() {
+						return Promise.reject(error);
+					}
+				})
+			);
 			return verify(dispatch(), error);
 		});
 
 		test('route fallback returns a rejected thenable', () => {
 			const error = new Error();
-			router.append(new Route({
-				path: '/foo',
-				fallback() {
-					return Promise.reject(error);
-				}
-			}));
+			router.append(
+				new Route({
+					path: '/foo',
+					fallback() {
+						return Promise.reject(error);
+					}
+				})
+			);
 			return verify(dispatch(), error);
 		});
 
 		test('route index returns a rejected thenable', () => {
 			const error = new Error();
-			router.append(new Route({
-				path,
-				index() {
-					return Promise.reject(error);
-				}
-			}));
+			router.append(
+				new Route({
+					path,
+					index() {
+						return Promise.reject(error);
+					}
+				})
+			);
 			return verify(dispatch(), error);
 		});
 
 		test('router fallback returns a rejected thenable', () => {
 			const error = new Error();
-			fallback = () => { return Promise.reject(error); };
+			fallback = () => {
+				return Promise.reject(error);
+			};
 			return verify(dispatch(), error);
 		});
 
@@ -1638,19 +1788,21 @@ suite('Router', () => {
 
 			router.start({ dispatchCurrent: false });
 			history.set('/to');
-			return promise.then((path) => {
-				// Allow the redirect to propagate through the dispatch promise chain before checking to see if the
-				// error was emitted.
-				return new Promise((resolve) => setTimeout(resolve, 10, path));
-			}).then((path) => {
-				assert.lengthOf(events, 1);
-				const [ evt ] = events;
-				assert.strictEqual(evt.context, context);
-				assert.instanceOf(evt.error, Error);
-				assert.equal(evt.error.message, 'More than 20 redirects, giving up');
-				assert.strictEqual(evt.path, path);
-				assert.strictEqual(evt.target, router);
-			});
+			return promise
+				.then((path) => {
+					// Allow the redirect to propagate through the dispatch promise chain before checking to see if the
+					// error was emitted.
+					return new Promise((resolve) => setTimeout(resolve, 10, path));
+				})
+				.then((path) => {
+					assert.lengthOf(events, 1);
+					const [evt] = events;
+					assert.strictEqual(evt.context, context);
+					assert.instanceOf(evt.error, Error);
+					assert.equal(evt.error.message, 'More than 20 redirects, giving up');
+					assert.strictEqual(evt.path, path);
+					assert.strictEqual(evt.target, router);
+				});
 		});
 	});
 
@@ -1665,12 +1817,14 @@ suite('Router', () => {
 				assert.isTrue(context.refined);
 			}
 		});
-		router.append(new Route<Refined, any>({
-			path: '/foo',
-			exec({ context }) {
-				assert.isTrue(context.refined);
-			}
-		}));
+		router.append(
+			new Route<Refined, any>({
+				path: '/foo',
+				exec({ context }) {
+					assert.isTrue(context.refined);
+				}
+			})
+		);
 		router.dispatch({ refined: true }, '/foo');
 		router.dispatch({ refined: true }, '/bar');
 	});

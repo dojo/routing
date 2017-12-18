@@ -9,7 +9,7 @@ suite('MemoryHistory', () => {
 	});
 
 	test('can create history with initial path', () => {
-		assert.equal(new MemoryHistory({ path: '/initial'}).current, '/initial');
+		assert.equal(new MemoryHistory({ path: '/initial' }).current, '/initial');
 	});
 
 	test('does not prefix the path', () => {

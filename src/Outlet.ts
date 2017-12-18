@@ -1,32 +1,23 @@
-import {
-	Constructor,
-	RegistryLabel,
-	DNode,
-	WidgetBaseInterface,
-	WidgetProperties
-} from '@dojo/widget-core/interfaces';
+import { Constructor, RegistryLabel, DNode, WidgetBaseInterface, WidgetProperties } from '@dojo/widget-core/interfaces';
 import { WidgetBase } from '@dojo/widget-core/WidgetBase';
 import { w } from '@dojo/widget-core/d';
 import { inject } from '@dojo/widget-core/decorators/inject';
 
 import { Router } from './Router';
 import { routerKey } from './RouterInjector';
-import {
-	MatchType,
-	Component,
-	MapParams,
-	OutletComponents,
-	MapParamsOptions
-} from './interfaces';
+import { MatchType, Component, MapParams, OutletComponents, MapParamsOptions } from './interfaces';
 
 export function isComponent<W extends WidgetBaseInterface>(value: any): value is Component<W> {
-	return Boolean(value && ((typeof value === 'string') || (typeof value === 'function') || (typeof value === 'symbol')));
+	return Boolean(value && (typeof value === 'string' || typeof value === 'function' || typeof value === 'symbol'));
 }
 
 export type Outlet<
 	W extends WidgetBaseInterface,
 	F extends WidgetBaseInterface,
-	E extends WidgetBaseInterface> = Constructor<WidgetBase<Partial<E['properties']> & Partial<W['properties']> & Partial<F['properties']> & WidgetProperties, null>>;
+	E extends WidgetBaseInterface
+> = Constructor<
+	WidgetBase<Partial<E['properties']> & Partial<W['properties']> & Partial<F['properties']> & WidgetProperties, null>
+>;
 
 export function Outlet<W extends WidgetBaseInterface, F extends WidgetBaseInterface, E extends WidgetBaseInterface>(
 	outletComponents: Component<W> | OutletComponents<W, F, E>,
@@ -43,7 +34,6 @@ export function Outlet<W extends WidgetBaseInterface, F extends WidgetBaseInterf
 
 	@inject({ name: routerKey, getProperties })
 	class OutletComponent extends WidgetBase<Partial<W['properties']> & { router: Router<any> }, null> {
-
 		public __setProperties__(properties: Partial<W['properties']> & { router: Router<any> }): void {
 			super.__setProperties__(properties);
 			this.invalidate();
@@ -58,11 +48,9 @@ export function Outlet<W extends WidgetBaseInterface, F extends WidgetBaseInterf
 
 				if ((type === MatchType.INDEX || type === MatchType.ERROR) && indexComponent) {
 					return w(indexComponent, properties, this.children);
-				}
-				else if (type === MatchType.ERROR && errorComponent) {
+				} else if (type === MatchType.ERROR && errorComponent) {
 					return w(errorComponent, properties, this.children);
-				}
-				else if (type !== MatchType.ERROR && mainComponent) {
+				} else if (type !== MatchType.ERROR && mainComponent) {
 					return w(mainComponent, properties, this.children);
 				}
 			}

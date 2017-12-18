@@ -88,18 +88,22 @@ export interface RouteOptions<C extends Context, P extends Parameters> {
 // change the private state of their children.
 const parentMap = new WeakMap<Route<Context, Parameters>, Route<Context, Parameters>>();
 
-const noop = () => {
-};
+const noop = () => {};
 
-function computeDefaultParams(parameters: string[], searchParameters: string[], fromPathname: string[], searchParams: UrlSearchParams): null | DefaultParameters {
+function computeDefaultParams(
+	parameters: string[],
+	searchParameters: string[],
+	fromPathname: string[],
+	searchParams: UrlSearchParams
+): null | DefaultParameters {
 	const params: DefaultParameters = {};
 	parameters.forEach((name, index) => {
-		params[ name ] = fromPathname[ index ];
+		params[name] = fromPathname[index];
 	});
-	searchParameters.forEach(name => {
+	searchParameters.forEach((name) => {
 		const value = searchParams.get(name);
 		if (value !== undefined) {
-			params[ name ] = value;
+			params[name] = value;
 		}
 	});
 
@@ -135,10 +139,20 @@ export class Route<C extends Context, P extends Parameters> implements RouteInte
 	}
 
 	constructor(options: RouteOptions<C, P> = {}) {
-		const { exec, fallback, guard, index, params: computeParams, path, outlet, trailingSlashMustMatch = true, defaultParams = {} } = options;
+		const {
+			exec,
+			fallback,
+			guard,
+			index,
+			params: computeParams,
+			path,
+			outlet,
+			trailingSlashMustMatch = true,
+			defaultParams = {}
+		} = options;
 
 		if (path && /#/.test(path)) {
-			throw new TypeError('Path must not contain \'#\'');
+			throw new TypeError("Path must not contain '#'");
 		}
 
 		const deconstructedPath = deconstructPath(path || '/');
@@ -146,12 +160,11 @@ export class Route<C extends Context, P extends Parameters> implements RouteInte
 
 		if (computeParams) {
 			if (parameters.length === 0 && searchParameters.length === 0) {
-				throw new TypeError('Can\'t specify params() if path doesn\'t contain any');
+				throw new TypeError("Can't specify params() if path doesn't contain any");
 			}
 
 			this._computeParams = computeParams;
-		}
-		else {
+		} else {
 			this._computeParams = (fromPathname: string[], searchParams: UrlSearchParams) => {
 				return computeDefaultParams(parameters, searchParameters, fromPathname, searchParams);
 			};
@@ -164,7 +177,7 @@ export class Route<C extends Context, P extends Parameters> implements RouteInte
 		this._path = deconstructedPath;
 		this._outlet = outlet;
 		this._routes = [];
-		this._defaultParams = <P> defaultParams;
+		this._defaultParams = <P>defaultParams;
 		this._trailingSlashMustMatch = trailingSlashMustMatch;
 	}
 
@@ -182,8 +195,7 @@ export class Route<C extends Context, P extends Parameters> implements RouteInte
 			for (const route of add) {
 				append(route);
 			}
-		}
-		else {
+		} else {
 			append(add);
 		}
 	}
@@ -192,7 +204,11 @@ export class Route<C extends Context, P extends Parameters> implements RouteInte
 		return findRouter(this).link(this, params);
 	}
 
-	match(segments: string[], hasTrailingSlash: boolean, searchParams: UrlSearchParams): null | MatchResult<DefaultParameters | P> {
+	match(
+		segments: string[],
+		hasTrailingSlash: boolean,
+		searchParams: UrlSearchParams
+	): null | MatchResult<DefaultParameters | P> {
 		const result = matchPath(this._path, segments);
 		if (result === null) {
 			return null;
@@ -206,7 +222,7 @@ export class Route<C extends Context, P extends Parameters> implements RouteInte
 		const knownSearchParams = this._path.searchParameters.reduce<SearchParams>((list, name) => {
 			const value = searchParams.getAll(name);
 			if (value !== undefined) {
-				list[ name ] = value;
+				list[name] = value;
 			}
 			return list;
 		}, {});
@@ -225,11 +241,19 @@ export class Route<C extends Context, P extends Parameters> implements RouteInte
 		};
 	}
 
-	select(context: C, segments: string[], hasTrailingSlash: boolean, searchParams: UrlSearchParams): string | Selection[] {
+	select(
+		context: C,
+		segments: string[],
+		hasTrailingSlash: boolean,
+		searchParams: UrlSearchParams
+	): string | Selection[] {
 		const matchResult = this.match(segments, hasTrailingSlash, searchParams);
 
 		// Return early if possible.
-		if (!matchResult || matchResult.hasRemaining && this._routes.length === 0 && !this._fallback && !this._outlet) {
+		if (
+			!matchResult ||
+			(matchResult.hasRemaining && this._routes.length === 0 && !this._fallback && !this._outlet)
+		) {
 			return [];
 		}
 
@@ -272,9 +296,8 @@ export class Route<C extends Context, P extends Parameters> implements RouteInte
 				selected = true;
 				handler = this._fallback || noop;
 			}
-		}
-		// Select this route, configure the index handler if specified.
-		else {
+		} else {
+			// Select this route, configure the index handler if specified.
 			selected = true;
 			type = MatchType.INDEX;
 			if (this._index) {
@@ -303,7 +326,7 @@ export class Route<C extends Context, P extends Parameters> implements RouteInte
 			route: this,
 			type
 		};
-		return remainingSelection ? [ selection, ...remainingSelection ] : [ selection ];
+		return remainingSelection ? [selection, ...remainingSelection] : [selection];
 	}
 }
 

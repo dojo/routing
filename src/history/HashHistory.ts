@@ -31,20 +31,22 @@ export class HashHistory extends HistoryBase implements History {
 		this._current = browserLocation.hash.slice(1);
 		this._browserLocation = browserLocation;
 
-		this.own(on(window, 'hashchange', () => {
-			const path = this.normalizePath(browserLocation.hash);
+		this.own(
+			on(window, 'hashchange', () => {
+				const path = this.normalizePath(browserLocation.hash);
 
-			// Ignore hashchange for the current path. Guards against browsers firing hashchange when the history
-			// manager sets the hash.
-			if (path !== this._current) {
-				this._current = path;
-				this.emit({
-					type: 'change',
-					target: this,
-					value: path
-				});
-			}
-		}));
+				// Ignore hashchange for the current path. Guards against browsers firing hashchange when the history
+				// manager sets the hash.
+				if (path !== this._current) {
+					this._current = path;
+					this.emit({
+						type: 'change',
+						target: this,
+						value: path
+					});
+				}
+			})
+		);
 	}
 
 	public prefix(path: string) {

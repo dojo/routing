@@ -31,8 +31,7 @@ import { Route } from './Route';
 export const errorOutlet = 'errorOutlet';
 
 // istanbul ignore next
-const noop = () => {
-};
+const noop = () => {};
 
 function createDeferral() {
 	// Use noop since TypeScript doesn't know we're assigning cancel and resume in the promise executor.
@@ -56,7 +55,12 @@ function reportError<C extends Context>(router: Router<C>, context: C, path: str
 	});
 }
 
-function catchRejection<C extends Context>(router: Router<C>, context: C, path: string, thenable: void | PromiseLike<any>) {
+function catchRejection<C extends Context>(
+	router: Router<C>,
+	context: C,
+	path: string,
+	thenable: void | PromiseLike<any>
+) {
 	if (thenable) {
 		Promise.resolve(thenable).catch((error) => {
 			reportError(router, context, path, error);
@@ -64,7 +68,8 @@ function catchRejection<C extends Context>(router: Router<C>, context: C, path: 
 	}
 }
 
-export class Router<C extends Context, M extends RouterEventMap<C> = RouterEventMap<C>> extends Evented<M> implements RouterInterface<C> {
+export class Router<C extends Context, M extends RouterEventMap<C> = RouterEventMap<C>> extends Evented<M>
+	implements RouterInterface<C> {
 	private _contextFactory: () => C;
 	private _currentSelection: Selection[];
 	private _dispatchFromStart: boolean;
@@ -78,20 +83,18 @@ export class Router<C extends Context, M extends RouterEventMap<C> = RouterEvent
 	private _defaultParams: any = {};
 	private _defaultRoute: RouteInterface<any, any>;
 
-	constructor(options: RouterOptions<C> = { }) {
+	constructor(options: RouterOptions<C> = {}) {
 		super();
 		const { context, fallback, history, config } = options;
 
 		let contextFactory: () => C;
 		if (typeof context === 'function') {
 			contextFactory = context;
-		}
-		else if (typeof context === 'undefined') {
+		} else if (typeof context === 'undefined') {
 			contextFactory = () => {
 				return {} as C;
 			};
-		}
-		else {
+		} else {
 			// Assign to a constant since the context variable may be changed after the function is defined,
 			// which would violate its typing.
 			const sharedContext = context;
@@ -119,8 +122,7 @@ export class Router<C extends Context, M extends RouterEventMap<C> = RouterEvent
 		let parent: RouterInterface<any> | RouteInterface<any, any>;
 		if (typeof from === 'string') {
 			parent = this._outletRouteMap.get(from) || this;
-		}
-		else {
+		} else {
 			parent = from;
 		}
 
@@ -133,9 +135,10 @@ export class Router<C extends Context, M extends RouterEventMap<C> = RouterEvent
 			if (defaultRoute) {
 				if (!this._defaultRoute) {
 					this._defaultRoute = route;
-				}
-				else {
-					throw new Error(`Default outlet has already been configured. Unable to register outlet ${outlet} as the default.`);
+				} else {
+					throw new Error(
+						`Default outlet has already been configured. Unable to register outlet ${outlet} as the default.`
+					);
 				}
 			}
 			assign(this._defaultParams, defaultParams);
@@ -161,8 +164,7 @@ export class Router<C extends Context, M extends RouterEventMap<C> = RouterEvent
 			for (const route of add) {
 				append(route);
 			}
-		}
-		else {
+		} else {
 			append(add);
 		}
 	}
@@ -244,7 +246,6 @@ export class Router<C extends Context, M extends RouterEventMap<C> = RouterEvent
 			result.redirect = redirect;
 		}
 		return result;
-
 	}
 
 	dispatch(context: C, path: string): Task<DispatchResult> {
@@ -260,7 +261,7 @@ export class Router<C extends Context, M extends RouterEventMap<C> = RouterEvent
 		this.emit({
 			context,
 			cancel,
-			defer () {
+			defer() {
 				const { cancel, promise, resume } = createDeferral();
 				deferrals.push(promise);
 				return { cancel, resume };
@@ -277,17 +278,19 @@ export class Router<C extends Context, M extends RouterEventMap<C> = RouterEvent
 
 		return new Task<DispatchResult>((resolve, reject) => {
 			// *Always* start dispatching in a future turn, even if there were no deferrals.
-			Promise.all(deferrals).then<DispatchResult, DispatchResult>(
-				() => {
-					return this._dispatch(context, path, canceled, false);
-				},
-				() => {
-					return { success: false };
-				}
-			).then(resolve, (error) => {
-				reportError(this, context, path, error);
-				reject(error);
-			});
+			Promise.all(deferrals)
+				.then<DispatchResult, DispatchResult>(
+					() => {
+						return this._dispatch(context, path, canceled, false);
+					},
+					() => {
+						return { success: false };
+					}
+				)
+				.then(resolve, (error) => {
+					reportError(this, context, path, error);
+					reject(error);
+				});
 		}, cancel);
 	}
 
@@ -297,24 +300,22 @@ export class Router<C extends Context, M extends RouterEventMap<C> = RouterEvent
 			const item = this._outletRouteMap.get(routeOrOutlet);
 			if (item) {
 				route = item;
-			}
-			else {
+			} else {
 				throw new Error(`No outlet ${routeOrOutlet} has been registered`);
 			}
-		}
-		else {
+		} else {
 			route = routeOrOutlet;
 		}
-		const hierarchy = [ route ];
+		const hierarchy = [route];
 		for (let parent = route.parent; parent !== undefined; parent = parent.parent) {
 			hierarchy.unshift(parent);
 		}
 
-		if (!includes(this._routes, hierarchy[ 0 ])) {
+		if (!includes(this._routes, hierarchy[0])) {
 			throw new Error('Cannot generate link for route that is not in the hierarchy');
 		}
 
-		const { leadingSlash: addLeadingSlash } = hierarchy[ 0 ].path;
+		const { leadingSlash: addLeadingSlash } = hierarchy[0].path;
 		let addTrailingSlash = false;
 		const segments: string[] = [];
 		const searchParams = new UrlSearchParams();
@@ -325,7 +326,7 @@ export class Router<C extends Context, M extends RouterEventMap<C> = RouterEvent
 				let currentPathValues: string[] | undefined;
 				let currentSearchParams: SearchParams | undefined;
 
-				const selection = this._currentSelection[ index ];
+				const selection = this._currentSelection[index];
 				if (selection && selection.route === route) {
 					currentPathValues = selection.rawPathValues;
 					currentSearchParams = selection.rawSearchParams;
@@ -340,31 +341,26 @@ export class Router<C extends Context, M extends RouterEventMap<C> = RouterEvent
 				let namedOffset = 0;
 				for (const segment of expectedSegments) {
 					if (isNamedSegment(segment)) {
-						const value = params[ segment.name ];
+						const value = params[segment.name];
 						if (typeof value === 'string') {
 							segments.push(value);
-						}
-						else if (Array.isArray(value)) {
+						} else if (Array.isArray(value)) {
 							if (value.length === 1) {
-								segments.push(value[ 0 ]);
+								segments.push(value[0]);
+							} else {
+								throw new TypeError(
+									`Cannot generate link, multiple values for parameter '${segment.name}'`
+								);
 							}
-							else {
-								throw new TypeError(`Cannot generate link, multiple values for parameter '${segment.name}'`);
-							}
-						}
-						else if (currentPathValues) {
-							segments.push(currentPathValues[ namedOffset ]);
-						}
-						else if (route.defaultParams[ segment.name ]) {
-							segments.push(route.defaultParams[ segment.name ]);
-
-						}
-						else {
+						} else if (currentPathValues) {
+							segments.push(currentPathValues[namedOffset]);
+						} else if (route.defaultParams[segment.name]) {
+							segments.push(route.defaultParams[segment.name]);
+						} else {
 							throw new Error(`Cannot generate link, missing parameter '${segment.name}'`);
 						}
 						namedOffset++;
-					}
-					else {
+					} else {
 						segments.push(segment.literal);
 					}
 				}
@@ -376,21 +372,18 @@ export class Router<C extends Context, M extends RouterEventMap<C> = RouterEvent
 						continue;
 					}
 
-					const value = params[ key ] || this._defaultParams[ key ] ;
+					const value = params[key] || this._defaultParams[key];
 					if (typeof value === 'string') {
 						searchParams.append(key, value);
-					}
-					else if (Array.isArray(value)) {
+					} else if (Array.isArray(value)) {
 						for (const item of value) {
 							searchParams.append(key, item);
 						}
-					}
-					else if (currentSearchParams) {
-						for (const item of currentSearchParams[ key ]) {
+					} else if (currentSearchParams) {
+						for (const item of currentSearchParams[key]) {
 							searchParams.append(key, item);
 						}
-					}
-					else {
+					} else {
 						throw new Error(`Cannot generate link, missing search parameter '${key}'`);
 					}
 				}
@@ -435,7 +428,7 @@ export class Router<C extends Context, M extends RouterEventMap<C> = RouterEvent
 	}
 
 	getOutlet(outletId: string | string[]): OutletContext | undefined {
-		const outletIds = Array.isArray(outletId) ? outletId : [ outletId ];
+		const outletIds = Array.isArray(outletId) ? outletId : [outletId];
 		let matchingOutlet: OutletContext | undefined = undefined;
 		let matchingParams: Parameters = {};
 		let matchingLocation = '';
@@ -464,7 +457,7 @@ export class Router<C extends Context, M extends RouterEventMap<C> = RouterEvent
 		return this._currentParams;
 	}
 
-	start(startOptions: StartOptions = { dispatchCurrent : true }): PausableHandle {
+	start(startOptions: StartOptions = { dispatchCurrent: true }): PausableHandle {
 		const { dispatchCurrent } = startOptions;
 
 		if (this._started) {
@@ -475,12 +468,9 @@ export class Router<C extends Context, M extends RouterEventMap<C> = RouterEvent
 
 		if (!this._history) {
 			return {
-				pause() {
-				},
-				resume() {
-				},
-				destroy() {
-				}
+				pause() {},
+				resume() {},
+				destroy() {}
 			};
 		}
 
@@ -536,8 +526,7 @@ export class Router<C extends Context, M extends RouterEventMap<C> = RouterEvent
 				redirecting = true;
 				this._history!.replace(redirect);
 				redirecting = false;
-			}
-			else if (!success && this._defaultRoute) {
+			} else if (!success && this._defaultRoute) {
 				const normalizedPath = this._history.normalizePath(this.link(this._defaultRoute));
 				this._dispatch(context, normalizedPath);
 			}
