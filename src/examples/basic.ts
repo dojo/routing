@@ -12,17 +12,13 @@ export interface ChildProperties extends WidgetProperties {
 
 export class About extends WidgetBase {
 	render(): DNode {
-		return v('div', [
-			v('h2', [ 'About' ])
-		]);
+		return v('div', [v('h2', ['About'])]);
 	}
 }
 
 export class Home extends WidgetBase {
 	render(): DNode {
-		return v('div', [
-			v('h2', [ 'Home' ])
-		]);
+		return v('div', [v('h2', ['Home'])]);
 	}
 }
 
@@ -35,25 +31,17 @@ export class Topics extends WidgetBase<TopicsProperties> {
 		const { showHeading } = this.properties;
 
 		return v('div', [
-			v('h2', [ 'Topics' ]),
+			v('h2', ['Topics']),
 			v('ul', [
 				v('li', [
 					w(Link, { key: 'rendering', to: 'topic', params: { topic: 'rendering' } }, [
 						'Rendering with Dojo 2'
 					])
 				]),
-				v('li', [
-					w(Link, { key: 'widgets', to: 'topic', params: { topic: 'widgets' } }, [
-						'Widgets'
-					])
-				]),
-				v('li', [
-					w(Link, { key: 'props', to: 'topic', params: { topic: 'props-v-state' } }, [
-						'Props v State'
-					])
-				])
+				v('li', [w(Link, { key: 'widgets', to: 'topic', params: { topic: 'widgets' } }, ['Widgets'])]),
+				v('li', [w(Link, { key: 'props', to: 'topic', params: { topic: 'props-v-state' } }, ['Props v State'])])
 			]),
-			showHeading ? v('h3', [ 'Please select a topic.' ]) : null,
+			showHeading ? v('h3', ['Please select a topic.']) : null,
 			w(TopicOutlet, {})
 		]);
 	}
@@ -65,40 +53,46 @@ export interface TopicProperties extends WidgetProperties {
 
 export class Topic extends WidgetBase<TopicProperties> {
 	render(): DNode {
-		return v('div', [
-			v('h3', [ this.properties.topic ])
-		]);
+		return v('div', [v('h3', [this.properties.topic])]);
 	}
 }
 
 class ErrorWidget extends WidgetBase {
 	render() {
-		return v('div', [ 'ERROR 2' ]);
+		return v('div', ['ERROR 2']);
 	}
 }
 
 export const AboutOutlet = Outlet(About, 'about', {}, 'router');
 export const HomeOutlet = Outlet({ index: Home }, 'home', {}, 'router');
-export const TopicsOutlet = Outlet(Topics, 'topics', { mapParams: ({ type }: MapParamsOptions) => {
-	return { showHeading: type === 'exact' };
-}}, 'router');
-export const TopicOutlet = Outlet({ main: Topic, error: ErrorWidget }, 'topic', { mapParams: ({ params }) => {
-	return { topic: params.topic };
-} }, 'router');
+export const TopicsOutlet = Outlet(
+	Topics,
+	'topics',
+	{
+		mapParams: ({ type }: MapParamsOptions) => {
+			return { showHeading: type === 'exact' };
+		}
+	},
+	'router'
+);
+export const TopicOutlet = Outlet(
+	{ main: Topic, error: ErrorWidget },
+	'topic',
+	{
+		mapParams: ({ params }) => {
+			return { topic: params.topic };
+		}
+	},
+	'router'
+);
 
 export class App extends WidgetBase {
 	render(): DNode {
 		return v('div', [
 			v('ul', [
-				v('li', [
-					w(Link, { key: 'home', to: 'home' }, [ 'Home' ])
-				]),
-				v('li', [
-					w(Link, { key: 'about', to: 'about' }, [ 'About' ])
-				]),
-				v('li', [
-					w(Link, { key: 'topics', to: 'topics' }, [ 'Topics' ])
-				])
+				v('li', [w(Link, { key: 'home', to: 'home' }, ['Home'])]),
+				v('li', [w(Link, { key: 'about', to: 'about' }, ['About'])]),
+				v('li', [w(Link, { key: 'topics', to: 'topics' }, ['Topics'])])
 			]),
 			w(AboutOutlet, {}),
 			w(HomeOutlet, {}),

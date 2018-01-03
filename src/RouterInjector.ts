@@ -24,7 +24,11 @@ export interface RouterInjectorOptions {
  * @param registry An optional registry that defaults to the global registry
  * @param options The router injector options
  */
-export function registerRouterInjector(config: Config[], registry: Registry, options: RouterInjectorOptions = {}): Router {
+export function registerRouterInjector(
+	config: Config[],
+	registry: Registry,
+	options: RouterInjectorOptions = {}
+): Router {
 	const { key = 'router', history = HashHistory } = options;
 
 	if (registry.hasInjector(key)) {

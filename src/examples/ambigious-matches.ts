@@ -12,13 +12,13 @@ export interface ChildProperties extends WidgetProperties {
 
 export class About extends WidgetBase {
 	render(): DNode {
-		return v('h2', [ 'About' ]);
+		return v('h2', ['About']);
 	}
 }
 
 export class Company extends WidgetBase {
 	render(): DNode {
-		return v('h2', [ 'Company' ]);
+		return v('h2', ['Company']);
 	}
 }
 
@@ -28,32 +28,31 @@ export interface UserProperties extends WidgetProperties {
 
 export class User extends WidgetBase<UserProperties> {
 	render(): DNode {
-		return v('div', [
-			v('h2', [ `User: ${this.properties.name}`])
-		]);
+		return v('div', [v('h2', [`User: ${this.properties.name}`])]);
 	}
 }
 
 export const AboutOutlet = Outlet(About, 'about', {}, 'router');
 export const CompanyOutlet = Outlet(Company, 'company', {}, 'router');
-export const UserOutlet = Outlet(User, 'user', { mapParams: ({ params }: MapParamsOptions) => { return { name: params.user }; } }, 'router');
+export const UserOutlet = Outlet(
+	User,
+	'user',
+	{
+		mapParams: ({ params }: MapParamsOptions) => {
+			return { name: params.user };
+		}
+	},
+	'router'
+);
 
 export class App extends WidgetBase {
 	render(): DNode {
 		return v('div', [
 			v('ul', [
-				v('li', [
-					w(Link, { key: '1', to: 'about-us' }, [ 'About Us (Static)' ])
-				]),
-				v('li', [
-					w(Link, { key: '2', to: 'company' }, [ 'Company (Static)' ])
-				]),
-				v('li', [
-					w(Link, { key: '3', to: 'user', params: { user: 'kim' } }, [ 'Kim (dynamic)' ])
-				]),
-				v('li', [
-					w(Link, { key: '4', to: 'user', params: { user: 'chris' } }, [ 'Chris (dynamic)' ])
-				])
+				v('li', [w(Link, { key: '1', to: 'about-us' }, ['About Us (Static)'])]),
+				v('li', [w(Link, { key: '2', to: 'company' }, ['Company (Static)'])]),
+				v('li', [w(Link, { key: '3', to: 'user', params: { user: 'kim' } }, ['Kim (dynamic)'])]),
+				v('li', [w(Link, { key: '4', to: 'user', params: { user: 'chris' } }, ['Chris (dynamic)'])])
 			]),
 			w(AboutOutlet, {}),
 			w(CompanyOutlet, {}),
