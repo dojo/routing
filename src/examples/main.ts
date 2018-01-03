@@ -13,7 +13,8 @@ import { AmbiguousMatchesOutlet, AmbiguousMatchesRouteConfig } from './ambigious
 const applicationRoutes: Config[] = [BasicAppRouteConfig, UrlParametersRouteConfig, AmbiguousMatchesRouteConfig];
 
 const registry = new Registry();
-const router = registerRouterInjector(applicationRoutes, registry);
+
+registerRouterInjector(applicationRoutes, registry);
 
 const styles = {
 	'text-decoration': 'none',

@@ -7,7 +7,6 @@
 </head>
 <body>
 	<script src="../../../node_modules/@dojo/loader/loader.min.js"></script>
-	<script src="../../../node_modules/maquette/dist/css-transitions.min.js"></script>
 	<script>
 		require.config({
 			baseUrl: '.',
@@ -15,7 +14,7 @@
 				{ name: 'src', location: '../../_build' },
 				{ name: '@dojo', location: '../../../node_modules/@dojo' },
 				{ name: 'pepjs', location: '../../../node_modules/pepjs/dist', main: 'pep' },
-				{ name: 'maquette', location: '../../../node_modules/maquette/dist', main: 'maquette' }
+				{ name: 'tslib', location: '../../../node_modules/tslib', main: 'tslib' }
 			]
 		});
 

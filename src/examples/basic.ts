@@ -4,7 +4,7 @@ import { WidgetProperties, DNode } from '@dojo/widget-core/interfaces';
 
 import { Outlet } from './../Outlet';
 import { Link } from './../Link';
-import { MatchType, MapParamsOptions } from './../interfaces';
+import { MapParamsOptions } from './../interfaces';
 
 export interface ChildProperties extends WidgetProperties {
 	name: string;
