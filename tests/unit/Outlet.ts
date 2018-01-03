@@ -1,160 +1,162 @@
-const { suite, test } = intern.getInterface('tdd');
+const { describe, it } = intern.getInterface('bdd');
 const { assert } = intern.getPlugin('chai');
+import { stub } from 'sinon';
+
 import { WidgetBase } from '@dojo/widget-core/WidgetBase';
-import { v } from '@dojo/widget-core/d';
-import { Registry } from '@dojo/widget-core/Registry';
 import { WNode } from '@dojo/widget-core/interfaces';
+import { Router } from './../../src/Router';
+import { MemoryHistory } from './../../src/MemoryHistory';
+import { Outlet } from './../../src/Outlet';
 
-import { registerRouterInjector } from '../../src/RouterInjector';
-import { MatchType } from '../../src/interfaces';
-import { MemoryHistory } from '../../src/history/MemoryHistory';
-import { Outlet } from '../../src/Outlet';
-
-const registry = new Registry();
-
-class MainWidget extends WidgetBase {
+class Widget extends WidgetBase {
 	render() {
-		return 'Main';
+		return 'widget';
 	}
 }
 
-class IndexWidget extends WidgetBase {
-	render() {
-		return 'Index';
-	}
-}
-
-class ErrorWidget extends WidgetBase {
-	render() {
-		return 'Error';
-	}
-}
-
-class ParamsWidget extends WidgetBase {
-	render() {
-		return v('div', this.properties, [ 'Params' ]);
-	}
-}
-
-const routerConfig = [
+const routeConfig = [
 	{
-		path: 'main',
+		path: '/foo',
+		outlet: 'foo',
 		children: [
 			{
-				path: 'next'
-			},
-			{
-				path: '{param}',
-				outlet: 'params'
+				path: '/bar',
+				outlet: 'bar'
 			}
 		]
+	},
+	{
+		path: 'baz/{baz}',
+		outlet: 'baz'
 	}
 ];
-const history = new MemoryHistory();
-const router = registerRouterInjector(routerConfig, registry, { history });
-const otherRouter = registerRouterInjector(routerConfig, registry, { history, key: 'router-key' });
-router.start();
-otherRouter.start();
 
-suite('Outlet', () => {
-
-	test('renders main widget given a partial path match', () => {
-		const TestOutlet = Outlet(MainWidget, 'main');
-
-		return router.dispatch({}, '/main/next').then(() => {
-			const outlet = new TestOutlet();
-			outlet.__setCoreProperties__({ bind: outlet, baseRegistry: registry });
-			outlet.__setProperties__({});
-			const dNode = outlet.__render__() as WNode;
-			assert.strictEqual(dNode.widgetConstructor, MainWidget);
-		});
+describe('Outlet', () => {
+	it('Should render the main component for exact matches when no index component is set', () => {
+		const router = new Router(MemoryHistory, routeConfig);
+		router.setPath('/foo');
+		const TestOutlet = Outlet(Widget, 'foo', undefined, 'router');
+		const outlet = new TestOutlet();
+		outlet.__setProperties__({ router } as any);
+		const renderResult = outlet.__render__() as WNode;
+		assert.strictEqual(renderResult.widgetConstructor, Widget);
+		assert.deepEqual(renderResult.children, []);
+		assert.deepEqual(renderResult.properties, {});
 	});
-	test('renders index widget given an exact path match', () => {
-		const TestOutlet = Outlet({
-			main: MainWidget,
-			index: IndexWidget,
-			error: ErrorWidget
-		}, 'main');
 
-		return router.dispatch({}, '/main').then(() => {
-			const outlet = new TestOutlet();
-			outlet.__setCoreProperties__({ bind: outlet, baseRegistry: registry });
-			outlet.__setProperties__({});
-			const dNode = outlet.__render__() as WNode;
-			assert.strictEqual(dNode.widgetConstructor, IndexWidget);
-		});
+	it('Should render the main component for partial matches', () => {
+		const router = new Router(MemoryHistory, routeConfig);
+		router.setPath('/foo/bar');
+		const TestOutlet = Outlet(Widget, 'foo', undefined, 'router');
+		const outlet = new TestOutlet();
+		outlet.__setProperties__({ router } as any);
+		const renderResult = outlet.__render__() as WNode;
+		assert.strictEqual(renderResult.widgetConstructor, Widget);
+		assert.deepEqual(renderResult.children, []);
+		assert.deepEqual(renderResult.properties, {});
 	});
-	test('renders main widget given an exact path match and no index component', () => {
-		const TestOutlet = Outlet({
-			main: MainWidget,
-			error: ErrorWidget
-		}, 'main');
 
-		return router.dispatch({}, '/main').then(() => {
-			const outlet = new TestOutlet();
-			outlet.__setCoreProperties__({ bind: outlet, baseRegistry: registry });
-			outlet.__setProperties__({});
-			const dNode = outlet.__render__() as WNode;
-			assert.strictEqual(dNode.widgetConstructor, MainWidget);
-		});
+	it('Should render the index component only for exact matches', () => {
+		const router = new Router(MemoryHistory, routeConfig);
+		router.setPath('/foo');
+		const TestOutlet = Outlet({ index: Widget }, 'foo', undefined, 'router');
+		const outlet = new TestOutlet();
+		outlet.__setProperties__({ router } as any);
+		let renderResult = outlet.__render__() as WNode;
+		assert.strictEqual(renderResult.widgetConstructor, Widget);
+		assert.deepEqual(renderResult.children, []);
+		assert.deepEqual(renderResult.properties, {});
+		router.setPath('/foo/bar');
+		renderResult = outlet.__render__() as WNode;
+		assert.isNull(renderResult);
 	});
-	test('renders error widget given no path match and no index component', () => {
-		const TestOutlet = Outlet({
-			main: MainWidget,
-			error: ErrorWidget
-		}, 'next');
 
-		return router.dispatch({}, '/main/next/other').then(() => {
-			const outlet = new TestOutlet();
-			outlet.__setCoreProperties__({ bind: outlet, baseRegistry: registry });
-			outlet.__setProperties__({});
-			const dNode = outlet.__render__() as WNode;
-			assert.strictEqual(dNode.widgetConstructor, ErrorWidget);
-		});
+	it('Should render the error component only for error matches', () => {
+		const router = new Router(MemoryHistory, routeConfig);
+		router.setPath('/foo/other');
+		const TestOutlet = Outlet({ error: Widget }, 'foo', undefined, 'router');
+		const outlet = new TestOutlet();
+		outlet.__setProperties__({ router } as any);
+		let renderResult = outlet.__render__() as WNode;
+		assert.strictEqual(renderResult.widgetConstructor, Widget);
+		assert.deepEqual(renderResult.children, []);
+		assert.deepEqual(renderResult.properties, {});
 	});
-	test('renders null given a partial path match and no main component', () => {
-		const TestOutlet = Outlet({
-			index: IndexWidget,
-			error: ErrorWidget
-		}, 'main');
 
-		return router.dispatch({}, '/main/next').then(() => {
-			const outlet = new TestOutlet();
-			outlet.__setCoreProperties__({ bind: outlet, baseRegistry: registry });
-			outlet.__setProperties__({});
-			const dNode = outlet.__render__();
-			assert.isNull(dNode);
-		});
+	it('Should render the index component only for error matches when there is no error component', () => {
+		const router = new Router(MemoryHistory, routeConfig);
+		router.setPath('/foo/other');
+		const TestOutlet = Outlet({ index: Widget }, 'foo', undefined, 'router');
+		const outlet = new TestOutlet();
+		outlet.__setProperties__({ router } as any);
+		let renderResult = outlet.__render__() as WNode;
+		assert.strictEqual(renderResult.widgetConstructor, Widget);
+		assert.deepEqual(renderResult.children, []);
+		assert.deepEqual(renderResult.properties, {});
 	});
-	test('renders null when null outlet matches', () => {
-		const TestOutlet = Outlet({
-			index: IndexWidget,
-			error: ErrorWidget
-		}, 'main');
 
-		return router.dispatch({}, '/other').then(() => {
-			const outlet = new TestOutlet();
-			outlet.__setCoreProperties__({ bind: outlet, baseRegistry: registry });
-			outlet.__setProperties__({});
-			const dNode = outlet.__render__();
-			assert.isNull(dNode);
-		});
+	it('Map params is called with params, queryParams, match type and router', () => {
+		const router = new Router(MemoryHistory, routeConfig);
+		router.setPath('/baz/bazParam?bazQuery=true');
+		const mapParams = stub();
+		const TestOutlet = Outlet({ index: Widget }, 'baz', { mapParams }, 'router');
+		const outlet = new TestOutlet();
+		outlet.__setProperties__({ router } as any);
+		outlet.__render__() as WNode;
+		assert.isTrue(mapParams.calledOnce);
+		assert.isTrue(
+			mapParams.calledWith({
+				params: {
+					baz: 'bazParam'
+				},
+				queryParams: {
+					bazQuery: 'true'
+				},
+				router,
+				type: 'exact'
+			})
+		);
 	});
-	test('params get passed to getProperties mapper and the returned object injected into widget as properties',
-		() => {
-			const TestOutlet = Outlet(ParamsWidget, 'params', (options) => {
-				return options;
-			}, 'router-key');
 
-			return router.dispatch({}, '/main/my-param').then(() => {
-				const outlet = new TestOutlet();
-				outlet.__setCoreProperties__({ bind: outlet, baseRegistry: registry });
-				outlet.__setProperties__({});
-				const dNode: any = outlet.__render__();
-				assert.strictEqual(dNode.properties.router, router);
-				assert.strictEqual(dNode.properties.location, 'main/my-param');
-				assert.deepEqual(dNode.properties.params, { param: 'my-param' });
-				assert.strictEqual(dNode.properties.type, MatchType.INDEX);
-			});
-		});
+	it('onEnter called when the outlet is rendered', () => {
+		const router = new Router(MemoryHistory, routeConfig);
+		router.setPath('/foo');
+		const onEnter = stub();
+		const TestOutlet = Outlet({ index: Widget }, 'foo', { onEnter }, 'router');
+		const outlet = new TestOutlet();
+		outlet.__setProperties__({ router } as any);
+		outlet.__render__() as WNode;
+		assert.isTrue(onEnter.calledOnce);
+		outlet.__render__() as WNode;
+		assert.isTrue(onEnter.calledOnce);
+		router.setPath('/foo/bar');
+		outlet.__render__() as WNode;
+		assert.isTrue(onEnter.calledOnce);
+		router.setPath('/baz');
+		outlet.__render__() as WNode;
+		assert.isTrue(onEnter.calledOnce);
+		router.setPath('/foo');
+		outlet.__render__() as WNode;
+		assert.isTrue(onEnter.calledTwice);
+	});
+
+	it('onExit called when the outlet is not rendered after previously rendering', () => {
+		const router = new Router(MemoryHistory, routeConfig);
+		router.setPath('/foo');
+		const onExit = stub();
+		const TestOutlet = Outlet({ index: Widget }, 'foo', { onExit }, 'router');
+		const outlet = new TestOutlet();
+		outlet.__setProperties__({ router } as any);
+		outlet.__render__() as WNode;
+		assert.isTrue(onExit.notCalled);
+		router.setPath('/foo/bar');
+		outlet.__render__() as WNode;
+		assert.isTrue(onExit.calledOnce);
+		router.setPath('/baz');
+		outlet.__render__() as WNode;
+		assert.isTrue(onExit.calledOnce);
+		router.setPath('/foo');
+		outlet.__render__() as WNode;
+		assert.isTrue(onExit.calledOnce);
+	});
 });

@@ -1,50 +1,17 @@
-import global from '@dojo/shim/global';
-import on from '@dojo/core/on';
-import { HistoryBase } from './HistoryBase';
-import { History, HistoryOptions } from './interfaces';
+import { History } from './interfaces';
 
-/**
- * Options for creating HashHistory instances.
- */
-export interface HashHistoryOptions extends HistoryOptions {
-	/**
-	 * A DOM window object. HashHistory uses the `location` property and
-	 * listens to `hashchange` events. The current value is initialized to the
-	 * initial hash.
-	 */
-	window: Window;
-}
-
-export class HashHistory extends HistoryBase implements History {
+export class HashHistory implements History {
+	private _onChangeFunction: (path: string) => void;
 	private _current: string;
-	private _browserLocation: Location;
 
-	get current() {
-		return this._current;
+	constructor(onChange: (path: string) => void) {
+		this._onChangeFunction = onChange.bind(this);
+		window.addEventListener('hashchange', this._onChange.bind(this), false);
+		this._onChange();
 	}
 
-	constructor({ window }: HashHistoryOptions = { window: global }) {
-		super();
-
-		const { location: browserLocation } = window;
-
-		this._current = browserLocation.hash.slice(1);
-		this._browserLocation = browserLocation;
-
-		this.own(on(window, 'hashchange', () => {
-			const path = this.normalizePath(browserLocation.hash);
-
-			// Ignore hashchange for the current path. Guards against browsers firing hashchange when the history
-			// manager sets the hash.
-			if (path !== this._current) {
-				this._current = path;
-				this.emit({
-					type: 'change',
-					target: this,
-					value: path
-				});
-			}
-		}));
+	public normalizePath(path: string): string {
+		return path.replace('#', '');
 	}
 
 	public prefix(path: string) {
@@ -54,45 +21,23 @@ export class HashHistory extends HistoryBase implements History {
 		return path;
 	}
 
-	public normalizePath(path: string): string {
-		if (path[0] === '#') {
-			path = path.slice(1);
-		}
-		return path;
-	}
-
-	set(path: string) {
+	public set(path: string) {
 		path = this.normalizePath(path);
 		if (this._current === path) {
 			return;
 		}
-
 		this._current = path;
-		this._browserLocation.hash = this.prefix(path);
-		this.emit({
-			type: 'change',
-			target: this,
-			value: path
-		});
+		window.location.hash = this.prefix(path);
+		this._onChange();
 	}
 
-	replace(path: string) {
-		path = this.normalizePath(path);
-		if (this._current === path) {
-			return;
-		}
+	public get current(): string {
+		return this._current;
+	}
 
+	private _onChange() {
+		const path = this.normalizePath(window.location.hash);
 		this._current = path;
-
-		const { pathname, search } = this._browserLocation;
-		this._browserLocation.replace(pathname + search + this.prefix(path));
-
-		this.emit({
-			type: 'change',
-			target: this,
-			value: path
-		});
+		this._onChangeFunction(path);
 	}
 }
-
-export default HashHistory;
