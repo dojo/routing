@@ -2,7 +2,7 @@ const { describe, it } = intern.getInterface('bdd');
 const { assert } = intern.getPlugin('chai');
 
 import { Router } from './../../src/Router';
-import { MemoryHistory } from './../../src/MemoryHistory';
+import { MemoryHistory } from './../../src/history/MemoryHistory';
 
 const routeConfig = [
 	{

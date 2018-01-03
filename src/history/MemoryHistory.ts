@@ -1,4 +1,4 @@
-import { History } from './interfaces';
+import { History } from './../interfaces';
 
 export class MemoryHistory implements History {
 	private _onChangeFunction: (path: string) => void;

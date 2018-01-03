@@ -6,7 +6,7 @@ import { Registry } from '@dojo/widget-core/Registry';
 import { Injector } from '@dojo/widget-core/Injector';
 import { Link } from './../../src/Link';
 import { Router } from './../../src/Router';
-import { MemoryHistory } from './../../src/MemoryHistory';
+import { MemoryHistory } from './../../src/history/MemoryHistory';
 
 const registry = new Registry();
 

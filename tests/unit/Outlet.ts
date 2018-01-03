@@ -5,7 +5,7 @@ import { stub } from 'sinon';
 import { WidgetBase } from '@dojo/widget-core/WidgetBase';
 import { WNode } from '@dojo/widget-core/interfaces';
 import { Router } from './../../src/Router';
-import { MemoryHistory } from './../../src/MemoryHistory';
+import { MemoryHistory } from './../../src/history/MemoryHistory';
 import { Outlet } from './../../src/Outlet';
 
 class Widget extends WidgetBase {

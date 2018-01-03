@@ -18,7 +18,7 @@ export class Child extends WidgetBase<ChildProperties> {
 	}
 }
 
-export const ChildOutlet = Outlet(Child, 'child', ({ params }: MapParamsOptions) => { return { name: params.id }; });
+export const ChildOutlet = Outlet(Child, 'child', { mapParams: ({ params }: MapParamsOptions) => { return { name: params.id }; }}, 'router');
 
 export class App extends WidgetBase {
 	render(): DNode {
@@ -54,4 +54,4 @@ export const UrlParametersRouteConfig = {
 	]
 };
 
-export const UrlParametersAppOutlet = Outlet(App, 'url-parameters');
+export const UrlParametersAppOutlet = Outlet(App, 'url-parameters', {}, 'router');

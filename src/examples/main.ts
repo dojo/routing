@@ -3,14 +3,14 @@ import { v, w } from '@dojo/widget-core/d';
 import { ProjectorMixin } from '@dojo/widget-core/mixins/Projector';
 import { Registry } from '@dojo/widget-core/Registry';
 
-import { RouteConfig } from './../interfaces';
+import { Config } from './../interfaces';
 import { registerRouterInjector } from './../RouterInjector';
 import { Link } from './../Link';
 import { BasicAppOutlet, BasicAppRouteConfig } from './basic';
 import { UrlParametersAppOutlet, UrlParametersRouteConfig } from './url-parameters';
 import { AmbiguousMatchesOutlet, AmbiguousMatchesRouteConfig } from './ambigious-matches';
 
-const applicationRoutes: RouteConfig[] = [
+const applicationRoutes: Config[] = [
 	BasicAppRouteConfig,
 	UrlParametersRouteConfig,
 	AmbiguousMatchesRouteConfig
@@ -82,4 +82,3 @@ const Projector = ProjectorMixin(App);
 const projector = new Projector();
 projector.setProperties({ registry });
 projector.append();
-router.start();
