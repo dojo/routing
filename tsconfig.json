@@ -2,7 +2,6 @@
 	"compilerOptions": {
 		"declaration": false,
 		"downlevelIteration": true,
-		"emitDecoratorMetadata": true,
 		"experimentalDecorators": true,
 		"importHelpers": true,
 		"lib": [
@@ -26,6 +25,7 @@
 	},
 	"include": [
 		"./src/**/*.ts",
-		"./tests/**/*.ts"
+		"./tests/**/*.ts",
+		"./examples/**/*.ts"
 	]
 }

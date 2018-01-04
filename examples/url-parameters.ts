@@ -1,10 +1,10 @@
 import { WidgetBase } from '@dojo/widget-core/WidgetBase';
 import { v, w } from '@dojo/widget-core/d';
 import { WidgetProperties, DNode } from '@dojo/widget-core/interfaces';
-import { MapParamsOptions } from './../interfaces';
+import { MapParamsOptions } from './../src/interfaces';
 
-import { Link } from './../Link';
-import { Outlet } from './../Outlet';
+import { Link } from './../src/Link';
+import { Outlet } from './../src/Outlet';
 
 export interface ChildProperties extends WidgetProperties {
 	name: string;
