@@ -176,3 +176,5 @@ export interface History {
 	 */
 	readonly current: string;
 }
+
+export type OnChangeFunction = (path: string) => void;

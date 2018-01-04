@@ -1,11 +1,11 @@
-import { History } from './../interfaces';
+import { History, OnChangeFunction } from './../interfaces';
 
 export class MemoryHistory implements History {
-	private _onChangeFunction: (path: string) => void;
+	private _onChangeFunction: OnChangeFunction;
 	private _current = '/';
 
-	constructor(onChange: (path: string) => void) {
-		this._onChangeFunction = onChange.bind(this);
+	constructor(onChange: OnChangeFunction) {
+		this._onChangeFunction = onChange;
 		this._onChange();
 	}
 

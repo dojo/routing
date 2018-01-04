@@ -1,12 +1,12 @@
-import { History } from './../interfaces';
+import { History, OnChangeFunction } from './../interfaces';
 
 export class HashHistory implements History {
-	private _onChangeFunction: (path: string) => void;
+	private _onChangeFunction: OnChangeFunction;
 	private _current: string;
 
-	constructor(onChange: (path: string) => void) {
-		this._onChangeFunction = onChange.bind(this);
-		window.addEventListener('hashchange', this._onChange.bind(this), false);
+	constructor(onChange: OnChangeFunction) {
+		this._onChangeFunction = onChange;
+		window.addEventListener('hashchange', this._onChange, false);
 		this._onChange();
 	}
 
@@ -35,9 +35,9 @@ export class HashHistory implements History {
 		return this._current;
 	}
 
-	private _onChange() {
+	private _onChange = () => {
 		const path = this.normalizePath(window.location.hash);
 		this._current = path;
 		this._onChangeFunction(path);
-	}
+	};
 }
