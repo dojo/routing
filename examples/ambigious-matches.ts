@@ -44,7 +44,7 @@ export class App extends WidgetBase {
 	render(): DNode {
 		return v('div', [
 			v('ul', [
-				v('li', [w(Link, { key: '1', to: 'about-us' }, ['About Us (Static)'])]),
+				v('li', [w(Link, { key: '1', to: 'about' }, ['About Us (Static)'])]),
 				v('li', [w(Link, { key: '2', to: 'company' }, ['Company (Static)'])]),
 				v('li', [w(Link, { key: '3', to: 'user', params: { user: 'kim' } }, ['Kim (dynamic)'])]),
 				v('li', [w(Link, { key: '4', to: 'user', params: { user: 'chris' } }, ['Chris (dynamic)'])])
@@ -62,7 +62,7 @@ export const AmbiguousMatchesRouteConfig = {
 	children: [
 		{
 			path: 'about',
-			outlet: 'about-us'
+			outlet: 'about'
 		},
 		{
 			path: 'company',
