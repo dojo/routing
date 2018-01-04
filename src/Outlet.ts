@@ -1,9 +1,9 @@
-import { DNode, RegistryLabel, WidgetBaseInterface } from '@dojo/widget-core/interfaces';
+import { DNode, WidgetBaseInterface } from '@dojo/widget-core/interfaces';
 import { WidgetBase } from '@dojo/widget-core/WidgetBase';
 import { w } from '@dojo/widget-core/d';
 import { inject } from '@dojo/widget-core/decorators/inject';
 import { alwaysRender } from '@dojo/widget-core/decorators/alwaysRender';
-import { Component, OutletCallbacks, OutletComponents, Outlet } from './interfaces';
+import { Component, OutletOptions, OutletComponents, Outlet } from './interfaces';
 import { Router } from './Router';
 
 export function isComponent<W extends WidgetBaseInterface>(value: any): value is Component<W> {
@@ -13,12 +13,12 @@ export function isComponent<W extends WidgetBaseInterface>(value: any): value is
 export function Outlet<W extends WidgetBaseInterface, F extends WidgetBaseInterface, E extends WidgetBaseInterface>(
 	outletComponents: Component<W> | OutletComponents<W, F, E>,
 	outlet: string,
-	outletCallbacks: OutletCallbacks = {},
-	key: RegistryLabel
+	options: OutletOptions = {}
 ): Outlet<W, F, E> {
 	const indexComponent = isComponent(outletComponents) ? undefined : outletComponents.index;
 	const mainComponent = isComponent(outletComponents) ? outletComponents : outletComponents.main;
 	const errorComponent = isComponent(outletComponents) ? undefined : outletComponents.error;
+	const { onEnter, onExit, mapParams, key = 'router' } = options;
 	function getProperties(this: WidgetBase, router: Router, properties: any) {
 		return { router };
 	}
@@ -29,7 +29,6 @@ export function Outlet<W extends WidgetBaseInterface, F extends WidgetBaseInterf
 		private _matched = false;
 
 		private _onEnter() {
-			const { onEnter } = outletCallbacks;
 			if (this._matched === false) {
 				onEnter && onEnter();
 				this._matched = true;
@@ -37,7 +36,6 @@ export function Outlet<W extends WidgetBaseInterface, F extends WidgetBaseInterf
 		}
 
 		protected render(): DNode {
-			const { mapParams, onExit } = outletCallbacks;
 			let { router, ...properties } = this.properties;
 
 			const outletContext = router.getOutlet(outlet);

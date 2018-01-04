@@ -108,9 +108,10 @@ export interface MapParams {
 }
 
 /**
- * Outlet callbacks that can be configured
+ * Outlet options that can be configured
  */
-export interface OutletCallbacks {
+export interface OutletOptions {
+	key?: RegistryLabel;
 	onEnter?: () => void;
 	onExit?: () => void;
 	mapParams?: MapParams;

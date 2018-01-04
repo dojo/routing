@@ -32,18 +32,13 @@ export class User extends WidgetBase<UserProperties> {
 	}
 }
 
-export const AboutOutlet = Outlet(About, 'about', {}, 'router');
-export const CompanyOutlet = Outlet(Company, 'company', {}, 'router');
-export const UserOutlet = Outlet(
-	User,
-	'user',
-	{
-		mapParams: ({ params }: MapParamsOptions) => {
-			return { name: params.user };
-		}
-	},
-	'router'
-);
+export const AboutOutlet = Outlet(About, 'about');
+export const CompanyOutlet = Outlet(Company, 'company');
+export const UserOutlet = Outlet(User, 'user', {
+	mapParams: ({ params }: MapParamsOptions) => {
+		return { name: params.user };
+	}
+});
 
 export class App extends WidgetBase {
 	render(): DNode {
@@ -80,4 +75,4 @@ export const AmbiguousMatchesRouteConfig = {
 	]
 };
 
-export const AmbiguousMatchesOutlet = Outlet(App, 'ambiguous-matches', {}, 'router');
+export const AmbiguousMatchesOutlet = Outlet(App, 'ambiguous-matches');

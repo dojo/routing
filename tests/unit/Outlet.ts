@@ -35,7 +35,7 @@ describe('Outlet', () => {
 	it('Should render the main component for exact matches when no index component is set', () => {
 		const router = new Router(MemoryHistory, routeConfig);
 		router.setPath('/foo');
-		const TestOutlet = Outlet(Widget, 'foo', undefined, 'router');
+		const TestOutlet = Outlet(Widget, 'foo');
 		const outlet = new TestOutlet();
 		outlet.__setProperties__({ router } as any);
 		const renderResult = outlet.__render__() as WNode;
@@ -47,7 +47,7 @@ describe('Outlet', () => {
 	it('Should render the main component for partial matches', () => {
 		const router = new Router(MemoryHistory, routeConfig);
 		router.setPath('/foo/bar');
-		const TestOutlet = Outlet(Widget, 'foo', undefined, 'router');
+		const TestOutlet = Outlet(Widget, 'foo');
 		const outlet = new TestOutlet();
 		outlet.__setProperties__({ router } as any);
 		const renderResult = outlet.__render__() as WNode;
@@ -59,7 +59,7 @@ describe('Outlet', () => {
 	it('Should render the index component only for exact matches', () => {
 		const router = new Router(MemoryHistory, routeConfig);
 		router.setPath('/foo');
-		const TestOutlet = Outlet({ index: Widget }, 'foo', undefined, 'router');
+		const TestOutlet = Outlet({ index: Widget }, 'foo');
 		const outlet = new TestOutlet();
 		outlet.__setProperties__({ router } as any);
 		let renderResult = outlet.__render__() as WNode;
@@ -74,7 +74,7 @@ describe('Outlet', () => {
 	it('Should render the error component only for error matches', () => {
 		const router = new Router(MemoryHistory, routeConfig);
 		router.setPath('/foo/other');
-		const TestOutlet = Outlet({ error: Widget }, 'foo', undefined, 'router');
+		const TestOutlet = Outlet({ error: Widget }, 'foo');
 		const outlet = new TestOutlet();
 		outlet.__setProperties__({ router } as any);
 		let renderResult = outlet.__render__() as WNode;
@@ -86,7 +86,7 @@ describe('Outlet', () => {
 	it('Should render the index component only for error matches when there is no error component', () => {
 		const router = new Router(MemoryHistory, routeConfig);
 		router.setPath('/foo/other');
-		const TestOutlet = Outlet({ index: Widget }, 'foo', undefined, 'router');
+		const TestOutlet = Outlet({ index: Widget }, 'foo');
 		const outlet = new TestOutlet();
 		outlet.__setProperties__({ router } as any);
 		let renderResult = outlet.__render__() as WNode;
@@ -99,7 +99,7 @@ describe('Outlet', () => {
 		const router = new Router(MemoryHistory, routeConfig);
 		router.setPath('/baz/bazParam?bazQuery=true');
 		const mapParams = stub();
-		const TestOutlet = Outlet({ index: Widget }, 'baz', { mapParams }, 'router');
+		const TestOutlet = Outlet({ index: Widget }, 'baz', { mapParams });
 		const outlet = new TestOutlet();
 		outlet.__setProperties__({ router } as any);
 		outlet.__render__() as WNode;
@@ -122,7 +122,7 @@ describe('Outlet', () => {
 		const router = new Router(MemoryHistory, routeConfig);
 		router.setPath('/foo');
 		const onEnter = stub();
-		const TestOutlet = Outlet({ index: Widget }, 'foo', { onEnter }, 'router');
+		const TestOutlet = Outlet({ index: Widget }, 'foo', { onEnter });
 		const outlet = new TestOutlet();
 		outlet.__setProperties__({ router } as any);
 		outlet.__render__() as WNode;
@@ -144,7 +144,7 @@ describe('Outlet', () => {
 		const router = new Router(MemoryHistory, routeConfig);
 		router.setPath('/foo');
 		const onExit = stub();
-		const TestOutlet = Outlet({ index: Widget }, 'foo', { onExit }, 'router');
+		const TestOutlet = Outlet({ index: Widget }, 'foo', { onExit });
 		const outlet = new TestOutlet();
 		outlet.__setProperties__({ router } as any);
 		outlet.__render__() as WNode;

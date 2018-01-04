@@ -16,16 +16,11 @@ export class Child extends WidgetBase<ChildProperties> {
 	}
 }
 
-export const ChildOutlet = Outlet(
-	Child,
-	'child',
-	{
-		mapParams: ({ params }: MapParamsOptions) => {
-			return { name: params.id };
-		}
-	},
-	'router'
-);
+export const ChildOutlet = Outlet(Child, 'child', {
+	mapParams: ({ params }: MapParamsOptions) => {
+		return { name: params.id };
+	}
+});
 
 export class App extends WidgetBase {
 	render(): DNode {

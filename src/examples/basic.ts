@@ -63,28 +63,18 @@ class ErrorWidget extends WidgetBase {
 	}
 }
 
-export const AboutOutlet = Outlet(About, 'about', {}, 'router');
-export const HomeOutlet = Outlet({ index: Home }, 'home', {}, 'router');
-export const TopicsOutlet = Outlet(
-	Topics,
-	'topics',
-	{
-		mapParams: ({ type }: MapParamsOptions) => {
-			return { showHeading: type === 'exact' };
-		}
-	},
-	'router'
-);
-export const TopicOutlet = Outlet(
-	{ main: Topic, error: ErrorWidget },
-	'topic',
-	{
-		mapParams: ({ params }) => {
-			return { topic: params.topic };
-		}
-	},
-	'router'
-);
+export const AboutOutlet = Outlet(About, 'about');
+export const HomeOutlet = Outlet({ index: Home }, 'home');
+export const TopicsOutlet = Outlet(Topics, 'topics', {
+	mapParams: ({ type }: MapParamsOptions) => {
+		return { showHeading: type === 'exact' };
+	}
+});
+export const TopicOutlet = Outlet({ main: Topic, error: ErrorWidget }, 'topic', {
+	mapParams: ({ params }) => {
+		return { topic: params.topic };
+	}
+});
 
 export class App extends WidgetBase {
 	render(): DNode {
@@ -126,4 +116,4 @@ export const BasicAppRouteConfig = {
 	]
 };
 
-export const BasicAppOutlet = Outlet(App, 'basic', {}, 'router');
+export const BasicAppOutlet = Outlet(App, 'basic');
