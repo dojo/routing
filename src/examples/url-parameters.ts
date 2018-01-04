@@ -48,4 +48,4 @@ export const UrlParametersRouteConfig = {
 	]
 };
 
-export const UrlParametersAppOutlet = Outlet(App, 'url-parameters', {}, 'router');
+export const UrlParametersAppOutlet = Outlet(App, 'url-parameters');
