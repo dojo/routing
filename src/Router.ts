@@ -2,12 +2,12 @@ import { Evented } from '@dojo/core/Evented';
 import {
 	RouteConfig,
 	History,
-	HistoryConstructor,
 	MatchType,
 	OutletContext,
 	Params,
 	RouterInterface,
-	Route
+	Route,
+	RouterOptions
 } from './interfaces';
 import { HashHistory } from './history/HashHistory';
 
@@ -21,10 +21,11 @@ export class Router extends Evented implements RouterInterface {
 	private _defaultOutlet: string;
 	private _history: History;
 
-	constructor(config: RouteConfig[], HistoryManager: HistoryConstructor = HashHistory) {
+	constructor(config: RouteConfig[], options: RouterOptions = {}) {
 		super();
+		const { HistoryManager = HashHistory, base, window } = options;
 		this._register(config);
-		this._history = new HistoryManager({ onChange: this._onChange });
+		this._history = new HistoryManager({ onChange: this._onChange, base, window });
 		if (this._matchedOutlets.errorOutlet && this._defaultOutlet) {
 			const path = this.link(this._defaultOutlet);
 			if (path) {
@@ -49,7 +50,7 @@ export class Router extends Evented implements RouterInterface {
 	 * @param params Optional Params for the generated link
 	 */
 	public link(outlet: string, params: Params = {}): string | undefined {
-		const { _outletMap, _currentParams, _history } = this;
+		const { _outletMap, _currentParams } = this;
 		let route = _outletMap[outlet];
 		if (route === undefined) {
 			return;
@@ -70,7 +71,7 @@ export class Router extends Evented implements RouterInterface {
 				return undefined;
 			}
 		}
-		return _history.prefix(linkPath);
+		return linkPath;
 	}
 
 	/**
@@ -233,3 +234,5 @@ export class Router extends Evented implements RouterInterface {
 		}
 	};
 }
+
+export default Router;

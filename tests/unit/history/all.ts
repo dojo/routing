@@ -1,2 +1,3 @@
-import './MemoryHistory';
-import './HashHistory';
+// import './MemoryHistory';
+// import './HashHistory';
+import './StateHistory';

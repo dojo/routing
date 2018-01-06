@@ -70,3 +70,5 @@ export function Outlet<W extends WidgetBaseInterface, F extends WidgetBaseInterf
 	}
 	return OutletComponent;
 }
+
+export default Outlet;

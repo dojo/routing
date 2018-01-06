@@ -170,6 +170,7 @@ export interface OnChangeFunction {
 export interface HistoryOptions {
 	onChange: OnChangeFunction;
 	window?: Window;
+	base?: string;
 }
 
 /**
@@ -197,4 +198,10 @@ export interface History {
 	 * Returns the current path
 	 */
 	readonly current: string;
+}
+
+export interface RouterOptions {
+	window?: Window;
+	base?: string;
+	HistoryManager?: HistoryConstructor;
 }

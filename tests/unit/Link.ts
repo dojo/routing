@@ -21,7 +21,7 @@ const router = new Router(
 			outlet: 'foo2'
 		}
 	],
-	MemoryHistory
+	{ HistoryManager: MemoryHistory }
 );
 
 registry.defineInjector('router', new Injector(router));

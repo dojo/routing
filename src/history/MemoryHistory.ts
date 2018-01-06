@@ -29,3 +29,5 @@ export class MemoryHistory implements History {
 		this._onChangeFunction(this._current);
 	}
 }
+
+export default MemoryHistory;

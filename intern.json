@@ -28,7 +28,8 @@
 	"node": {
 		"suites": [
 			"./_build/tests/unit/**/*.js",
-			"!./_build/tests/unit/**/all.js"
+			"!./_build/tests/unit/**/all.js",
+			"!./_build/tests/unit/history/StateHistory.js"
 		]
 	},
 	"coverage": [

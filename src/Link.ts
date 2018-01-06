@@ -51,3 +51,5 @@ export function createLink(routerKey: string): Constructor<BaseLink> {
 }
 
 export const Link = createLink('router');
+
+export default Link;

@@ -5,7 +5,7 @@ import { stub } from 'sinon';
 import { WidgetBase } from '@dojo/widget-core/WidgetBase';
 import { WNode } from '@dojo/widget-core/interfaces';
 import { Router } from './../../src/Router';
-import { MemoryHistory } from './../../src/history/MemoryHistory';
+import { MemoryHistory as HistoryManager } from './../../src/history/MemoryHistory';
 import { Outlet, getProperties } from './../../src/Outlet';
 
 class Widget extends WidgetBase {
@@ -33,7 +33,7 @@ const routeConfig = [
 
 describe('Outlet', () => {
 	it('Should render the main component for index matches when no index component is set', () => {
-		const router = new Router(routeConfig, MemoryHistory);
+		const router = new Router(routeConfig, { HistoryManager });
 		router.setPath('/foo');
 		const TestOutlet = Outlet(Widget, 'foo');
 		const outlet = new TestOutlet();
@@ -45,7 +45,7 @@ describe('Outlet', () => {
 	});
 
 	it('Should render the main component for partial matches', () => {
-		const router = new Router(routeConfig, MemoryHistory);
+		const router = new Router(routeConfig, { HistoryManager });
 		router.setPath('/foo/bar');
 		const TestOutlet = Outlet(Widget, 'foo');
 		const outlet = new TestOutlet();
@@ -57,7 +57,7 @@ describe('Outlet', () => {
 	});
 
 	it('Should render the index component only for index matches', () => {
-		const router = new Router(routeConfig, MemoryHistory);
+		const router = new Router(routeConfig, { HistoryManager });
 		router.setPath('/foo');
 		const TestOutlet = Outlet({ index: Widget }, 'foo');
 		const outlet = new TestOutlet();
@@ -72,7 +72,7 @@ describe('Outlet', () => {
 	});
 
 	it('Should render the error component only for error matches', () => {
-		const router = new Router(routeConfig, MemoryHistory);
+		const router = new Router(routeConfig, { HistoryManager });
 		router.setPath('/foo/other');
 		const TestOutlet = Outlet({ error: Widget }, 'foo');
 		const outlet = new TestOutlet();
@@ -84,7 +84,7 @@ describe('Outlet', () => {
 	});
 
 	it('Should render the index component only for error matches when there is no error component', () => {
-		const router = new Router(routeConfig, MemoryHistory);
+		const router = new Router(routeConfig, { HistoryManager });
 		router.setPath('/foo/other');
 		const TestOutlet = Outlet({ index: Widget }, 'foo');
 		const outlet = new TestOutlet();
@@ -96,7 +96,7 @@ describe('Outlet', () => {
 	});
 
 	it('Map params is called with params, queryParams, match type and router', () => {
-		const router = new Router(routeConfig, MemoryHistory);
+		const router = new Router(routeConfig, { HistoryManager });
 		router.setPath('/baz/bazParam?bazQuery=true');
 		const mapParams = stub();
 		const TestOutlet = Outlet({ index: Widget }, 'baz', { mapParams });
@@ -119,7 +119,7 @@ describe('Outlet', () => {
 	});
 
 	it('onEnter called when the outlet is rendered', () => {
-		const router = new Router(routeConfig, MemoryHistory);
+		const router = new Router(routeConfig, { HistoryManager });
 		router.setPath('/foo');
 		const onEnter = stub();
 		const TestOutlet = Outlet({ index: Widget }, 'foo', { onEnter });
@@ -141,7 +141,7 @@ describe('Outlet', () => {
 	});
 
 	it('onExit called when the outlet is not rendered after previously rendering', () => {
-		const router = new Router(routeConfig, MemoryHistory);
+		const router = new Router(routeConfig, { HistoryManager });
 		router.setPath('/foo');
 		const onExit = stub();
 		const TestOutlet = Outlet({ index: Widget }, 'foo', { onExit });
@@ -161,7 +161,7 @@ describe('Outlet', () => {
 	});
 
 	it('getProperties returns the payload as router', () => {
-		const router = new Router(routeConfig, MemoryHistory);
+		const router = new Router(routeConfig, { HistoryManager });
 		assert.deepEqual(getProperties(router, {}), { router });
 	});
 });
