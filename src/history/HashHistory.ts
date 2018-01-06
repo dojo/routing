@@ -1,12 +1,15 @@
-import { History, OnChangeFunction } from './../interfaces';
+import global from '@dojo/shim/global';
+import { History, HistoryOptions, OnChangeFunction } from './../interfaces';
 
 export class HashHistory implements History {
 	private _onChangeFunction: OnChangeFunction;
 	private _current: string;
+	private _window: Window;
 
-	constructor(onChange: OnChangeFunction) {
+	constructor({ window = global.window, onChange }: HistoryOptions) {
 		this._onChangeFunction = onChange;
-		window.addEventListener('hashchange', this._onChange, false);
+		this._window = window;
+		this._window.addEventListener('hashchange', this._onChange, false);
 		this._onChange();
 	}
 
@@ -22,22 +25,19 @@ export class HashHistory implements History {
 	}
 
 	public set(path: string) {
-		path = this.normalizePath(path);
-		if (this._current === path) {
-			return;
-		}
-		this._current = path;
-		window.location.hash = this.prefix(path);
-		this._onChange();
+		this._window.location.hash = path;
 	}
 
 	public get current(): string {
 		return this._current;
 	}
 
+	public destroy() {
+		this._window.removeEventListener('hashchange', this._onChange);
+	}
+
 	private _onChange = () => {
-		const path = this.normalizePath(window.location.hash);
-		this._current = path;
-		this._onChangeFunction(path);
+		this._current = this.normalizePath(this._window.location.hash);
+		this._onChangeFunction(this._current);
 	};
 }

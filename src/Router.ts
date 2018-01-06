@@ -1,6 +1,14 @@
 import { Evented } from '@dojo/core/Evented';
-import { Constructor } from '@dojo/widget-core/interfaces';
-import { Config, History, MatchType, OutletContext, Params, RouterInterface, Route } from './interfaces';
+import {
+	Config,
+	History,
+	HistoryConstructor,
+	MatchType,
+	OutletContext,
+	Params,
+	RouterInterface,
+	Route
+} from './interfaces';
 
 const PARAM = Symbol('routing param');
 
@@ -12,10 +20,10 @@ export class Router extends Evented implements RouterInterface {
 	private _defaultOutlet: string;
 	private _history: History;
 
-	constructor(HistoryManager: Constructor<History>, config: Config[]) {
+	constructor(HistoryManager: HistoryConstructor, config: Config[]) {
 		super();
 		this._register(config);
-		this._history = new HistoryManager(this._onChange.bind(this));
+		this._history = new HistoryManager({ onChange: this._onChange });
 		if (this._matchedOutlets.errorOutlet && this._defaultOutlet) {
 			const path = this.link(this._defaultOutlet);
 			if (path) {
@@ -160,7 +168,7 @@ export class Router extends Evented implements RouterInterface {
 	 *
 	 * @param originalPath The path of the route
 	 */
-	private _onChange(originalPath: string): void {
+	private _onChange = (originalPath: string): void => {
 		this.emit({ type: 'navstart' });
 		this._matchedOutlets = Object.create(null);
 		this._currentParams = {};
@@ -222,5 +230,5 @@ export class Router extends Evented implements RouterInterface {
 		if (routeMatched === false) {
 			this._matchedOutlets.errorOutlet = { queryParams, params, type: 'error' };
 		}
-	}
+	};
 }

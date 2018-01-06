@@ -6,7 +6,7 @@ import { WidgetBase } from '@dojo/widget-core/WidgetBase';
 import { WNode } from '@dojo/widget-core/interfaces';
 import { Router } from './../../src/Router';
 import { MemoryHistory } from './../../src/history/MemoryHistory';
-import { Outlet } from './../../src/Outlet';
+import { Outlet, getProperties } from './../../src/Outlet';
 
 class Widget extends WidgetBase {
 	render() {
@@ -158,5 +158,10 @@ describe('Outlet', () => {
 		router.setPath('/foo');
 		outlet.__render__() as WNode;
 		assert.isTrue(onExit.calledOnce);
+	});
+
+	it('getProperties returns the payload as router', () => {
+		const router = new Router(MemoryHistory, routeConfig);
+		assert.deepEqual(getProperties(router, {}), { router });
 	});
 });

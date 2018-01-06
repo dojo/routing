@@ -28,13 +28,12 @@
 	"node": {
 		"suites": [
 			"./_build/tests/unit/**/*.js",
-			"!./_build/tests/unit/**/all.js",
-			"!./_build/tests/unit/HashHistory.js"
+			"!./_build/tests/unit/**/all.js"
 		]
 	},
 	"coverage": [
 		"./_build/src/**/*.js",
-		"!./_build/src/examples/**"
+		"!./_build/examples/**"
 	],
 	"configs": {
 		"local": {

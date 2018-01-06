@@ -1,10 +1,10 @@
-import { History, OnChangeFunction } from './../interfaces';
+import { History, HistoryOptions, OnChangeFunction } from './../interfaces';
 
 export class MemoryHistory implements History {
 	private _onChangeFunction: OnChangeFunction;
 	private _current = '/';
 
-	constructor(onChange: OnChangeFunction) {
+	constructor({ onChange }: HistoryOptions) {
 		this._onChangeFunction = onChange;
 		this._onChange();
 	}

@@ -158,6 +158,21 @@ export interface LinkProperties extends VNodeProperties {
 }
 
 /**
+ * Options for a history provider
+ */
+export interface HistoryOptions {
+	onChange: OnChangeFunction;
+	window?: Window;
+}
+
+/**
+ * History Constructor
+ */
+export interface HistoryConstructor {
+	new (options: HistoryOptions): History;
+}
+
+/**
  * History interface
  */
 export interface History {

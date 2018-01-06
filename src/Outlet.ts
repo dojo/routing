@@ -10,6 +10,10 @@ export function isComponent<W extends WidgetBaseInterface>(value: any): value is
 	return Boolean(value && (typeof value === 'string' || typeof value === 'function' || typeof value === 'symbol'));
 }
 
+export function getProperties(router: Router, properties: any) {
+	return { router };
+}
+
 export function Outlet<W extends WidgetBaseInterface, F extends WidgetBaseInterface, E extends WidgetBaseInterface>(
 	outletComponents: Component<W> | OutletComponents<W, F, E>,
 	outlet: string,
@@ -19,9 +23,6 @@ export function Outlet<W extends WidgetBaseInterface, F extends WidgetBaseInterf
 	const mainComponent = isComponent(outletComponents) ? outletComponents : outletComponents.main;
 	const errorComponent = isComponent(outletComponents) ? undefined : outletComponents.error;
 	const { onEnter, onExit, mapParams, key = 'router' } = options;
-	function getProperties(this: WidgetBase, router: Router, properties: any) {
-		return { router };
-	}
 
 	@inject({ name: key, getProperties })
 	@alwaysRender()
