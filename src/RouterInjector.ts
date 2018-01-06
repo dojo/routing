@@ -2,10 +2,9 @@ import { Registry } from '@dojo/widget-core/Registry';
 import { Injector } from '@dojo/widget-core/Injector';
 import { Constructor, RegistryLabel } from '@dojo/widget-core/interfaces';
 
-import { HashHistory } from './history/HashHistory';
 import { History } from './interfaces';
 import { Router } from './Router';
-import { Config } from './interfaces';
+import { RouteConfig } from './interfaces';
 
 /**
  * Router Injector Options
@@ -25,16 +24,16 @@ export interface RouterInjectorOptions {
  * @param options The router injector options
  */
 export function registerRouterInjector(
-	config: Config[],
+	config: RouteConfig[],
 	registry: Registry,
 	options: RouterInjectorOptions = {}
 ): Router {
-	const { key = 'router', history = HashHistory } = options;
+	const { key = 'router', history } = options;
 
 	if (registry.hasInjector(key)) {
 		throw new Error('Router has already been defined');
 	}
-	const router = new Router(history, config);
+	const router = new Router(config, history);
 	const injector = new Injector(router);
 	router.on('navstart', () => {
 		injector.emit({ type: 'invalidate' });

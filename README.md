@@ -8,19 +8,16 @@ A routing library for Dojo 2 applications.
 
 **WARNING** This is _beta_ software. While we do not anticipate significant changes to the API at this stage, we may feel the need to do so. This is not yet production ready, so you should use at your own risk.
 
-This routing library lets you construct route hierarchies that are matched against URLs. Each selected route can tell the application to materialize a different set of widgets and influence the state of those widgets.
-
-History managers are included. The recommended manager uses `pushState()` and `replaceState()` to [add or modify history entries](https://developer.mozilla.org/en-US/docs/Web/API/History_API#Adding_and_modifying_history_entries). This requires server-side support to work well. The hash-based manager uses the fragment identifier, so can work for static HTML pages. A memory-backed manager is provided for debugging purposes.
-
  - [Features](#features)
-   - [Outlets](#outlets)
-   - [Outlet Component Types](#outlet-component-types)
-   - [Map Params](#maps-params)
-   - [Global Error Outlet](#global-error-outlet)
-   - [Route Registration](#route-registration)
+   - [Route Configuration](#route-configuration)
+   - [Router](#router)
+     - [History Managers](#history-managers)
    - [Router Context Injection](#router-context-injection)
-   - [Link Component](#link-component)
-   - [Sample Routing Application](#sample-routing-application)
+   - [Outlets](#outlets)
+     - [Outlet Component Types](#outlet-component-types)
+     - [Outlet Options](#outlet-options)
+     - [Global Error Outlet](#global-error-outlet)
+   - [Link](#link)
 
 ## Usage
 
@@ -33,21 +30,194 @@ npm install @dojo/routing
 npm install @dojo/core
 npm install @dojo/has
 npm install @dojo/shim
+npm install @dojo/widget-core
 ```
 
 ## Features
 
-The examples below are provided in TypeScript syntax. The package does work under JavaScript, but for clarity, the examples will only include one syntax.
+Widgets are a fundamental concept for any Dojo 2 application and as such Dojo 2 Routing provides a collection of components that integrate directly with existing widgets within an application. These components enable widgets to be registered against a route _without_ requiring any knowledge of the `Router`.
 
-### Widget Routing
+### Route Configuration
 
-Widgets are a fundamental concept for any Dojo 2 application and as such Dojo 2 Routing provides a collection of components that integrate directly with existing widgets within an application.
+Application routes are registered using a `RouteConfig`, which defines a route's `path`, the associated `outlet` and nested child `RouteConfig`s. The full routes are recursively constructed from the nested route structure.
 
-These components enable widgets to be registered against a route _without_ requiring any knowledge of the `Router` or `Routes`.
+Example routing configuration:
 
-#### Outlets
+```ts
+import { RouteConfig } from '@dojo/routing/interfaces';
 
-The primary concept for the routing integration is an `outlet`, a unique identifier associated with the registered application route. Dojo 2 Widgets can then be configured with these outlet identifiers using the `Outlet` higher order component. `Outlet` returns a "new" Widget that can be used like any other widget within a `render` method, e.g. `w(MyFooOutlet, { })`.
+const config: RouteConfig[] = [
+	{
+		path: 'foo',
+		outlet: 'root',
+		children: [
+			{
+				path: 'bar',
+				outlet: 'bar'
+			},
+			{
+				path: 'baz',
+				outlet: 'baz',
+				children: [
+					{
+						path: 'qux',
+						outlet: 'qux',
+					}
+				]
+			}
+		]
+	}
+]
+```
+
+This configuration would register the following routes and outlets:
+
+| Route        | Outlet |
+| ------------ | ------ |
+|`/foo`        | `root` |
+|`/foo/bar`    | `bar`  |
+|`/foo/baz`    | `baz`  |
+|`/foo/baz/qux`| `qux`  |
+
+#### Path Params
+
+Path parameters can be defined in a `path` using curly braces in the path attribute of a `RouteConfig`. Params will match any segment and the value of that segment is made available to matching outlets via the [mapParams](#mapParams) `Outlet` options.
+
+```ts
+const config = [
+	{
+		path: 'foo/{foo}',
+		outlet: 'foo'
+	}
+]
+```
+
+For routes with path parameters, a map of default params can be specified for each route. These parameters are used as a fallback when generating a link from an outlet without specifying parameters, or when parameters do not exist in the current route.
+
+```ts
+const config = [
+	{
+		path: 'foo/{foo}',
+		outlet: 'foo',
+		defaultParams: {
+			foo: 'bar'
+		}
+	}
+]
+```
+
+A default route can be specified using the optional configuration property `defaultRoute`, which will be used if the current route does not match a registered route.
+
+```ts
+const config = [
+	{
+		path: 'foo/{foo}',
+		outlet: 'foo',
+		defaultRoute: true
+	}
+]
+```
+
+### Router
+
+A `Router` registers a [route configuration](#route-configuration) which is passed to the router on construction:
+
+```ts
+const router = new Router(config);
+```
+
+The router will automatically be registered with a `HashHistory` history manager. This can be overridden by passing a different history manager as the second parameter.
+
+```ts
+import { MemoryHistory } from '@dojo/routing/MemoryHistory';
+
+const router = new Router(config, MemoryHistory);
+```
+
+Once the router has been created with the application route configuration it needs to be made available to all the components within your application. This is done using a `Registry` from `@dojo/widget-core/Registry` and defining an `Injector` that contains the `router` instance as the `payload`. This `Injector` is defined using a known key, by default through `@dojo/routing` the key is `router` but can be overridden throughout if desired.
+
+```ts
+import { Registry } from '@dojo/widget-core/Registry';
+import { Injector } from '@dojo/widget-core/Injector';
+
+const registry = new Registry();
+
+// Assuming we have the router instance available
+registry.defineInjector('router', new Injector(router));
+```
+
+Finally the `registry` needs to be made available to all widgets within the application by setting it as a `property` to the applications top level `Projector` instance.
+
+```ts
+const projector = new Projector();
+projector.setProperties({ registry });
+```
+
+#### History Managers
+
+Routing comes with three history managers for monitoring and changing the navigation state, `HashHistory`, `StateHistory` and `MemoryHistory`. By default the `HashHistory` is used, however this can be overridden by passing a different `HistoryManager` when creating the `Router`.
+
+```ts
+const router = new Router(config, MemoryHistory);
+```
+
+##### Hash History
+
+The hash-based manager uses the fragment identifier to store navigation state and is the default manager used within `@dojo/routing`.
+
+```ts
+import { Router } from '@dojo/routing/Router';
+import { HashHistory } from '@dojo/routing/history/HashHistory';
+
+
+const router = new Router(config, HashHistory);
+```
+
+The history manager has `current` getter, `set(path: string)` and `prefix(path: string)` APIs. The `HashHistory` class assumes the global object is a browser `window` object, but an explicit object can be provided. The manager uses `window.location.hash` and adds an event listener for the `hashchange` event. The `current` getter returns the current path, without a # prefix.
+
+##### State History
+
+State History is coming soon!
+
+##### Memory History
+
+The `MemoryHistory` should not be used in production applications but is useful for testing routing.
+
+```ts
+import { Router } from '@dojo/routing/Router';
+import { MemoryHistory } from '@dojo/routing/history/MemoryHistory';
+
+const router = new Router(config, MemoryHistory);
+```
+
+### Router Context Injection
+
+The `RouterInjector` module exports a helper function, `registerRouterInjector`, that combines the instantiation of a `Router` instance, registering route configuration and defining injector in the provided registry. The `router` instance is returned.
+
+```ts
+import { Registry } from '@dojo/widget-core/Registry';
+import { registerRouterInjector } from '@dojo/routing/RoutingInjector';
+
+const registry = new Registry();
+const router = registerRouterInjector(config, registry);
+```
+
+The defaults can be overridden using `RouterInjectorOptions`:
+
+```ts
+import { Registry } from '@dojo/widget-core/Registry';
+import { registerRouterInjector } from '@dojo/routing/RoutingInjector';
+import { MemoryHistory } from './history/MemoryHistory';
+
+const registry = new Registry();
+const history = new MemoryHistory();
+
+const router = registerRouterInjector(config, registry, { history, key: 'custom-router-key' });
+```
+
+### Outlets
+
+The primary concept for the routing integration is an `outlet`, a unique identifier associated with the registered application route. Dojo 2 Widgets can then be configured with these outlet identifiers using the `Outlet` higher order component. `Outlet` returns a new widget that can be used like any other widget within a `render` method, e.g. `w(MyFooOutlet, { })`.
 
 Properties can be passed to an `Outlet` widget in the same way as if the original widget was being used. However, all properties are made optional to allow the properties to be injected using the [mapParams](#mapParams) function described below.
 
@@ -76,15 +246,15 @@ class App extends WidgetBase {
 
 #### Outlet Component Types
 
-When registering an outlet a different widget can be configure for each `MatchType` of a route:
+When registering an outlet a different widget can be configure for each match type of a route:
 
-| Type              | Description |
-| ----------------- | ---------------------------------------------------- |
-|`MatchType.INDEX`  | This is an exact match for the registered route. E.g. Navigating to `foo/bar` with a registered route `foo/bar`.   |
-|`MatchType.PARTIAL`| Any match other than an exact match, for example `foo/bar` would partially match `foo/bar/qux` but only if `foo/bar/qux` was also a registered route. Otherwise it would be an `ERROR` match. |
-|`MatchType.ERROR`  | When a partial match occurs but there is no match for the next section of the route. |
+| Type    | Description |
+| ------- | ------------ |
+|`index`  | This is an exact match for the registered route. E.g. Navigating to `foo/bar` with a registered route `foo/bar`.   |
+|`partial`| Any match other than an index match, for example `foo/bar` would partially match `foo/bar/qux` but only if `foo/bar/qux` was also a registered route. Otherwise it would be an `ERROR` match. |
+|`error`  | When a partial match occurs but there is no match for the next section of the route. |
 
-To register a different widget for a specific `MatchType` use a `OutletComponents` object can be passed in place of the widget that specifies each of the components to be used per `MatchType`.
+To do this, instead of passing a widget as the first argument to the `Outlet` use the `OutletComponents` object.
 
 ```ts
 import { MyViewWidget, MyErrorWidget } from './MyWidgets';
@@ -97,176 +267,77 @@ const fooWidgets: OutletComponents = {
 const FooOutlet = Outlet(fooWidgets, 'foo');
 ```
 
-It is important to note that a widget registered against `MatchType.ERROR` will not be used if the outlet also has a widget registered for `MatchType.INDEX`
+It is important to note that a widget registered against match type `error` will not be used if the outlet also has a widget registered for match type `index`.
 
-#### Map Params
+#### Outlet Options
+
+Outlet Options of `mapParams`, `onEnter`, `onExit` and `key` can be passed as an optional third argument to an `Outlet`.
+
+##### Map Params
 
 When a widget is configured for an outlet it is possible to provide a callback function that is used to inject properties that will be available during render lifecycle of the widget.
 
+```ts
+mapParams(type: 'error | index | main', location: string, params: {[key: string]: any}, router: Router)
 ```
-mapParams(type: MatchType, location: string, params: {[key: string]: any}, router: Router<any>)
-```
-
 
 | Argument | Description                                                            |
 | -------- | ---------------------------------------------------------------------- |
 | type     | The `MatchType` that caused the outlet to render                        |
-| location | The location of the route that was matched                             |
 | params   | Key/Value object of the params that were parsed from the matched route |
 | router   | The router instance that can be used to provide functions that go to other routes/outlets|
 
 The following example uses `mapParams` to inject an `onClose` function that will go to the route registered against the `other-outlet` route and `id` property extracted from `params` in the `MyViewWidget` properties:
 
 ```ts
-const FooOutlet = Outlet(MyViewWidget, 'foo', (options: MapParamsOptions) {
-	const { type, location, params, router } = options;
+const mapParams = (options: MapParamsOptions) {
+	const { type, params, router } = options;
 
 	return {
 		onClose() {
 			// This creates a link for another outlet and sets the path
-			router.setPath(route.link('other-outlet'));
+			router.setPath(router.link('other-outlet'));
 		},
 		id: params.id
 	}
-});
+}
+
+const FooOutlet = Outlet(MyViewWidget, 'foo', { mapParams });
 ```
 
+##### On Enter
 
-When there are multiple matching outlets, the callback function receives all matching parameters merged into a single object.
+`onEnter` is a callback that is executed when a `Outlet` is matched for the first time. If a route changes but the `Outlet` is still matched then the `onEnter` callback will not be executed.
 
-##### Global Error Outlet
+```ts
+const onEnter = () => {
+	// do something when the outlet is first matched.
+}
+```
 
-Whenever a `MatchType.ERROR` occurs a global outlet is automatically added to the matched outlets called `errorOutlet`. This outlet can be used to render a widget for any unknown routes.
+##### On Exit
+
+`onExit` is a callback that is executed when a `Outlet` is no longer matched.
+
+```ts
+const onExit = () => {
+	// do something when the outlet is no longer matched.
+}
+```
+
+##### Key
+
+The `key` is the identifier used to locate the `router` from the `registry`, throughout the routing library this is defaulted to `router`.
+
+#### Global Error Outlet
+
+Whenever a match type of `error` is registered a global outlet is automatically added to the matched outlets called `errorOutlet`. This outlet can be used to render a widget for any unknown routes.
 
 ```ts
 const ErrorOutlet = Outlet(ErrorWidget, 'errorOutlet');
 ```
 
-#### Route Registration
-
-Routes are registered using `RouteConfig`, which defines a route's `path`, the associated `outlet` and nested child `RouteConfig`s. The full routes are recursively constructed from the nested route structure.
-
-Example routing configuration:
-
-```ts
-const config: RouteConfig[] = [
-	{
-		path: 'foo',
-		outlet: 'root',
-		children: [
-			{
-				path: 'bar',
-				outlet: 'bar'
-			},
-			{
-				path: 'baz',
-				children: [
-					{
-						path: 'qux'
-					}
-				]
-			}
-		]
-	}
-]
-```
-
-That would register the following routes and outlets:
-
-| Route        | Outlet |
-| ------------ | ------ |
-|`/foo`        | `root` |
-|`/foo/bar`    | `bar`  |
-|`/foo/baz`    | `baz`  |
-|`/foo/baz/qux`| `qux`  |
-
-**Note:** If an `outlet` is not explicitly specified the `path` will be used.
-
-To actually register the configuration with a Dojo 2 router, simply pass the `config` object in the `constructor` options:
-
-```ts
-const router = new Router({ config });
-```
-
-For routes that have either path parameters or query parameters, it is possible to specify default parameters. These parameters are used as a fallback when generating a link from an outlet without specifying parameters, or when parameters do not exist in the current route.
-
-```ts
-const config = [
-	{
-		path: 'foo/{foo}',
-		outlet: 'foo',
-		defaultParams: {
-			foo: 'bar'
-		}
-	}
-];
-
-// Using router.link to generate a link for an outlet 'foo'; will use the default 'bar' value
-router.link('foo')
-```
-
-A default route can be specified using the optional configuration property `defaultRoute`, which will be used if the current route does not match a registered route. Note there can only be one default route configured otherwise an error will be thrown.
-
-In the case that multiple outlets match, for example where a nested path has an exact match, and a parent path has a partial match, the deepest registered outlet is returned.
-
-#### Registering Additional Routes
-
-Additional routing configuration can be registered with a router instance, either from the root or by specifying an existing outlet name.
-
-```ts
-const additionalRouteConfig = [
-	{
-		path: 'extra',
-		outlet: 'extra'
-	}
-];
-
-// Will register the extra routes from the route
-router.register(additionalRouteConfig);
-
-// Will register the extra routes from `foo` outlet
-router.register(additionalRouteConfig, 'foo');
-```
-
-If the outlet is not found then an error is thrown.
-
-#### Router Context Injection
-
-To make the `router` instance available to the created outlets and other routing components (such as [`Link`](#link)), Routing leverages a Dojo 2 widget-core concept of [Injecting State](https://github.com/dojo/widget-core/blob/master/README.md#injecting-state). The custom injector `RouterInjector` needs to be defined in a `registry` available to the components for an known `key`.
-
-All routing components by default use the exported `RouterInjector#routerKey` as the key for the injected `router` context.
-
-```ts
-import { registry } from '@dojo/widget-core/d'
-import { RouterInjector, routerKey } from '@dojo/routing/RouterInjector';
-
-registry.define(routerKey, Injector(RouterInjector, router));
-```
-
-The `RouterInjector` module exports a helper function, `registerRouterInjector`,  that combines the instantiation of a `Router` instance, registering route configuration and defining the `RouterInjector`. The `router` instance is returned.
-
-```ts
-import { registerRouterInjector } from '@dojo/routing/RoutingInjector';
-
-const router = registerRouterInjector(config);
-```
-
-The defaults can be overridden using the `registry`, `history` and `key` arguments:
-
-```ts
-import { WidgetRegistry } from '@dojo/widget-core';
-import { registerRouterInjector } from '@dojo/routing/RoutingInjector';
-import MemoryHistory from './history/MemoryHistory';
-
-const customRegistry = new WidgetRegistry();
-const history = new MemoryHistory();
-
-const router = registerRouterInjector(config, customRegistry, history, 'custom-router-key');
-```
-
-The final thing to do is call `router.start()` to start the `router` instance.
-
-#### Link Component
+### Link
 
 The `Link` component is a wrapper around an `a` DOM element that enables consumers to specify an `outlet` to create a link to. It is also possible to use a static route by setting the `isOutlet` property to `false`.
 
@@ -283,163 +354,7 @@ render() {
 }
 ```
 
-All the standard `VirtualDomProperties` are available for the `Link` component as they would be creating an `a` DOM Element using `v()` with `@dojo/widget-core`.
-
-#### Sample Routing Application
-
-```ts
-// main.ts
-import { registerRouterInjector } from '@dojo/routing/RouterInjector';
-import { RouteConfig } from '@dojo/routing/interfaces';
-import { ProjectorMixin } from '@dojo/widget-core/mixins/Projector';
-
-import { App } from './App';
-
-const config = [
-	{
-		path: '/',
-		outlet: 'home'
-	},
-	{
-		path: 'profiles',
-		outlet: 'profiles',
-		children: [
-			{
-				path: '{profile}',
-				outlet: 'profile'
-			}
-		]
-	}
-];
-
-const router = registerRouterInjector(config);
-const AppProjector = ProjectorMixin(App);
-const projector = new AppProjector();
-
-projector.append();
-router.start();
-```
-
-```ts
-// Home.ts
-import { WidgetBase } from '@dojo/widget-core/WidgetBase';
-import { DNode } from '@dojo/widget-core/interfaces';
-
-export class Home extends WidgetBase {
-	protected render(): DNode {
-		return 'Home';
-	}
-}
-```
-
-```ts
-import { WidgetBase } from '@dojo/widget-core/WidgetBase';
-import { w, v } from '@dojo/widget-core/d';
-import { DNode, WidgetProperties } from '@dojo/widget-core/interfaces';
-import { Link } from '@dojo/routing/Link';
-
-import { ProfileOutlet } from './ProfileOutlet';
-
-export interface ProfilesProperties extends WidgetProperties {
-	showHeader: boolean;
-}
-
-export class Profiles extends WidgetBase<ProfilesProperties> {
-	protected render(): DNode {
-		return [
-			v('div', [
-				w(Link, { to: 'profile', params: { profile: 'Tess' } }, [ 'Tess ']),
-				w(Link, { to: 'profile', params: { profile: 'Jess' } }, [ 'Jess ']),
-				w(Link, { to: 'profile', params: { profile: 'Bess' } }, [ 'Bess '])
-			]),
-			v('div', [
-				this.properties.showHeader ? 'Please select a profile' : null,
-				w(ProfileOutlet, {})
-			])
-		];
-	}
-}
-```
-
-```ts
-// Profile.ts
-import { WidgetBase } from '@dojo/widget-core/WidgetBase';
-import { DNode, WidgetProperties } from '@dojo/widget-core/interfaces';
-
-export interface ProfileProperties extends WidgetProperties {
-	name: string;
-}
-
-export class Profile extends WidgetBase<ProfileProperties> {
-	protected render(): DNode {
-		return `Hello, ${this.properties.name}`;
-	}
-}
-```
-
-```ts
-// HomeOutlet.ts
-import { Outlet } from '@dojo/routing/Outlet';
-
-import { Home } from './Home';
-
-export const HomeOutlet = Outlet(Home, 'home');
-```
-
-```ts
-// ProfilesOutlet.ts
-import { Outlet } from '@dojo/routing/Outlet';
-import { MatchType } from '@dojo/routing/Route';
-
-import { Profiles } from './Profiles';
-
-export const ProfilesOutlet = Outlet(Profiles, 'profiles', ({ type }: MapParamsOptions) => {
-	return { showHeader: type === MatchType.INDEX };
-});
-```
-
-```ts
-// ProfileOutlet.ts
-import { Outlet } from '@dojo/routing/Outlet';
-
-import { Profile } from './Profile';
-
-export const ProfileOutlet = Outlet(Profile, 'profile', ({ params }: MapParamsOptions) => {
-	return { name: params.profile };
-});
-```
-
-```ts
-// App.ts
-import { WidgetBase } from '@dojo/widget-core/WidgetBase';
-import { w, v } from '@dojo/widget-core/d';
-import { DNode } from '@dojo/widget-core/interfaces';
-import { Link } from '@dojo/routing/Link';
-
-import { ProfileOutlet } from './ProfileOutlet';
-import { HomeOutlet } from './HomeOutlet';
-
-export class App extends WidgetBase {
-	protected render(): DNode {
-		return [
-			v('div', [
-				v('ul', [
-					v('li', [
-						w(Link, { to: 'home' }, [ 'Home'])
-					]),
-					v('li', [
-						w(Link, { to: 'profiles' }, [ 'Profiles'])
-					])
-				])
-			]),
-			w(HomeOutlet, {}),
-			w(ProfilesOutlet, {})
-		];
-	}
-}
-```
-
-**More examples are located in the examples directory.**
+All the standard `VNodeProperties` are available for the `Link` component as they would be creating an `a` DOM Element using `v()` with `@dojo/widget-core`.
 
 ## How do I contribute?
 

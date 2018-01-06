@@ -10,16 +10,19 @@ import { MemoryHistory } from './../../src/history/MemoryHistory';
 
 const registry = new Registry();
 
-const router = new Router(MemoryHistory, [
-	{
-		path: 'foo',
-		outlet: 'foo'
-	},
-	{
-		path: 'foo/{foo}',
-		outlet: 'foo2'
-	}
-]);
+const router = new Router(
+	[
+		{
+			path: 'foo',
+			outlet: 'foo'
+		},
+		{
+			path: 'foo/{foo}',
+			outlet: 'foo2'
+		}
+	],
+	MemoryHistory
+);
 
 registry.defineInjector('router', new Injector(router));
 

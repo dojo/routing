@@ -72,19 +72,19 @@ const routeWithChildrenAndMultipleParams = [
 
 describe('Router', () => {
 	it('Navigates to current route if matches against a registered outlet', () => {
-		const router = new Router(MemoryHistory, routeConfig);
+		const router = new Router(routeConfig, MemoryHistory);
 		const context = router.getOutlet('home');
 		assert.isOk(context);
 	});
 
 	it('Navigates to default route if current route does not matches against a registered outlet', () => {
-		const router = new Router(MemoryHistory, routeConfigDefaultRoute);
+		const router = new Router(routeConfigDefaultRoute, MemoryHistory);
 		const context = router.getOutlet('foo');
 		assert.isOk(context);
 	});
 
 	it('Navigates to global "errorOutlet" if current route does not match a registered outlet and no default route is configured', () => {
-		const router = new Router(MemoryHistory, routeConfigNoRoot);
+		const router = new Router(routeConfigNoRoot, MemoryHistory);
 		const context = router.getOutlet('errorOutlet');
 		assert.isOk(context);
 		assert.deepEqual(context!.params, {});
@@ -93,7 +93,7 @@ describe('Router', () => {
 	});
 
 	it('Should navigates to global "errorOutlet" if default route requires params but none have been provided', () => {
-		const router = new Router(MemoryHistory, routeConfigDefaultRouteNoDefaultParams);
+		const router = new Router(routeConfigDefaultRouteNoDefaultParams, MemoryHistory);
 		const fooContext = router.getOutlet('foo');
 		assert.isNotOk(fooContext);
 		const errorContext = router.getOutlet('errorOutlet');
@@ -103,18 +103,18 @@ describe('Router', () => {
 		assert.deepEqual(errorContext!.type, 'error');
 	});
 
-	it('Should register as an exact match for an outlet that exact matches the route', () => {
-		const router = new Router(MemoryHistory, routeConfig);
+	it('Should register as an index match for an outlet that index matches the route', () => {
+		const router = new Router(routeConfig, MemoryHistory);
 		router.setPath('/foo');
 		const context = router.getOutlet('foo');
 		assert.isOk(context);
 		assert.deepEqual(context!.params, {});
 		assert.deepEqual(context!.queryParams, {});
-		assert.deepEqual(context!.type, 'exact');
+		assert.deepEqual(context!.type, 'index');
 	});
 
 	it('Should register as a partial match for an outlet that matches a section of the route', () => {
-		const router = new Router(MemoryHistory, routeConfig);
+		const router = new Router(routeConfig, MemoryHistory);
 		router.setPath('/foo/bar');
 		const fooContext = router.getOutlet('foo');
 		assert.isOk(fooContext);
@@ -125,11 +125,11 @@ describe('Router', () => {
 		assert.isOk(barContext);
 		assert.deepEqual(barContext!.params, {});
 		assert.deepEqual(barContext!.queryParams, {});
-		assert.deepEqual(barContext!.type, 'exact');
+		assert.deepEqual(barContext!.type, 'index');
 	});
 
 	it('Should register as a error match for an outlet that matches a section of the route with no further matching registered outlets', () => {
-		const router = new Router(MemoryHistory, routeConfig);
+		const router = new Router(routeConfig, MemoryHistory);
 		router.setPath('/foo/unknown');
 		const fooContext = router.getOutlet('foo');
 		assert.isOk(fooContext);
@@ -141,7 +141,7 @@ describe('Router', () => {
 	});
 
 	it('Matches routes against outlets with params', () => {
-		const router = new Router(MemoryHistory, routeConfig);
+		const router = new Router(routeConfig, MemoryHistory);
 		router.setPath('/foo/baz/baz');
 		const fooContext = router.getOutlet('foo');
 		assert.isOk(fooContext);
@@ -152,11 +152,11 @@ describe('Router', () => {
 		assert.isOk(context);
 		assert.deepEqual(context!.params, { baz: 'baz' });
 		assert.deepEqual(context!.queryParams, {});
-		assert.deepEqual(context!.type, 'exact');
+		assert.deepEqual(context!.type, 'index');
 	});
 
 	it('Should pass query params to all matched outlets', () => {
-		const router = new Router(MemoryHistory, routeConfig);
+		const router = new Router(routeConfig, MemoryHistory);
 		router.setPath('/foo/bar?query=true');
 		const fooContext = router.getOutlet('foo');
 		assert.deepEqual(fooContext!.params, {});
@@ -165,11 +165,11 @@ describe('Router', () => {
 		const barContext = router.getOutlet('bar');
 		assert.deepEqual(barContext!.params, {});
 		assert.deepEqual(barContext!.queryParams, { query: 'true' });
-		assert.deepEqual(barContext!.type, 'exact');
+		assert.deepEqual(barContext!.type, 'index');
 	});
 
 	it('Should return all params for a route', () => {
-		const router = new Router(MemoryHistory, routeWithChildrenAndMultipleParams);
+		const router = new Router(routeWithChildrenAndMultipleParams, MemoryHistory);
 		router.setPath('/foo/foo/bar/bar/baz/baz');
 		assert.deepEqual(router.currentParams, {
 			foo: 'foo',
@@ -179,39 +179,39 @@ describe('Router', () => {
 	});
 
 	it('Should create link using current params', () => {
-		const router = new Router(MemoryHistory, routeWithChildrenAndMultipleParams);
+		const router = new Router(routeWithChildrenAndMultipleParams, MemoryHistory);
 		router.setPath('/foo/foo/bar/bar/baz/baz');
 		const link = router.link('baz');
 		assert.strictEqual(link, 'foo/foo/bar/bar/baz/baz');
 	});
 
 	it('Will not generate a link if params are not available', () => {
-		const router = new Router(MemoryHistory, routeWithChildrenAndMultipleParams);
+		const router = new Router(routeWithChildrenAndMultipleParams, MemoryHistory);
 		const link = router.link('baz');
 		assert.isUndefined(link);
 	});
 
 	it('Should use params passed to generate link', () => {
-		const router = new Router(MemoryHistory, routeWithChildrenAndMultipleParams);
+		const router = new Router(routeWithChildrenAndMultipleParams, MemoryHistory);
 		router.setPath('/foo/foo/bar/bar/baz/baz');
 		const link = router.link('baz', { bar: 'bar1' });
 		assert.strictEqual(link, 'foo/foo/bar/bar1/baz/baz');
 	});
 
 	it('Should return undefined from link if there is a missing param', () => {
-		const router = new Router(MemoryHistory, routeWithChildrenAndMultipleParams);
+		const router = new Router(routeWithChildrenAndMultipleParams, MemoryHistory);
 		const link = router.link('baz', { bar: 'bar1' });
 		assert.isUndefined(link);
 	});
 
 	it('Should fallback to default params if params are not passed and no matching current params', () => {
-		const router = new Router(MemoryHistory, routeConfigDefaultRoute);
+		const router = new Router(routeConfigDefaultRoute, MemoryHistory);
 		const link = router.link('foo');
 		assert.strictEqual(link, 'foo/defaultBar');
 	});
 
 	it('Cannot generate link for an unknown outlet', () => {
-		const router = new Router(MemoryHistory, routeConfigDefaultRoute);
+		const router = new Router(routeConfigDefaultRoute, MemoryHistory);
 		const link = router.link('unknown');
 		assert.isUndefined(link);
 	});

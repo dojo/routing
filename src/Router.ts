@@ -1,6 +1,6 @@
 import { Evented } from '@dojo/core/Evented';
 import {
-	Config,
+	RouteConfig,
 	History,
 	HistoryConstructor,
 	MatchType,
@@ -9,6 +9,7 @@ import {
 	RouterInterface,
 	Route
 } from './interfaces';
+import { HashHistory } from './history/HashHistory';
 
 const PARAM = Symbol('routing param');
 
@@ -20,7 +21,7 @@ export class Router extends Evented implements RouterInterface {
 	private _defaultOutlet: string;
 	private _history: History;
 
-	constructor(HistoryManager: HistoryConstructor, config: Config[]) {
+	constructor(config: RouteConfig[], HistoryManager: HistoryConstructor = HashHistory) {
 		super();
 		this._register(config);
 		this._history = new HistoryManager({ onChange: this._onChange });
@@ -107,7 +108,7 @@ export class Router extends Evented implements RouterInterface {
 	 * @param routes The routes
 	 * @param parentRoute The parent route
 	 */
-	private _register(config: Config[], routes?: Route[], parentRoute?: Route): void {
+	private _register(config: RouteConfig[], routes?: Route[], parentRoute?: Route): void {
 		routes = routes ? routes : this._routes;
 		for (let i = 0; i < config.length; i++) {
 			let { path, outlet, children, defaultRoute = false, defaultParams = {} } = config[i];
@@ -187,7 +188,7 @@ export class Router extends Evented implements RouterInterface {
 				break;
 			}
 			const route = routes.shift()!;
-			let type: MatchType = 'exact';
+			let type: MatchType = 'index';
 			const segmentsForRoute = [...segments];
 			let routeMatch = true;
 			let segmentIndex = 0;

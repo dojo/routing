@@ -67,7 +67,7 @@ export const AboutOutlet = Outlet(About, 'about');
 export const HomeOutlet = Outlet({ index: Home }, 'home');
 export const TopicsOutlet = Outlet(Topics, 'topics', {
 	mapParams: ({ type }: MapParamsOptions) => {
-		return { showHeading: type === 'exact' };
+		return { showHeading: type === 'index' };
 	}
 });
 export const TopicOutlet = Outlet({ main: Topic, error: ErrorWidget }, 'topic', {

@@ -25,10 +25,10 @@ export interface Route {
 /**
  * Route configuration
  */
-export interface Config {
+export interface RouteConfig {
 	path: string;
 	outlet: string;
-	children?: Config[];
+	children?: RouteConfig[];
 	defaultParams?: Params;
 	defaultRoute?: boolean;
 }
@@ -53,7 +53,7 @@ export interface MapParamsOptions {
 /**
  * Type of outlet matches
  */
-export type MatchType = 'error' | 'exact' | 'partial';
+export type MatchType = 'error' | 'index' | 'partial';
 
 /**
  * Context stored for matched outlets
@@ -158,6 +158,13 @@ export interface LinkProperties extends VNodeProperties {
 }
 
 /**
+ * The `onChange` function signature
+ */
+export interface OnChangeFunction {
+	(path: string): void;
+}
+
+/**
  * Options for a history provider
  */
 export interface HistoryOptions {
@@ -191,5 +198,3 @@ export interface History {
 	 */
 	readonly current: string;
 }
-
-export type OnChangeFunction = (path: string) => void;

@@ -3,14 +3,14 @@ import { v, w } from '@dojo/widget-core/d';
 import { ProjectorMixin } from '@dojo/widget-core/mixins/Projector';
 import { Registry } from '@dojo/widget-core/Registry';
 
-import { Config } from './../src/interfaces';
+import { RouteConfig } from './../src/interfaces';
 import { registerRouterInjector } from './../src/RouterInjector';
 import { Link } from './../src/Link';
 import { BasicAppOutlet, BasicAppRouteConfig } from './basic';
 import { UrlParametersAppOutlet, UrlParametersRouteConfig } from './url-parameters';
 import { AmbiguousMatchesOutlet, AmbiguousMatchesRouteConfig } from './ambigious-matches';
 
-const applicationRoutes: Config[] = [BasicAppRouteConfig, UrlParametersRouteConfig, AmbiguousMatchesRouteConfig];
+const applicationRoutes: RouteConfig[] = [BasicAppRouteConfig, UrlParametersRouteConfig, AmbiguousMatchesRouteConfig];
 
 const registry = new Registry();
 
