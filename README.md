@@ -118,6 +118,23 @@ const config = [
 ]
 ```
 
+Callbacks for `onEnter` and `onExit` can be set on the route configuration, these callbacks get called when an outlet is entered and exited.
+
+```ts
+const config = [
+	{
+		path: 'foo/{foo}',
+		outlet: 'foo',
+		onEnter: () => {
+			console.log('outlet foo entered');
+		},
+		onExit: () => {
+			console.log('outlet foo exited');
+		}
+	}
+]
+```
+
 ### Router
 
 A `Router` registers a [route configuration](#route-configuration) which is passed to the router on construction:
@@ -315,6 +332,8 @@ const onEnter = () => {
 }
 ```
 
+This overrides the `onEnter` set on the configuration.
+
 ##### On Exit
 
 `onExit` is a callback that is executed when a `Outlet` is no longer matched.
@@ -324,6 +343,8 @@ const onExit = () => {
 	// do something when the outlet is no longer matched.
 }
 ```
+
+This overrides the `onExit` set on the configuration.
 
 ##### Key
 
