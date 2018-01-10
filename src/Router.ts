@@ -181,6 +181,8 @@ export class Router extends Evented implements RouterInterface {
 		const [path, queryParamString] = originalPath.split('?');
 		const queryParams = this._getQueryParams(queryParamString);
 		let params: Params = {};
+		let matchedOutletContext: OutletContext | undefined = undefined;
+		let matchedOutlet: string | undefined = undefined;
 		let routes = [...this._routes];
 		let paramIndex = 0;
 		let segments = path.split('/');
@@ -219,6 +221,8 @@ export class Router extends Evented implements RouterInterface {
 				previousOutlet = route.outlet;
 				routeMatched = true;
 				this._matchedOutlets[route.outlet] = { queryParams, params, type, onEnter, onExit };
+				matchedOutletContext = this._matchedOutlets[route.outlet];
+				matchedOutlet = route.outlet;
 				this._currentParams = { ...this._currentParams, ...params };
 				if (route.children.length) {
 					paramIndex = 0;
@@ -235,6 +239,7 @@ export class Router extends Evented implements RouterInterface {
 		if (routeMatched === false) {
 			this._matchedOutlets.errorOutlet = { queryParams, params, type: 'error' };
 		}
+		this.emit({ type: 'nav', outlet: matchedOutlet, context: matchedOutletContext });
 	};
 }
 

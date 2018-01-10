@@ -20,8 +20,8 @@ export interface Route {
 	fullPath: string;
 	fullParams: string[];
 	defaultParams: Params;
-	onEnter?: () => void;
-	onExit?: () => void;
+	onEnter?: OnEnter;
+	onExit?: OnExit;
 }
 
 /**
@@ -33,8 +33,8 @@ export interface RouteConfig {
 	children?: RouteConfig[];
 	defaultParams?: Params;
 	defaultRoute?: boolean;
-	onEnter?: () => void;
-	onExit?: () => void;
+	onEnter?: OnEnter;
+	onExit?: OnExit;
 }
 
 /**
@@ -78,8 +78,15 @@ export interface OutletContext {
 	 */
 	queryParams: Params;
 
-	onEnter?: () => void;
-	onExit?: () => void;
+	/**
+	 * On enter for the route
+	 */
+	onEnter?: OnEnter;
+
+	/**
+	 *On exit for the route
+	 */
+	onExit?: OnExit;
 }
 
 /**
@@ -114,13 +121,21 @@ export interface MapParams {
 	(options: MapParamsOptions): any;
 }
 
+export interface OnEnter {
+	(params: Params): void;
+}
+
+export interface OnExit {
+	(): void;
+}
+
 /**
  * Outlet options that can be configured
  */
 export interface OutletOptions {
 	key?: RegistryLabel;
-	onEnter?: () => void;
-	onExit?: () => void;
+	onEnter?: OnEnter;
+	onExit?: OnExit;
 	mapParams?: MapParams;
 }
 

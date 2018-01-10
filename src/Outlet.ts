@@ -3,7 +3,7 @@ import { WidgetBase } from '@dojo/widget-core/WidgetBase';
 import { w } from '@dojo/widget-core/d';
 import { inject } from '@dojo/widget-core/decorators/inject';
 import { alwaysRender } from '@dojo/widget-core/decorators/alwaysRender';
-import { Component, OutletOptions, OutletComponents, Outlet, Params } from './interfaces';
+import { OnEnter, Component, OutletOptions, OutletComponents, Outlet, Params } from './interfaces';
 import { Router } from './Router';
 import { widgetInstanceMap } from '@dojo/widget-core/vdom';
 
@@ -52,9 +52,9 @@ export function Outlet<W extends WidgetBaseInterface, F extends WidgetBaseInterf
 			return false;
 		}
 
-		private _onEnter(params: Params, onEnterCallback?: () => void) {
+		private _onEnter(params: Params, onEnterCallback?: OnEnter) {
 			if (this._hasRouteChanged(params)) {
-				onEnterCallback && onEnterCallback();
+				onEnterCallback && onEnterCallback(params);
 				this._matched = true;
 				this._matchedParams = params;
 			}
