@@ -84,7 +84,7 @@ export interface OutletContext {
 	onEnter?: OnEnter;
 
 	/**
-	 *On exit for the route
+	 * On exit for the route
 	 */
 	onExit?: OnExit;
 }
