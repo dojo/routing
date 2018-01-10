@@ -14,6 +14,11 @@ module.exports = function (grunt) {
 			dist: {
 				exclude: ['tests/**/*.ts', 'examples/**/*.ts']
 			}
+		},
+		typedoc: {
+			options: {
+				ignoreCompilerErrors: true // Remove this once compile errors are resolved
+			}
 		}
 	});
 
