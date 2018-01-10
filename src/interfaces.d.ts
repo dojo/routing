@@ -20,6 +20,8 @@ export interface Route {
 	fullPath: string;
 	fullParams: string[];
 	defaultParams: Params;
+	onEnter?: () => void;
+	onExit?: () => void;
 }
 
 /**
@@ -31,6 +33,8 @@ export interface RouteConfig {
 	children?: RouteConfig[];
 	defaultParams?: Params;
 	defaultRoute?: boolean;
+	onEnter?: () => void;
+	onExit?: () => void;
 }
 
 /**
@@ -73,6 +77,9 @@ export interface OutletContext {
 	 * The query params for the route
 	 */
 	queryParams: Params;
+
+	onEnter?: () => void;
+	onExit?: () => void;
 }
 
 /**

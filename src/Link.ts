@@ -14,7 +14,7 @@ const getProperties = (router: Router, properties: LinkProperties): VNodePropert
 
 		if (!event.defaultPrevented && event.button === 0 && !properties.target) {
 			event.preventDefault();
-			href && router.setPath(href);
+			href !== undefined && router.setPath(href);
 		}
 	};
 	return {

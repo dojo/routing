@@ -9,6 +9,11 @@ module.exports = function (grunt) {
 				src: staticExampleFiles,
 				dest: '<%= devDirectory %>'
 			}
+		},
+		ts: {
+			dist: {
+				exclude: ['tests/**/*.ts', 'examples/**/*.ts']
+			}
 		}
 	});
 

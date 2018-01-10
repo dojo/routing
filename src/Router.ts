@@ -112,7 +112,7 @@ export class Router extends Evented implements RouterInterface {
 	private _register(config: RouteConfig[], routes?: Route[], parentRoute?: Route): void {
 		routes = routes ? routes : this._routes;
 		for (let i = 0; i < config.length; i++) {
-			let { path, outlet, children, defaultRoute = false, defaultParams = {} } = config[i];
+			let { onEnter, onExit, path, outlet, children, defaultRoute = false, defaultParams = {} } = config[i];
 			path = this._stripLeadingSlash(path);
 			const segments: (symbol | string)[] = path.split('/');
 			const route: Route = {
@@ -124,7 +124,9 @@ export class Router extends Evented implements RouterInterface {
 				query: [],
 				children: [],
 				fullPath: parentRoute ? `${parentRoute.fullPath}/${path}` : path,
-				fullParams: []
+				fullParams: [],
+				onEnter,
+				onExit
 			};
 			if (defaultRoute) {
 				this._defaultOutlet = outlet;
@@ -189,6 +191,7 @@ export class Router extends Evented implements RouterInterface {
 				break;
 			}
 			const route = routes.shift()!;
+			const { onEnter, onExit } = route;
 			let type: MatchType = 'index';
 			const segmentsForRoute = [...segments];
 			let routeMatch = true;
@@ -215,7 +218,7 @@ export class Router extends Evented implements RouterInterface {
 			if (routeMatch === true) {
 				previousOutlet = route.outlet;
 				routeMatched = true;
-				this._matchedOutlets[route.outlet] = { queryParams, params, type };
+				this._matchedOutlets[route.outlet] = { queryParams, params, type, onEnter, onExit };
 				this._currentParams = { ...this._currentParams, ...params };
 				if (route.children.length) {
 					paramIndex = 0;
