@@ -60,6 +60,13 @@ export function Outlet<W extends WidgetBaseInterface, F extends WidgetBaseInterf
 			}
 		}
 
+		protected onDetach() {
+			if (this._matched) {
+				this._onExit && this._onExit();
+				this._matched = false;
+			}
+		}
+
 		protected render(): DNode {
 			let { router, ...properties } = this.properties;
 
