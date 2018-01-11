@@ -29,7 +29,7 @@
     "@dojo/core": "~0.3.0",
     "@dojo/has": "~0.1.1",
     "@dojo/shim": "~0.2.3",
-    "@dojo/widget-core": "file:../widget-core/dist/dojo-widget-core-0.5.1-rc.1.tgz"
+    "@dojo/widget-core": "~0.6.0"
   },
   "devDependencies": {
     "@dojo/interfaces": "~0.2.0",
