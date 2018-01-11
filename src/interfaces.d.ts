@@ -122,7 +122,7 @@ export interface MapParams {
 }
 
 export interface OnEnter {
-	(params: Params): void;
+	(params: Params, type: MatchType): void;
 }
 
 export interface OnExit {

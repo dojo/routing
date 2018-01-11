@@ -3,7 +3,7 @@ import { WidgetBase } from '@dojo/widget-core/WidgetBase';
 import { w } from '@dojo/widget-core/d';
 import { inject } from '@dojo/widget-core/decorators/inject';
 import { alwaysRender } from '@dojo/widget-core/decorators/alwaysRender';
-import { OnEnter, Component, OutletOptions, OutletComponents, Outlet, Params } from './interfaces';
+import { OnEnter, Component, OutletOptions, OutletComponents, Outlet, Params, OutletContext } from './interfaces';
 import { Router } from './Router';
 import { widgetInstanceMap } from '@dojo/widget-core/vdom';
 
@@ -52,9 +52,10 @@ export function Outlet<W extends WidgetBaseInterface, F extends WidgetBaseInterf
 			return false;
 		}
 
-		private _onEnter(params: Params, onEnterCallback?: OnEnter) {
+		private _onEnter(outletContext: OutletContext, onEnterCallback?: OnEnter) {
+			const { params, type } = outletContext;
 			if (this._hasRouteChanged(params)) {
-				onEnterCallback && onEnterCallback(params);
+				onEnterCallback && onEnterCallback(params, type);
 				this._matched = true;
 				this._matchedParams = params;
 			}
@@ -79,16 +80,16 @@ export function Outlet<W extends WidgetBaseInterface, F extends WidgetBaseInterf
 				}
 
 				if (type === 'index' && indexComponent) {
-					this._onEnter(params, onEnter || outletOnEnter);
+					this._onEnter(outletContext, onEnter || outletOnEnter);
 					return w(indexComponent, properties, this.children);
 				} else if (type === 'error' && errorComponent) {
-					this._onEnter(params, onEnter || outletOnEnter);
+					this._onEnter(outletContext, onEnter || outletOnEnter);
 					return w(errorComponent, properties, this.children);
 				} else if (type === 'error' && indexComponent) {
-					this._onEnter(params, onEnter || outletOnEnter);
+					this._onEnter(outletContext, onEnter || outletOnEnter);
 					return w(indexComponent, properties, this.children);
 				} else if (type !== 'error' && mainComponent) {
-					this._onEnter(params, onEnter || outletOnEnter);
+					this._onEnter(outletContext, onEnter || outletOnEnter);
 					return w(mainComponent, properties, this.children);
 				}
 			}
