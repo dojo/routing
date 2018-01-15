@@ -285,7 +285,7 @@ import MemoryHistory from './history/MemoryHistory';
 const customRegistry = new WidgetRegistry();
 const history = new MemoryHistory();
 
-const router = registerRouterInjector(config, customRegistry, history, 'custom-router-key');
+const router = registerRouterInjector(config, customRegistry, { history }, 'custom-router-key');
 ```
 
 The final thing to do is call `router.start()` to start the `router` instance.
