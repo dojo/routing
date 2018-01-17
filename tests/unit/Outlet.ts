@@ -3,6 +3,7 @@ const { assert } = intern.getPlugin('chai');
 import { stub } from 'sinon';
 
 import { WidgetBase } from '@dojo/widget-core/WidgetBase';
+import { w } from '@dojo/widget-core/d';
 import { WNode } from '@dojo/widget-core/interfaces';
 import { Router } from './../../src/Router';
 import { MemoryHistory as HistoryManager } from './../../src/history/MemoryHistory';
@@ -102,6 +103,29 @@ describe('Outlet', () => {
 		assert.deepEqual(renderResult.properties, {});
 	});
 
+	it('Map params is called with params, queryParams, match type and router', () => {
+		const router = new Router(routeConfig, { HistoryManager });
+		router.setPath('/baz/bazParam?bazQuery=true');
+		const mapParams = stub();
+		const TestOutlet = Outlet({ index: Widget }, 'baz', { mapParams });
+		const outlet = new TestOutlet();
+		outlet.__setProperties__({ router } as any);
+		outlet.__render__() as WNode;
+		assert.isTrue(mapParams.calledOnce);
+		assert.isTrue(
+			mapParams.calledWith({
+				params: {
+					baz: 'bazParam'
+				},
+				queryParams: {
+					bazQuery: 'true'
+				},
+				router,
+				type: 'index'
+			})
+		);
+	});
+
 	it('configuration onEnter called when the outlet is rendered', () => {
 		const routeConfig = [
 			{
@@ -133,6 +157,61 @@ describe('Outlet', () => {
 		outlet.__render__() as WNode;
 		assert.isTrue(configOnEnter.calledTwice);
 		router.setPath('/baz/baz');
+		outlet.__render__() as WNode;
+		assert.isTrue(configOnEnter.calledThrice);
+	});
+
+	it('configuration onEnter called when the outlet if params change', () => {
+		class InnerWidget extends WidgetBase {
+			render() {
+				return 'inner';
+			}
+		}
+		const InnerOutlet = Outlet({ index: InnerWidget }, 'qux');
+		class OuterWidget extends WidgetBase {
+			render() {
+				return w(InnerOutlet, {});
+			}
+		}
+		const routeConfig = [
+			{
+				path: '/foo',
+				outlet: 'foo',
+				children: [
+					{
+						path: '/bar',
+						outlet: 'bar'
+					}
+				]
+			},
+			{
+				path: 'baz/{baz}',
+				outlet: 'baz',
+				onEnter: configOnEnter,
+				onExit: configOnExit,
+				children: [
+					{
+						path: 'qux',
+						outlet: 'qux'
+					}
+				]
+			}
+		];
+
+		const router = new Router(routeConfig, { HistoryManager });
+		router.setPath('/baz/param');
+		const TestOutlet = Outlet(OuterWidget, 'baz');
+		const outlet = new TestOutlet();
+		outlet.__setProperties__({ router } as any);
+		outlet.__render__() as WNode;
+		assert.isTrue(configOnEnter.calledOnce);
+		router.setPath('/baz/bar');
+		outlet.__render__() as WNode;
+		assert.isTrue(configOnEnter.calledTwice);
+		router.setPath('/baz/bar/qux');
+		outlet.__render__() as WNode;
+		assert.isTrue(configOnEnter.calledTwice);
+		router.setPath('/baz/foo/qux');
 		outlet.__render__() as WNode;
 		assert.isTrue(configOnEnter.calledThrice);
 	});

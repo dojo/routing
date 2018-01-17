@@ -5,7 +5,6 @@ import { inject } from '@dojo/widget-core/decorators/inject';
 import { alwaysRender } from '@dojo/widget-core/decorators/alwaysRender';
 import { OnEnter, Component, OutletOptions, OutletComponents, Outlet, Params, OutletContext } from './interfaces';
 import { Router } from './Router';
-import { widgetInstanceMap } from '@dojo/widget-core/vdom';
 
 export function isComponent<W extends WidgetBaseInterface>(value: any): value is Component<W> {
 	return Boolean(value && (typeof value === 'string' || typeof value === 'function' || typeof value === 'symbol'));
@@ -31,12 +30,6 @@ export function Outlet<W extends WidgetBaseInterface, F extends WidgetBaseInterf
 		private _matched = false;
 		private _matchedParams: Params = {};
 		private _onExit?: () => void;
-
-		public __setProperties__(properties: Partial<W['properties']> & { router: Router }): void {
-			super.__setProperties__(properties);
-			const instanceData = widgetInstanceMap.get(this)!;
-			instanceData.dirty = true;
-		}
 
 		private _hasRouteChanged(params: Params): boolean {
 			if (!this._matched) {
