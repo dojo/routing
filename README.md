@@ -322,30 +322,6 @@ const mapParams = (options: MapParamsOptions) {
 const FooOutlet = Outlet(MyViewWidget, 'foo', { mapParams });
 ```
 
-##### On Enter
-
-`onEnter` is a callback that is executed when a `Outlet` is matched for the first time. If a route changes but the `Outlet` is still matched then the `onEnter` callback will not be executed.
-
-```ts
-const onEnter = () => {
-	// do something when the outlet is first matched.
-}
-```
-
-This overrides the `onEnter` set on the configuration.
-
-##### On Exit
-
-`onExit` is a callback that is executed when a `Outlet` is no longer matched.
-
-```ts
-const onExit = () => {
-	// do something when the outlet is no longer matched.
-}
-```
-
-This overrides the `onExit` set on the configuration.
-
 ##### Key
 
 The `key` is the identifier used to locate the `router` from the `registry`, throughout the routing library this is defaulted to `router`.
