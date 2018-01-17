@@ -34,7 +34,7 @@
 		"no-var-keyword": true,
 		"no-var-requires": false,
 		"object-literal-sort-keys": false,
-		"one-line": [ true, "check-open-brace", "check-whitespace" ],
+		"one-line": [ true, "check-whitespace" ],
 		"radix": true,
  		"trailing-comma": [ true, {
 			"multiline": "never",
