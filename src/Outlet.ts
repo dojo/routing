@@ -23,7 +23,7 @@ export function Outlet<W extends WidgetBaseInterface, F extends WidgetBaseInterf
 	const indexComponent = isComponent(outletComponents) ? undefined : outletComponents.index;
 	const mainComponent = isComponent(outletComponents) ? outletComponents : outletComponents.main;
 	const errorComponent = isComponent(outletComponents) ? undefined : outletComponents.error;
-	const { onEnter, onExit, mapParams, key = 'router' } = options;
+	const { mapParams, key = 'router' } = options;
 
 	@inject({ name: key, getProperties })
 	@alwaysRender()
@@ -73,23 +73,23 @@ export function Outlet<W extends WidgetBaseInterface, F extends WidgetBaseInterf
 
 			const outletContext = router.getOutlet(outlet);
 			if (outletContext) {
-				const { queryParams, params, type, onEnter: outletOnEnter, onExit: outletOnExit } = outletContext;
-				this._onExit = onExit || outletOnExit;
+				const { queryParams, params, type, onEnter, onExit } = outletContext;
+				this._onExit = onExit;
 				if (mapParams) {
 					properties = { ...properties, ...mapParams({ queryParams, params, type, router }) };
 				}
 
 				if (type === 'index' && indexComponent) {
-					this._onEnter(outletContext, onEnter || outletOnEnter);
+					this._onEnter(outletContext, onEnter);
 					return w(indexComponent, properties, this.children);
 				} else if (type === 'error' && errorComponent) {
-					this._onEnter(outletContext, onEnter || outletOnEnter);
+					this._onEnter(outletContext, onEnter);
 					return w(errorComponent, properties, this.children);
 				} else if (type === 'error' && indexComponent) {
-					this._onEnter(outletContext, onEnter || outletOnEnter);
+					this._onEnter(outletContext, onEnter);
 					return w(indexComponent, properties, this.children);
 				} else if (type !== 'error' && mainComponent) {
-					this._onEnter(outletContext, onEnter || outletOnEnter);
+					this._onEnter(outletContext, onEnter);
 					return w(mainComponent, properties, this.children);
 				}
 			}

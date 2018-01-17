@@ -102,71 +102,6 @@ describe('Outlet', () => {
 		assert.deepEqual(renderResult.properties, {});
 	});
 
-	it('Map params is called with params, queryParams, match type and router', () => {
-		const router = new Router(routeConfig, { HistoryManager });
-		router.setPath('/baz/bazParam?bazQuery=true');
-		const mapParams = stub();
-		const TestOutlet = Outlet({ index: Widget }, 'baz', { mapParams });
-		const outlet = new TestOutlet();
-		outlet.__setProperties__({ router } as any);
-		outlet.__render__() as WNode;
-		assert.isTrue(mapParams.calledOnce);
-		assert.isTrue(
-			mapParams.calledWith({
-				params: {
-					baz: 'bazParam'
-				},
-				queryParams: {
-					bazQuery: 'true'
-				},
-				router,
-				type: 'index'
-			})
-		);
-	});
-
-	it('onEnter called when the outlet is rendered', () => {
-		const router = new Router(routeConfig, { HistoryManager });
-		router.setPath('/foo');
-		const onEnter = stub();
-		const TestOutlet = Outlet({ index: Widget }, 'foo', { onEnter });
-		const outlet = new TestOutlet();
-		outlet.__setProperties__({ router } as any);
-		outlet.__render__() as WNode;
-		assert.isTrue(onEnter.calledOnce);
-		outlet.__render__() as WNode;
-		assert.isTrue(onEnter.calledOnce);
-		router.setPath('/foo/bar');
-		outlet.__render__() as WNode;
-		assert.isTrue(onEnter.calledOnce);
-		router.setPath('/baz');
-		outlet.__render__() as WNode;
-		assert.isTrue(onEnter.calledOnce);
-		router.setPath('/foo');
-		outlet.__render__() as WNode;
-		assert.isTrue(onEnter.calledTwice);
-	});
-
-	it('onEnter called when the outlet is rendered with different params', () => {
-		const router = new Router(routeConfig, { HistoryManager });
-		router.setPath('/baz/param');
-		const onEnter = stub();
-		const TestOutlet = Outlet({ index: Widget }, 'baz', { onEnter });
-		const outlet = new TestOutlet();
-		outlet.__setProperties__({ router } as any);
-		outlet.__render__() as WNode;
-		assert.isTrue(onEnter.calledOnce);
-		router.setPath('/baz/bar');
-		outlet.__render__() as WNode;
-		assert.isTrue(onEnter.calledTwice);
-		router.setPath('/baz/bar');
-		outlet.__render__() as WNode;
-		assert.isTrue(onEnter.calledTwice);
-		router.setPath('/baz/baz');
-		outlet.__render__() as WNode;
-		assert.isTrue(onEnter.calledThrice);
-	});
-
 	it('configuration onEnter called when the outlet is rendered', () => {
 		const routeConfig = [
 			{
@@ -200,65 +135,6 @@ describe('Outlet', () => {
 		router.setPath('/baz/baz');
 		outlet.__render__() as WNode;
 		assert.isTrue(configOnEnter.calledThrice);
-	});
-
-	it('outlet onEnter overrides configuration onEnter', () => {
-		const routeConfig = [
-			{
-				path: '/foo',
-				outlet: 'foo',
-				children: [
-					{
-						path: '/bar',
-						outlet: 'bar'
-					}
-				]
-			},
-			{
-				path: 'baz/{baz}',
-				outlet: 'baz',
-				onEnter: configOnEnter,
-				onExit: configOnExit
-			}
-		];
-
-		const router = new Router(routeConfig, { HistoryManager });
-		router.setPath('/baz/param');
-		const onEnter = stub();
-		const TestOutlet = Outlet({ index: Widget }, 'baz', { onEnter });
-		const outlet = new TestOutlet();
-		outlet.__setProperties__({ router } as any);
-		outlet.__render__() as WNode;
-		assert.isTrue(onEnter.calledOnce);
-		assert.isTrue(configOnEnter.notCalled);
-		router.setPath('/baz/bar');
-		outlet.__render__() as WNode;
-		assert.isTrue(onEnter.calledTwice);
-		assert.isTrue(configOnEnter.notCalled);
-		router.setPath('/baz/baz');
-		outlet.__render__() as WNode;
-		assert.isTrue(onEnter.calledThrice);
-		assert.isTrue(configOnEnter.notCalled);
-	});
-
-	it('onExit called when the outlet is not rendered after previously rendering', () => {
-		const router = new Router(routeConfig, { HistoryManager });
-		router.setPath('/foo');
-		const onExit = stub();
-		const TestOutlet = Outlet({ index: Widget }, 'foo', { onExit });
-		const outlet = new TestOutlet();
-		outlet.__setProperties__({ router } as any);
-		outlet.__render__() as WNode;
-		assert.isTrue(onExit.notCalled);
-		router.setPath('/foo/bar');
-		outlet.__render__() as WNode;
-		assert.isTrue(onExit.calledOnce);
-		router.setPath('/baz');
-		outlet.__render__() as WNode;
-		assert.isTrue(onExit.calledOnce);
-		router.setPath('/foo');
-		outlet.__render__() as WNode;
-		assert.isTrue(onExit.calledOnce);
 	});
 
 	it('configuration onExit called when the outlet is rendered', () => {

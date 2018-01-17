@@ -134,8 +134,6 @@ export interface OnExit {
  */
 export interface OutletOptions {
 	key?: RegistryLabel;
-	onEnter?: OnEnter;
-	onExit?: OnExit;
 	mapParams?: MapParams;
 }
 

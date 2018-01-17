@@ -170,24 +170,24 @@ export class Router extends Evented implements RouterInterface {
 	 * Called on change of the route by the the registered history manager. Matches the path against
 	 * the registered outlets.
 	 *
-	 * @param originalPath The path of the route
+	 * @param requestedPath The path of the requested route
 	 */
-	private _onChange = (originalPath: string): void => {
+	private _onChange = (requestedPath: string): void => {
 		this.emit({ type: 'navstart' });
 		this._matchedOutlets = Object.create(null);
 		this._currentParams = {};
-		originalPath = this._stripLeadingSlash(originalPath);
+		requestedPath = this._stripLeadingSlash(requestedPath);
 
-		const [path, queryParamString] = originalPath.split('?');
+		const [path, queryParamString] = requestedPath.split('?');
 		const queryParams = this._getQueryParams(queryParamString);
 		let params: Params = {};
-		let matchedOutletContext: OutletContext | undefined = undefined;
-		let matchedOutlet: string | undefined = undefined;
+		let matchedOutletContext: OutletContext | undefined;
+		let matchedOutlet: string | undefined;
 		let routes = [...this._routes];
 		let paramIndex = 0;
 		let segments = path.split('/');
 		let routeMatched = false;
-		let previousOutlet: string | undefined = undefined;
+		let previousOutlet: string | undefined;
 		while (routes.length > 0) {
 			if (segments.length === 0) {
 				break;
