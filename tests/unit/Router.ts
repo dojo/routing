@@ -928,6 +928,25 @@ suite('Router', () => {
 		assert.deepEqual(dispatchedPaths, [ '/foo', 'bar' ]);
 	});
 
+	test('start() handles an invalid default route config', () => {
+		const history = new MemoryHistory();
+		const config = [
+			{
+				path: '{bar}',
+				defaultRoute: true
+			}
+		];
+		const router = new Router({ history, config });
+		const dispatchedPaths: string[] = [];
+
+		router.on('navstart', (event) => {
+			dispatchedPaths.push(event.path);
+		});
+
+		router.start({ dispatchCurrent: true });
+		assert.deepEqual(dispatchedPaths, [ '', '' ]);
+	});
+
 	test('start() can be configured not to immediately dispatch for the current history value', () => {
 		const history = new MemoryHistory({ path: '/foo' });
 		const router = new Router({ history });
@@ -1100,22 +1119,19 @@ suite('Router', () => {
 		assert.deepEqual(contexts[1], { second: true });
 	});
 
-	test('link() throws if route has not been appended', () => {
+	test('link() returns undefined if route has not been appended', () => {
 		const router = new Router();
-		assert.throws(() => {
-			router.link(new Route({ path: '/' }));
-		}, Error, 'Cannot generate link for route that is not in the hierarchy');
-		assert.throws(() => {
-			const foo = new Route({ path: '/foo' });
-			const bar = new Route({ path: '/bar' });
-			foo.append(bar);
-			router.link(bar);
-		}, Error, 'Cannot generate link for route that is not in the hierarchy');
-		assert.throws(() => {
-			const foo = new Route({ path: '/foo' });
-			new Router().append(foo);
-			router.link(foo);
-		}, Error, 'Cannot generate link for route that is not in the hierarchy');
+		const bar = new Route({ path: '/bar' });
+		let foo = new Route({ path: '/foo' });
+
+		assert.isUndefined(router.link(new Route({ path: '/' })), 'Cannot generate link for route that is not in the hierarchy');
+
+		foo.append(bar);
+		assert.isUndefined(router.link(bar), 'Cannot generate link for route that is not in the hierarchy');
+
+		foo = new Route({ path: '/foo' });
+		new Router().append(foo);
+		assert.isUndefined(router.link(foo), 'Cannot generate link for route that is not in the hierarchy');
 	});
 
 	test('link() combines paths of route hierarchy (no parameters)', () => {
@@ -1140,28 +1156,32 @@ suite('Router', () => {
 		assert.equal(router.link(route), '/prefixed/foo');
 	});
 
-	test('link() throws if parameters are missing', () => {
+	test('link() returns undefined if parameters are missing', () => {
 		const router = new Router();
 		const route = new Route({ path: '/{foo}?{bar}' });
 		router.append(route);
 
-		assert.throws(() => {
-			router.link(route);
-		}, Error, 'Cannot generate link, missing parameter \'foo\'');
-		assert.throws(() => {
-			router.link(route, { foo: 'foo' });
-		}, Error, 'Cannot generate link, missing search parameter \'bar\'');
+		assert.isUndefined(router.link(route), 'Cannot generate link, missing parameter \'foo\'');
+		assert.isUndefined(router.link(route, { foo: 'foo' }), 'Cannot generate link, missing search parameter \'bar\'');
 	});
 
-	test('link() throws if more than one value is provided for a path parameter', () => {
+	test('link() returns undefined if more than one value is provided for a path parameter', () => {
 		const router = new Router();
 		const route = new Route({ path: '/{foo}' });
-		router.append(route);
 
+		router.append(route);
 		assert.equal(router.link(route, { foo: [ 'foo' ] }), '/foo');
-		assert.throws(() => {
-			router.link(route, { foo: [ 'foo', 'bar' ] });
-		}, Error, 'Cannot generate link, multiple values for parameter \'foo\'');
+		assert.isUndefined(router.link(route, { foo: [ 'foo', 'bar' ] }));
+	});
+
+	test('link() should return undefined if the parent route returns undefined', () => {
+		const router = new Router();
+		const route = new Route({ path: '/{foo}' });
+		const childRoute = new Route({ path: 'bar'});
+
+		router.append(route);
+		route.append(childRoute);
+		assert.isUndefined(router.link(childRoute, { foo: [ 'foo', 'bar' ]}));
 	});
 
 	test('link() fills in parameters', () => {
@@ -1235,7 +1255,7 @@ suite('Router', () => {
 		router.append(initial);
 
 		const ready = new Promise((resolve) => {
-			const links: string[] = [];
+			const links: (string | undefined)[] = [];
 			const route = new Route({
 				path: '/{foo}',
 				guard() {
@@ -1295,13 +1315,9 @@ suite('Router', () => {
 		router.start({ dispatchCurrent: false });
 		history.set('/initial/foo');
 
-		return ready
-			.then(() => {
-				throw new Error('Should have thrown');
-			})
-			.catch((err) => {
-				assert.equal(err.message, 'Cannot generate link, missing parameter \'foo\'');
-			});
+		return ready.then(link => {
+				assert.isUndefined(link);
+		});
 	});
 
 	test('there is no currently selected route for link() after a dispatch fails', () => {
@@ -1334,13 +1350,9 @@ suite('Router', () => {
 		router.start({ dispatchCurrent: false });
 		history.set('/initial/foo');
 
-		return ready
-			.then(() => {
-				throw new Error('Should have thrown');
-			})
-			.catch((err) => {
-				assert.equal(err.message, 'Cannot generate link, missing parameter \'foo\'');
-			});
+		return ready.then(link => {
+			assert.isUndefined(link);
+		});
 	});
 
 	test('there is no currently selected route for link() after an unmanaged dispatch', () => {
@@ -1373,13 +1385,9 @@ suite('Router', () => {
 		router.start({ dispatchCurrent: false });
 		history.set('/initial/foo');
 
-		return ready
-			.then(() => {
-				throw new Error('Should have thrown');
-			})
-			.catch((err) => {
-				assert.equal(err.message, 'Cannot generate link, missing parameter \'foo\'');
-			});
+		return ready.then(link => {
+			assert.isUndefined(link);
+		});
 	});
 
 	test('link() generated for a registered outlet', () => {

@@ -14,7 +14,7 @@ export interface LinkProperties extends VNodeProperties {
 	to: string;
 }
 
-const getProperties = (router: Router<any>, properties: any): LinkProperties => {
+const getProperties = (router: Router<any>, properties: any): Partial<LinkProperties> => {
 	const { to, isOutlet = true, params = {}, onClick, ...props } = properties;
 	const href = isOutlet ? router.link(to, { ...router.getCurrentParams(), ...params }) : to;
 	const handleOnClick = (event: MouseEvent) => {
@@ -25,9 +25,12 @@ const getProperties = (router: Router<any>, properties: any): LinkProperties => 
 
 		if (!event.defaultPrevented && event.button === 0 && !properties.target) {
 			event.preventDefault();
-			router.setPath(href);
+			if (typeof href === 'string') {
+				router.setPath(href);
+			}
 		}
 	};
+
 	return {
 		href,
 		onClick: handleOnClick,
