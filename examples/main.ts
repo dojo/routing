@@ -34,7 +34,7 @@ const linkStyles = {
 	position: 'relative',
 	display: 'block',
 	lineHeight: '1.8',
-	cursor: 'auto',
+	cursor: 'pointer',
 	color: 'inherit'
 };
 
@@ -69,7 +69,7 @@ class App extends WidgetBase {
 				v('div', { styles: menuStyles }, [
 					v('div', { styles: titleStyles }, ['Examples']),
 					v('div', { styles: menuContainerStyles }, [
-						w(Link, { key: 'basic', to: 'basic', styles: linkStyles }, ['Basic ']),
+						w(Link, { key: 'basic', to: 'basic', styles: linkStyles }, ['Basic']),
 						w(Link, { key: 'url', to: 'url-parameters', styles: linkStyles }, ['Url Parameters']),
 						w(Link, { key: 'amb', to: 'ambiguous-matches', styles: linkStyles }, ['Ambiguous Matches'])
 					])
