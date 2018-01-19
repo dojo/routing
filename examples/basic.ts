@@ -1,33 +1,32 @@
 import { WidgetBase } from '@dojo/widget-core/WidgetBase';
 import { v, w } from '@dojo/widget-core/d';
-import { WidgetProperties, DNode } from '@dojo/widget-core/interfaces';
 
 import { Outlet } from './../src/Outlet';
 import { Link } from './../src/Link';
 import { MapParamsOptions } from './../src/interfaces';
 
-export interface ChildProperties extends WidgetProperties {
+export interface ChildProperties {
 	name: string;
 }
 
 export class About extends WidgetBase {
-	render(): DNode {
+	protected render() {
 		return v('div', [v('h2', ['About'])]);
 	}
 }
 
 export class Home extends WidgetBase {
-	render(): DNode {
+	protected render() {
 		return v('div', [v('h2', ['Home'])]);
 	}
 }
 
-export interface TopicsProperties extends WidgetProperties {
+export interface TopicsProperties {
 	showHeading: boolean;
 }
 
 export class Topics extends WidgetBase<TopicsProperties> {
-	render(): DNode {
+	protected render() {
 		const { showHeading } = this.properties;
 
 		return v('div', [
@@ -47,18 +46,18 @@ export class Topics extends WidgetBase<TopicsProperties> {
 	}
 }
 
-export interface TopicProperties extends WidgetProperties {
+export interface TopicProperties {
 	topic: string;
 }
 
 export class Topic extends WidgetBase<TopicProperties> {
-	render(): DNode {
+	protected render() {
 		return v('div', [v('h3', [this.properties.topic])]);
 	}
 }
 
 class ErrorWidget extends WidgetBase {
-	render() {
+	protected render() {
 		return v('div', ['ERROR 2']);
 	}
 }
@@ -77,7 +76,7 @@ export const TopicOutlet = Outlet({ main: Topic, error: ErrorWidget }, 'topic', 
 });
 
 export class App extends WidgetBase {
-	render(): DNode {
+	protected render() {
 		return v('div', [
 			v('ul', [
 				v('li', [w(Link, { key: 'home', to: 'home' }, ['Home'])]),

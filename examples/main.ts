@@ -16,86 +16,70 @@ const registry = new Registry();
 
 registerRouterInjector(applicationRoutes, registry);
 
-const styles = {
-	'text-decoration': 'none',
+const sideBarStyles = {
+	fontSize: '13px',
+	background: '#eee',
+	overflow: 'auto',
+	position: 'fixed',
+	height: '100vh',
+	left: '0px',
+	top: '0px',
+	bottom: '0px',
+	width: '250px',
+	display: 'block'
+};
+
+const linkStyles = {
+	textDecoration: 'none',
 	position: 'relative',
 	display: 'block',
-	'line-height': '1.8',
+	lineHeight: '1.8',
 	cursor: 'auto',
 	color: 'inherit'
 };
 
+const contentStyles = {
+	marginLeft: '250px',
+	display: 'block'
+};
+
+const menuStyles = {
+	lineHeight: '1.8',
+	padding: '10px',
+	display: 'block'
+};
+
+const titleStyles = {
+	textTransform: 'uppercase',
+	fontWeight: 'bold',
+	color: 'hsl(0, 0%, 32%)',
+	marginTop: '20px',
+	display: 'block'
+};
+
+const menuContainerStyles = {
+	paddingLeft: '10px',
+	display: 'block'
+};
+
 class App extends WidgetBase {
-	render() {
+	protected render() {
 		return v('div', [
-			v(
-				'div',
-				{
-					styles: {
-						'font-size': '13px',
-						background: '#eee',
-						overflow: 'auto',
-						position: 'fixed',
-						height: '100vh',
-						left: '0px',
-						top: '0px',
-						bottom: '0px',
-						width: '250px',
-						display: 'block'
-					}
-				},
-				[
-					v(
-						'div',
-						{
-							styles: {
-								'line-height': '1.8',
-								padding: '10px',
-								display: 'block'
-							}
-						},
-						[
-							v(
-								'div',
-								{
-									styles: {
-										'text-transform': 'uppercase',
-										'font-weight': 'bold',
-										color: 'hsl(0, 0%, 32%)',
-										'margin-top': '20px',
-										display: 'block'
-									}
-								},
-								['Examples']
-							),
-							v(
-								'div',
-								{
-									styles: {
-										'padding-left': '10px',
-										display: 'block'
-									}
-								},
-								[
-									w(Link, { key: 'basic', to: 'basic', styles }, ['Basic ']),
-									w(Link, { key: 'url', to: 'url-parameters', styles }, ['Url Parameters']),
-									w(Link, { key: 'amb', to: 'ambiguous-matches', styles }, ['Ambiguous Matches'])
-								]
-							)
-						]
-					)
-				]
-			),
-			v(
-				'div',
-				{
-					styles: {
-						'margin-left': '250px',
-						display: 'block'
-					}
-				},
-				[w(BasicAppOutlet, {}), w(UrlParametersAppOutlet, {}), w(AmbiguousMatchesOutlet, {})]
-			)
+			v('div', { styles: sideBarStyles }, [
+				v('div', { styles: menuStyles }, [
+					v('div', { styles: titleStyles }, ['Examples']),
+					v('div', { styles: menuContainerStyles }, [
+						w(Link, { key: 'basic', to: 'basic', styles: linkStyles }, ['Basic ']),
+						w(Link, { key: 'url', to: 'url-parameters', styles: linkStyles }, ['Url Parameters']),
+						w(Link, { key: 'amb', to: 'ambiguous-matches', styles: linkStyles }, ['Ambiguous Matches'])
+					])
+				])
+			]),
+			v('div', { styles: contentStyles }, [
+				w(BasicAppOutlet, {}),
+				w(UrlParametersAppOutlet, {}),
+				w(AmbiguousMatchesOutlet, {})
+			])
 		]);
 	}
 }

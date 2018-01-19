@@ -1,33 +1,32 @@
 import { WidgetBase } from '@dojo/widget-core/WidgetBase';
 import { v, w } from '@dojo/widget-core/d';
-import { WidgetProperties, DNode } from '@dojo/widget-core/interfaces';
 import { MapParamsOptions } from './../src/interfaces';
 
 import { Link } from './../src/Link';
 import { Outlet } from './../src/Outlet';
 
-export interface ChildProperties extends WidgetProperties {
+export interface ChildProperties {
 	name: string;
 }
 
 export class About extends WidgetBase {
-	render(): DNode {
+	protected render() {
 		return v('h2', ['About']);
 	}
 }
 
 export class Company extends WidgetBase {
-	render(): DNode {
+	protected render() {
 		return v('h2', ['Company']);
 	}
 }
 
-export interface UserProperties extends WidgetProperties {
+export interface UserProperties {
 	name: string;
 }
 
 export class User extends WidgetBase<UserProperties> {
-	render(): DNode {
+	protected render() {
 		return v('div', [v('h2', [`User: ${this.properties.name}`])]);
 	}
 }
@@ -41,7 +40,7 @@ export const UserOutlet = Outlet(User, 'user', {
 });
 
 export class App extends WidgetBase {
-	render(): DNode {
+	protected render() {
 		return v('div', [
 			v('ul', [
 				v('li', [w(Link, { key: '1', to: 'about-us' }, ['About Us (Static)'])]),

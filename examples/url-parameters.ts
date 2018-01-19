@@ -1,17 +1,16 @@
 import { WidgetBase } from '@dojo/widget-core/WidgetBase';
 import { v, w } from '@dojo/widget-core/d';
-import { WidgetProperties, DNode } from '@dojo/widget-core/interfaces';
 import { MapParamsOptions } from './../src/interfaces';
 
 import { Link } from './../src/Link';
 import { Outlet } from './../src/Outlet';
 
-export interface ChildProperties extends WidgetProperties {
+export interface ChildProperties {
 	name: string;
 }
 
 export class Child extends WidgetBase<ChildProperties> {
-	render(): DNode {
+	protected render() {
 		return v('div', [v('h3', [`ID: ${this.properties.name || 'this must be about'}`])]);
 	}
 }
@@ -23,7 +22,7 @@ export const ChildOutlet = Outlet(Child, 'child', {
 });
 
 export class App extends WidgetBase {
-	render(): DNode {
+	protected render() {
 		return v('div', [
 			v('h2', ['Accounts']),
 			v('ul', [
