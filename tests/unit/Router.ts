@@ -19,7 +19,13 @@ const routeConfig = [
 			},
 			{
 				path: '/{baz}/baz',
-				outlet: 'baz'
+				outlet: 'baz',
+				children: [
+					{
+						path: '/{qux}/qux',
+						outlet: 'qux'
+					}
+				]
 			}
 		]
 	}
@@ -153,6 +159,26 @@ describe('Router', () => {
 		assert.deepEqual(context!.params, { baz: 'baz' });
 		assert.deepEqual(context!.queryParams, {});
 		assert.deepEqual(context!.type, 'index');
+	});
+
+	it('Should return params from all matching outlets', () => {
+		const router = new Router(routeConfig, { HistoryManager });
+		router.setPath('/foo/baz/baz/qux/qux?hello=world');
+		const fooContext = router.getOutlet('foo');
+		assert.isOk(fooContext);
+		assert.deepEqual(fooContext!.params, {});
+		assert.deepEqual(fooContext!.queryParams, { hello: 'world' });
+		assert.deepEqual(fooContext!.type, 'partial');
+		const bazContext = router.getOutlet('baz');
+		assert.isOk(bazContext);
+		assert.deepEqual(bazContext!.params, { baz: 'baz' });
+		assert.deepEqual(bazContext!.queryParams, { hello: 'world' });
+		assert.deepEqual(bazContext!.type, 'partial');
+		const quxContext = router.getOutlet('qux');
+		assert.isOk(quxContext);
+		assert.deepEqual(quxContext!.params, { baz: 'baz', qux: 'qux' });
+		assert.deepEqual(quxContext!.queryParams, { hello: 'world' });
+		assert.deepEqual(quxContext!.type, 'index');
 	});
 
 	it('Should pass query params to all matched outlets', () => {

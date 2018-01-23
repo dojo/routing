@@ -180,7 +180,6 @@ export class Router extends Evented implements RouterInterface {
 
 		const [path, queryParamString] = requestedPath.split('?');
 		const queryParams = this._getQueryParams(queryParamString);
-		let params: Params = {};
 		let matchedOutletContext: OutletContext | undefined;
 		let matchedOutlet: string | undefined;
 		let routes = [...this._routes];
@@ -209,7 +208,7 @@ export class Router extends Evented implements RouterInterface {
 					}
 					const segment = segments.shift()!;
 					if (route.segments[segmentIndex] === PARAM) {
-						params[route.params[paramIndex++]] = segment;
+						this._currentParams[route.params[paramIndex++]] = segment;
 					} else if (route.segments[segmentIndex] !== segment) {
 						routeMatch = false;
 						break;
@@ -220,13 +219,17 @@ export class Router extends Evented implements RouterInterface {
 			if (routeMatch === true) {
 				previousOutlet = route.outlet;
 				routeMatched = true;
-				this._matchedOutlets[route.outlet] = { queryParams, params, type, onEnter, onExit };
+				this._matchedOutlets[route.outlet] = {
+					queryParams,
+					params: { ...this._currentParams },
+					type,
+					onEnter,
+					onExit
+				};
 				matchedOutletContext = this._matchedOutlets[route.outlet];
 				matchedOutlet = route.outlet;
-				this._currentParams = { ...this._currentParams, ...params };
 				if (route.children.length) {
 					paramIndex = 0;
-					params = {};
 				}
 				routes = [...route.children];
 			} else {
@@ -237,7 +240,7 @@ export class Router extends Evented implements RouterInterface {
 			}
 		}
 		if (routeMatched === false) {
-			this._matchedOutlets.errorOutlet = { queryParams, params, type: 'error' };
+			this._matchedOutlets.errorOutlet = { queryParams, params: { ...this._currentParams }, type: 'error' };
 		}
 		this.emit({ type: 'nav', outlet: matchedOutlet, context: matchedOutletContext });
 	};
