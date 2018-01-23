@@ -193,7 +193,7 @@ The history manager has `current` getter, `set(path: string)` and `prefix(path: 
 
 ##### State History
 
-The state history uses, the browsers history API, `pushState()` and `replaceState()` to add or modify history entries. The state history manager requires server-side support to work effectively.
+The state history uses the browser's history API, `pushState()` and `replaceState()`, to add or modify history entries. The state history manager requires server-side support to work effectively.
 
 ##### Memory History
 
