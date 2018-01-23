@@ -79,9 +79,9 @@ This configuration would register the following routes and outlets:
 |`/foo/baz`    | `baz`  |
 |`/foo/baz/qux`| `qux`  |
 
-#### Path Params
+#### Path Parameters
 
-Path parameters can be defined in a `path` using curly braces in the path attribute of a `RouteConfig`. Params will match any segment and the value of that segment is made available to matching outlets via the [mapParams](#mapParams) `Outlet` options.
+Path parameters can be defined in a `path` using curly braces in the path attribute of a `RouteConfig`. Parameters will match any segment and the value of that segment is made available to matching outlets via the [mapParams](#mapParams) `Outlet` options. The parameters provided to child outlets will include any parameters from matching parent routes.
 
 ```ts
 const config = [
@@ -151,7 +151,7 @@ import { MemoryHistory } from '@dojo/routing/MemoryHistory';
 const router = new Router(config, MemoryHistory);
 ```
 
-Once the router has been created with the application route configuration it needs to be made available to all the components within your application. This is done using a `Registry` from `@dojo/widget-core/Registry` and defining an `Injector` that contains the `router` instance as the `payload`. This `Injector` is defined using a known key, by default through `@dojo/routing` the key is `router` but can be overridden throughout if desired.
+Once the router has been created with the application route configuration, it needs to be made available to all the components within your application. This is done using a `Registry` from `@dojo/widget-core/Registry` and defining an `Injector` that contains the `router` instance as the `payload`. This `Injector` is defined using a known key, by default the key is `router` but this can be overridden if desired.
 
 ```ts
 import { Registry } from '@dojo/widget-core/Registry';
@@ -163,7 +163,7 @@ const registry = new Registry();
 registry.defineInjector('router', new Injector(router));
 ```
 
-Finally the `registry` needs to be made available to all widgets within the application by setting it as a `property` to the applications top level `Projector` instance.
+Finally the `registry` needs to be made available to all widgets within the application by setting it as a `property` to the application's top level `Projector` instance.
 
 ```ts
 const projector = new Projector();
@@ -186,7 +186,6 @@ The hash-based manager uses the fragment identifier to store navigation state an
 import { Router } from '@dojo/routing/Router';
 import { HashHistory } from '@dojo/routing/history/HashHistory';
 
-
 const router = new Router(config, HashHistory);
 ```
 
@@ -194,11 +193,11 @@ The history manager has `current` getter, `set(path: string)` and `prefix(path: 
 
 ##### State History
 
-State History is coming soon!
+The state history uses, the browsers history API, `pushState()` and `replaceState()` to add or modify history entries. The state history manager requires server-side support to work effectively.
 
 ##### Memory History
 
-The `MemoryHistory` should not be used in production applications but is useful for testing routing.
+The `MemoryHistory` should not be used in production applications, but is useful for testing routing.
 
 ```ts
 import { Router } from '@dojo/routing/Router';
@@ -268,10 +267,10 @@ When registering an outlet a different widget can be configure for each match ty
 | Type    | Description |
 | ------- | ------------ |
 |`index`  | This is an exact match for the registered route. E.g. Navigating to `foo/bar` with a registered route `foo/bar`.   |
-|`partial`| Any match other than an index match, for example `foo/bar` would partially match `foo/bar/qux` but only if `foo/bar/qux` was also a registered route. Otherwise it would be an `ERROR` match. |
+|`partial`| Any match other than an index match, for example `foo/bar` would partially match `foo/bar/qux`, but only if `foo/bar/qux` was also a registered route. Otherwise it would be an `ERROR` match. |
 |`error`  | When a partial match occurs but there is no match for the next section of the route. |
 
-To do this, instead of passing a widget as the first argument to the `Outlet` use the `OutletComponents` object.
+To do this, instead of passing a widget as the first argument to the `Outlet`, use the `OutletComponents` object.
 
 ```ts
 import { MyViewWidget, MyErrorWidget } from './MyWidgets';
@@ -290,7 +289,7 @@ It is important to note that a widget registered against match type `error` will
 
 Outlet Options of `mapParams`, `onEnter`, `onExit` and `key` can be passed as an optional third argument to an `Outlet`.
 
-##### Map Params
+##### Map Parameters
 
 When a widget is configured for an outlet it is possible to provide a callback function that is used to inject properties that will be available during render lifecycle of the widget.
 
@@ -338,7 +337,7 @@ const ErrorOutlet = Outlet(ErrorWidget, 'errorOutlet');
 
 The `Link` component is a wrapper around an `a` DOM element that enables consumers to specify an `outlet` to create a link to. It is also possible to use a static route by setting the `isOutlet` property to `false`.
 
-If the generated link requires specific path or query parameters that are not in the route then they can be passed via the `params` property.
+If the generated link requires specific path or query parameters that are not in the route, they can be passed via the `params` property.
 
 ```ts
 import { Link } from '@dojo/routing/Link';
